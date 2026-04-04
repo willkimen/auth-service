@@ -27,12 +27,12 @@ class Email:
     @staticmethod
     def _validate(value: str) -> str:
         if value is None or not value.strip():
-            raise InvalidEmailError("email cannot be None or empty")
+            raise InvalidEmailError('email cannot be None or empty')
 
         value = value.strip().lower()
 
         if _EMAIL_PATTERN.match(value) is None:
-            raise InvalidEmailError("email must be in a valid format")
+            raise InvalidEmailError('email must be in a valid format')
 
         return value
 
@@ -60,37 +60,37 @@ class PlainPassword:
     @staticmethod
     def _validate(value: str) -> str:
         if value is None or not value.strip():
-            raise InvalidPasswordError("password cannot be empty")
+            raise InvalidPasswordError('password cannot be empty')
 
         if len(value) < _min_length_password:
-            raise InvalidPasswordError("password too short")
+            raise InvalidPasswordError('password too short')
 
         if len(value) > _max_length_password:
-            raise InvalidPasswordError("password too long")
+            raise InvalidPasswordError('password too long')
 
         if not any(c.isalpha() for c in value):
             raise InvalidPasswordError(
-                "password must contain at least one letter"
+                'password must contain at least one letter'
             )
 
         if not any(c.isdigit() for c in value):
             raise InvalidPasswordError(
-                "password must contain at least one number"
+                'password must contain at least one number'
             )
 
         if not any(not c.isalnum() for c in value):
             raise InvalidPasswordError(
-                "password must contain at least one special character"
+                'password must contain at least one special character'
             )
 
         if not any(c.isupper() for c in value):
             raise InvalidPasswordError(
-                "password must contain at least one uppercase character"
+                'password must contain at least one uppercase character'
             )
 
         if not any(c.islower() for c in value):
             raise InvalidPasswordError(
-                "password must contain at least one lowercase character"
+                'password must contain at least one lowercase character'
             )
 
         return value
@@ -115,6 +115,6 @@ class PasswordHash:
     @staticmethod
     def _validate(value: bytes) -> bytes:
         if not value:
-            raise InvalidPasswordError("password hash cannot be empty")
+            raise InvalidPasswordError('password hash cannot be empty')
 
         return value

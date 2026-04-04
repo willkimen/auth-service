@@ -59,7 +59,7 @@ format = 'ruff format'
 
 run = 'fastapi dev src/main.py'
 
-pre_test = 'task lint'
+pre_test = 'task lint && task format'
 
 test = 'pytest -s -x --cov=src -vv'
 

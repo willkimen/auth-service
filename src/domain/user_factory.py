@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from domain.exceptions import UserError
+from domain.exceptions import DomainError
 from domain.user import User
 
 
@@ -17,7 +17,7 @@ def create_new_user(email: str, plain_password: str) -> User:
             is_active=False,
             created_at=now,
             updated_at=now,
-            last_login_at=None
+            last_login_at=None,
         )
-    except UserError:
+    except DomainError:
         raise
