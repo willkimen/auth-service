@@ -1,0 +1,105 @@
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from domain.code_factory import (
+    new_activation_account_code,
+    new_change_email_code,
+    new_change_password_code,
+    new_delete_account_code,
+    new_reset_password_code,
+)
+from domain.enums import CodeType
+from domain.exceptions import InvalidEmailError
+
+user_id = 100
+created_at = datetime.now(timezone.utc)
+expires_at = created_at + timedelta(days=7)
+new_email = 'user@email.com'
+incorrect_format_email = 'email.com'
+current_time = datetime.now(timezone.utc)
+
+
+def test_create_activation_code_success():
+    code = new_activation_account_code(
+        user_id,
+        created_at,
+        expires_at,
+    )
+
+    assert code.code is not None
+    assert code.user_id == user_id
+    assert code.is_active(current_time)
+    assert code.type == CodeType.ACCOUNT_ACTIVATION
+    assert not code.has_new_email()
+    assert code.payload is None
+    assert code.created_at == created_at
+    assert code.expires_at == expires_at
+    assert code.used_at is None
+
+
+def test_create_change_email_code_success():
+    code = new_change_email_code(user_id, created_at, expires_at, new_email)
+
+    assert code.code is not None
+    assert code.user_id == user_id
+    assert code.is_active(current_time)
+    assert code.type == CodeType.CHANGE_EMAIL
+    assert code.has_new_email()
+    assert code.payload is not None
+    assert code.payload['new_email'] == new_email
+    assert code.created_at == created_at
+    assert code.expires_at == expires_at
+    assert code.used_at is None
+
+
+def test_create_change_password_code_success():
+    code = new_change_password_code(user_id, created_at, expires_at)
+
+    assert code.code is not None
+    assert code.user_id == user_id
+    assert code.is_active(current_time)
+    assert code.type == CodeType.CHANGE_PASSWORD
+    assert not code.has_new_email()
+    assert code.payload is None
+    assert code.created_at == created_at
+    assert code.expires_at == expires_at
+    assert code.used_at is None
+
+
+def test_create_reset_password_code_success():
+    code = new_reset_password_code(user_id, created_at, expires_at)
+
+    assert code.code is not None
+    assert code.user_id == user_id
+    assert code.is_active(current_time)
+    assert code.type == CodeType.RESET_PASSWORD
+    assert not code.has_new_email()
+    assert code.payload is None
+    assert code.created_at == created_at
+    assert code.expires_at == expires_at
+    assert code.used_at is None
+
+
+def test_create_delete_account_code_success():
+    code = new_delete_account_code(user_id, created_at, expires_at)
+
+    assert code.code is not None
+    assert code.user_id == user_id
+    assert code.is_active(current_time)
+    assert code.type == CodeType.DELETE_ACCOUNT
+    assert not code.has_new_email()
+    assert code.payload is None
+    assert code.created_at == created_at
+    assert code.expires_at == expires_at
+    assert code.used_at is None
+
+
+def test_email_payload_must_be_in_valid_format():
+    with pytest.raises(InvalidEmailError):
+        new_change_email_code(
+            user_id,
+            created_at,
+            expires_at,
+            incorrect_format_email,
+        )
