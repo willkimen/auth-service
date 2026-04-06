@@ -6,6 +6,7 @@ from domain.exceptions import (
     InvalidEmailError,
     InvalidPasswordError,
     InvalidTimestampError,
+    RequiredFieldError,
 )
 from domain.user import User
 
@@ -41,11 +42,11 @@ def test_password_invalid_is_not_accepted(initial_state: dict):
 
 
 # ============ created_at =================
-def test_user_must_have_a_creation_date(initial_state: dict):
+def test_user_must_have_an_creation_date(initial_state: dict):
     initial_state['created_at'] = None
 
     msg_error = 'created_at must not be None'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(RequiredFieldError, match=msg_error):
         User(**initial_state)
 
 
@@ -70,11 +71,11 @@ def test_creation_date_cannot_be_in_the_future(initial_state: dict):
 
 
 # ============ updated_at =================
-def test_user_must_have_a_update_date(initial_state: dict):
+def test_user_must_have_an_update_date(initial_state: dict):
     initial_state['updated_at'] = None
 
     msg_error = 'updated_at must not be None'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(RequiredFieldError, match=msg_error):
         User(**initial_state)
 
 

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from domain.exceptions import InvalidTimestampError
-from domain.utils import ensure_aware, ensure_not_future
+from domain.utils import ensure_aware, ensure_not_future, ensure_not_none
 from domain.value_objects import Email, PlainPassword
 
 
@@ -128,18 +128,14 @@ class User:
 
     @staticmethod
     def _validate_created_at(created_at: datetime) -> datetime:
-        if created_at is None:
-            raise InvalidTimestampError('created_at must not be None')
-
+        ensure_not_none(created_at, 'created_at')
         ensure_aware(created_at, 'created_at')
         ensure_not_future(created_at, 'created_at')
 
         return created_at
 
     def _validate_updated_at(self, updated_at: datetime) -> datetime:
-        if updated_at is None:
-            raise InvalidTimestampError('updated_at must not be None')
-
+        ensure_not_none(updated_at, 'updated_at')
         ensure_aware(updated_at, 'updated_at')
         ensure_not_future(updated_at, 'updated_at')
         self._validate_not_before_created_at(updated_at, 'updated_at')
