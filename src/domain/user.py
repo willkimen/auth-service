@@ -18,13 +18,15 @@ class User:
         updated_at: datetime,
         last_login_at: datetime | None,
     ):
-        self._public_id: uuid.UUID = public_id
+        self._public_id: uuid.UUID = User._validate_public_id(public_id)
 
         self._email: Email = Email(email)
         self._plain_password: PlainPassword = PlainPassword(plain_password)
 
-        self._email_verified: bool = email_verified
-        self._is_active: bool = is_active
+        self._email_verified: bool = User._validate_email_verified(
+            email_verified
+        )
+        self._is_active: bool = User._validate_is_active(is_active)
 
         self._created_at: datetime = User._validate_created_at(created_at)
         self._updated_at: datetime = self._validate_updated_at(updated_at)
@@ -153,3 +155,38 @@ class User:
         self._validate_not_before_created_at(last_login_at, 'last_login_at')
 
         return last_login_at
+
+    @staticmethod
+    def _validate_public_id(public_id: uuid.UUID) -> uuid.UUID:
+        ensure_not_none(public_id, 'public_id')
+
+        if not isinstance(public_id, uuid.UUID):
+            raise TypeError(
+                f'Invalid id: expected UUID, got {type(public_id).__name__}'
+            )
+
+        return public_id
+
+    @staticmethod
+    def _validate_email_verified(email_verified: bool) -> bool:
+        ensure_not_none(email_verified, 'email_verified')
+
+        if not isinstance(email_verified, bool):
+            raise TypeError(
+                f'Invalid email_verified: expected bool, '
+                f'got {type(email_verified).__name__}'
+            )
+
+        return email_verified
+
+    @staticmethod
+    def _validate_is_active(is_active: bool) -> bool:
+        ensure_not_none(is_active, 'is_active')
+
+        if not isinstance(is_active, bool):
+            raise TypeError(
+                f'Invalid is_active: expected bool, '
+                f'got {type(is_active).__name__}'
+            )
+
+        return is_active

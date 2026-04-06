@@ -25,6 +25,69 @@ def test_create_user_success(initial_state: dict):
     assert user.last_login_at == initial_state['last_login_at']
 
 
+# ============ public_id =================
+def test_public_id_must_not_be_none(initial_state: dict):
+    initial_state['public_id'] = None
+    msg_error = 'public_id it is required'
+
+    with pytest.raises(RequiredFieldError, match=msg_error):
+        User(**initial_state)
+
+
+def test_public_id_must_be_uuid_type(initial_state: dict):
+    type_incorrect = 'type_incorrect'
+    initial_state['public_id'] = type_incorrect
+    msg_error = (
+            'Invalid id: expected UUID, '
+            f'got {type(type_incorrect).__name__}'
+    )
+
+    with pytest.raises(TypeError, match=msg_error):
+        User(**initial_state)
+
+
+# ============ email_verified =================
+def test_email_verified_must_not_be_none(initial_state: dict):
+    initial_state['email_verified'] = None
+    msg_error = 'email_verified it is required'
+
+    with pytest.raises(RequiredFieldError, match=msg_error):
+        User(**initial_state)
+
+
+def test_email_verified_must_be_bool_type(initial_state: dict):
+    type_incorrect = 0
+    initial_state['email_verified'] = type_incorrect
+    msg_error = (
+            'Invalid email_verified: expected bool, '
+            f'got {type(type_incorrect).__name__}'
+    )
+
+    with pytest.raises(TypeError, match=msg_error):
+        User(**initial_state)
+
+
+# ============ is_active =================
+def test_is_active_must_not_be_none(initial_state: dict):
+    initial_state['is_active'] = None
+    msg_error = 'is_active it is required'
+
+    with pytest.raises(RequiredFieldError, match=msg_error):
+        User(**initial_state)
+
+
+def test_is_active_must_be_bool_type(initial_state: dict):
+    type_incorrect = 0
+    initial_state['is_active'] = type_incorrect
+    msg_error = (
+            'Invalid is_active: expected bool, '
+            f'got {type(type_incorrect).__name__}'
+    )
+
+    with pytest.raises(TypeError, match=msg_error):
+        User(**initial_state)
+
+
 # ============ email =================
 def test_email_with_invalid_format_is_not_accepted(initial_state: dict):
     initial_state['email'] = 'invalid'

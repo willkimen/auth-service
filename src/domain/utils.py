@@ -16,4 +16,4 @@ def ensure_aware(dt: datetime, field: str):
 
 def ensure_not_none(value, field_name: str):
     if value is None:
-        raise RequiredFieldError(f'{field_name} must not be None')
+        raise RequiredFieldError(f'{field_name} it is required')
