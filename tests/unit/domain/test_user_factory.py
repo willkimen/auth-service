@@ -15,11 +15,11 @@ def test_create_new_user_success():
     assert user.created_at == user.updated_at
 
 
-def test_user_constructor_rejects_invalid_email():
+def test_factory_rejects_invalid_email():
     with pytest.raises(InvalidEmailError):
         create_new_user('invalid', 'Password!10')
 
 
-def test_user_constructor_rejects_invalid_password():
+def test_factory_rejects_invalid_password():
     with pytest.raises(InvalidPasswordError):
         create_new_user('user@email.com', 'invalid')

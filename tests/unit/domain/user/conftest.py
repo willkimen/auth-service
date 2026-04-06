@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.fixture
-def user_data_initial() -> dict:
+def initial_state() -> dict:
     now = datetime.now(timezone.utc)
     return {
         'public_id': uuid.uuid4(),

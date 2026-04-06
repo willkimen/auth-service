@@ -28,3 +28,4 @@ venv/
 logs
 stats
 __localcode/
+tests/
