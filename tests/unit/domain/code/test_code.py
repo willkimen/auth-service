@@ -72,7 +72,7 @@ def test_code_must_not_be_empty_string(initial_state: dict):
 
 
 # ============= user_id ====================
-def test_user_id_must_not_be_none(initial_state: dict):
+def test_user_id_it_is_required(initial_state: dict):
     initial_state['user_id'] = None
     msg_error = 'user_id it is required'
 
@@ -92,7 +92,7 @@ def test_user_id_must_be_int_type(initial_state: dict):
 
 
 # ============= type ====================
-def test_type_must_not_be_none(initial_state: dict):
+def test_type_it_is_required(initial_state: dict):
     initial_state['type'] = None
     msg_error = 'type it is required'
 
@@ -113,7 +113,7 @@ def test_type_must_be_codetype_type(initial_state: dict):
 
 
 # ============= created_at ====================
-def test_created_at_must_not_be_none(initial_state: dict):
+def test_created_at_it_is_required(initial_state: dict):
     initial_state['created_at'] = None
     msg_error = 'created_at it is required'
 
@@ -139,7 +139,7 @@ def test_created_at_must_not_be_in_future(initial_state: dict):
 
 
 # ============= expires_at ====================
-def test_expires_at_must_not_be_none(initial_state: dict):
+def test_expires_at_it_is_required(initial_state: dict):
     initial_state['expires_at'] = None
     msg_error = 'expires_at it is required'
 

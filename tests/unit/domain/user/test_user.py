@@ -26,7 +26,7 @@ def test_create_user_success(initial_state: dict):
 
 
 # ============ public_id =================
-def test_public_id_must_not_be_none(initial_state: dict):
+def test_public_id_it_is_required(initial_state: dict):
     initial_state['public_id'] = None
     msg_error = 'public_id it is required'
 
@@ -46,7 +46,7 @@ def test_public_id_must_be_uuid_type(initial_state: dict):
 
 
 # ============ email_verified =================
-def test_email_verified_must_not_be_none(initial_state: dict):
+def test_email_verified_it_is_required(initial_state: dict):
     initial_state['email_verified'] = None
     msg_error = 'email_verified it is required'
 
@@ -67,7 +67,7 @@ def test_email_verified_must_be_bool_type(initial_state: dict):
 
 
 # ============ is_active =================
-def test_is_active_must_not_be_none(initial_state: dict):
+def test_is_active_it_is_required(initial_state: dict):
     initial_state['is_active'] = None
     msg_error = 'is_active it is required'
 
