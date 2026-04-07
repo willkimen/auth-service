@@ -10,7 +10,22 @@ def new_activation_account_code(
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
+    """Creates an account activation verification code.
 
+    Args:
+        user_id (int): Owner user identifier.
+        created_at (datetime): Creation timestamp.
+        expires_at (datetime): Expiration timestamp.
+
+    Returns:
+        VerificationCode: Created verification code.
+
+    Raises:
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        CodeTypeError: If type is invalid.
+        TypeError: If user_id has invalid type.
+    """
     return VerificationCode(
         code=None,
         user_id=user_id,
@@ -26,6 +41,24 @@ def new_change_email_code(
     expires_at: datetime,
     new_email: str,
 ) -> VerificationCode:
+    """Creates an email change verification code.
+
+    Args:
+        user_id (int): Owner user identifier.
+        created_at (datetime): Creation timestamp.
+        expires_at (datetime): Expiration timestamp.
+        new_email (str): New email value.
+
+    Returns:
+        VerificationCode: Created verification code.
+
+    Raises:
+        InvalidEmailError: If new_email is invalid.
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        CodeTypeError: If type is invalid.
+        TypeError: If user_id has invalid type.
+    """
 
     Email(new_email)
 
@@ -44,7 +77,22 @@ def new_change_password_code(
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
+    """Creates a password change verification code.
 
+    Args:
+        user_id (int): Owner user identifier.
+        created_at (datetime): Creation timestamp.
+        expires_at (datetime): Expiration timestamp.
+
+    Returns:
+        VerificationCode: Created verification code.
+
+    Raises:
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        CodeTypeError: If type is invalid.
+        TypeError: If user_id has invalid type.
+    """
     return VerificationCode(
         code=None,
         user_id=user_id,
@@ -59,7 +107,22 @@ def new_reset_password_code(
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
+    """Creates a password reset verification code.
 
+    Args:
+        user_id (int): Owner user identifier.
+        created_at (datetime): Creation timestamp.
+        expires_at (datetime): Expiration timestamp.
+
+    Returns:
+        VerificationCode: Created verification code.
+
+    Raises:
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        CodeTypeError: If type is invalid.
+        TypeError: If user_id has invalid type.
+    """
     return VerificationCode(
         code=None,
         user_id=user_id,
@@ -74,7 +137,22 @@ def new_delete_account_code(
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
+    """Creates an account deletion verification code.
 
+    Args:
+        user_id (int): Owner user identifier.
+        created_at (datetime): Creation timestamp.
+        expires_at (datetime): Expiration timestamp.
+
+    Returns:
+        VerificationCode: Created verification code.
+
+    Raises:
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        CodeTypeError: If type is invalid.
+        TypeError: If user_id has invalid type.
+    """
     return VerificationCode(
         code=None,
         user_id=user_id,

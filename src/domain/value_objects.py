@@ -9,6 +9,17 @@ _EMAIL_PATTERN = re.compile(r'^[\w\.\+-]+@[\w\.-]+\.\w+$')
 
 
 class Email:
+    """Represents an email value object with validation.
+
+    Ensures the email is valid, normalized, and compared by value.
+
+    Args:
+        value (str): Raw email string.
+
+    Raises:
+        InvalidEmailError: If email is None, empty, or invalid.
+    """
+
     def __init__(self, value: str):
         self._value: str = Email._validate(value)
 
@@ -42,6 +53,19 @@ _max_length_password = 128
 
 
 class PlainPassword:
+    """Represents a plain password value object with validation.
+
+    Ensures the password meets security rules and is compared by value.
+
+    Password length must be between 8 and 128 characters.
+
+    Args:
+        value (str): Raw password string.
+
+    Raises:
+        InvalidPasswordError: If empty or violates any rule.
+    """
+
     def __init__(self, value: str):
         self._value = PlainPassword._validate(value)
 
@@ -97,6 +121,17 @@ class PlainPassword:
 
 
 class PasswordHash:
+    """Represents a password hash value object with validation.
+
+    Ensures the hash is non-empty and compared by value.
+
+    Args:
+        value (bytes): Password hash bytes.
+
+    Raises:
+        InvalidPasswordError: If the hash is empty.
+    """
+
     def __init__(self, value: bytes):
         self._value = PasswordHash._validate(value)
 

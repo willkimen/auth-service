@@ -7,6 +7,31 @@ from domain.value_objects import Email, PlainPassword
 
 
 class User:
+    """Represents a user entity with validation and domain rules.
+
+    Ensures all fields are valid and timestamps are consistent.
+
+    Timestamps must be timezone-aware. created_at and updated_at must
+    not be in the future. updated_at and last_login_at must not be
+    before created_at.
+
+    Args:
+        public_id (UUID): Public user identifier.
+        email (str): User email.
+        plain_password (str): Raw password.
+        email_verified (bool): Email verification status.
+        is_active (bool): Active status.
+        created_at (datetime): Creation timestamp.
+        updated_at (datetime): Update timestamp.
+        last_login_at (datetime | None): Last login timestamp.
+
+    Raises:
+        RequiredFieldError: If required fields are None.
+        InvalidTimestampError: If timestamps are invalid.
+        TypeError: If fields have invalid types.
+        InvalidEmailError: If email is invalid.
+        InvalidPasswordError: If password is invalid.
+    """
     def __init__(
         self,
         public_id: uuid.UUID,
@@ -39,6 +64,14 @@ class User:
         return self._plain_password
 
     def change_password(self, new: str):
+        """Changes the user's password and updates updated_at.
+
+        Args:
+            new (str): New raw password.
+
+        Raises:
+            InvalidPasswordError: If the password is invalid.
+        """
         new_password = PlainPassword(new)
 
         if new_password == self._plain_password:
@@ -53,6 +86,14 @@ class User:
         return self._email
 
     def change_email(self, new: str):
+        """Changes the user's email and updates updated_at.
+
+        Args:
+            new (str): New email value.
+
+        Raises:
+            InvalidEmailError: If the email is invalid.
+        """
         new_email = Email(new)
 
         if new_email == self._email:
@@ -67,6 +108,10 @@ class User:
         return self._is_active
 
     def activate(self):
+        """Activates the user and updates updated_at.
+
+        Does nothing if already active.
+        """
         if self._is_active:
             return
 
@@ -75,6 +120,10 @@ class User:
         self._is_active = True
 
     def deactivate(self):
+        """Deactivates the user and updates updated_at.
+
+        Does nothing if already inactive.
+        """
         if not self._is_active:
             return
 
@@ -87,6 +136,10 @@ class User:
         return self._email_verified
 
     def mark_email_as_verified(self):
+        """Marks the email as verified and updates updated_at.
+
+        Does nothing if already verified.
+        """
         if self._email_verified:
             return
 
@@ -111,12 +164,33 @@ class User:
         return self._last_login_at
 
     def record_login(self):
+        """Records a login and updates last_login_at.
+
+        Uses current UTC time. Timestamp must be timezone-aware, not
+        in the future, and not before created_at.
+
+        Raises:
+            InvalidTimestampError: If timestamp is invalid or before
+            created_at.
+        """
         now = datetime.now(timezone.utc)
         self._last_login_at = self._validate_last_login_at(now)
 
     def _validate_not_before_created_at(
         self, date: datetime, field: str
     ) -> datetime:
+        """Ensures a timestamp is not before created_at.
+
+        Args:
+            date (datetime): Timestamp to validate.
+            field (str): Field name.
+
+        Returns:
+            datetime: Validated timestamp.
+
+        Raises:
+            InvalidTimestampError: If date is before created_at.
+        """
         if date < self._created_at:
             raise InvalidTimestampError(
                 f'{field} must not be before created_at'
@@ -125,11 +199,35 @@ class User:
         return date
 
     def _register_update(self):
+        """Updates updated_at with current UTC time.
+
+        Validates timestamp as timezone-aware, not in the future,
+        and not before created_at.
+
+        Raises:
+            InvalidTimestampError: If timestamp is invalid or before
+            created_at.
+        """
         now = datetime.now(timezone.utc)
         self._updated_at = self._validate_updated_at(now)
 
     @staticmethod
     def _validate_created_at(created_at: datetime) -> datetime:
+        """Validates created_at timestamp.
+
+        Ensures value is not None, is timezone-aware, and not in the
+        future.
+
+        Args:
+            created_at (datetime): Creation timestamp.
+
+        Returns:
+            datetime: Validated timestamp.
+
+        Raises:
+            RequiredFieldError: If None.
+            InvalidTimestampError: If not aware or in the future.
+        """
         ensure_not_none(created_at, 'created_at')
         ensure_aware(created_at, 'created_at')
         ensure_not_future(created_at, 'created_at')
@@ -137,6 +235,22 @@ class User:
         return created_at
 
     def _validate_updated_at(self, updated_at: datetime) -> datetime:
+        """Validates updated_at timestamp.
+
+        Ensures value is not None, is timezone-aware, not in the
+        future, and not before created_at.
+
+        Args:
+            updated_at (datetime): Update timestamp.
+
+        Returns:
+            datetime: Validated timestamp.
+
+        Raises:
+            RequiredFieldError: If None.
+            InvalidTimestampError: If not aware, in future, or before
+            created_at.
+        """
         ensure_not_none(updated_at, 'updated_at')
         ensure_aware(updated_at, 'updated_at')
         ensure_not_future(updated_at, 'updated_at')
@@ -147,6 +261,21 @@ class User:
     def _validate_last_login_at(
         self, last_login_at: datetime | None
     ) -> datetime | None:
+        """Validates last_login_at timestamp.
+
+        Allows None. If provided, must be timezone-aware, not in the
+        future, and not before created_at.
+
+        Args:
+            last_login_at (datetime | None): Login timestamp.
+
+        Returns:
+            datetime | None: Validated timestamp.
+
+        Raises:
+            InvalidTimestampError: If not aware, in future, or before
+            created_at.
+        """
         if last_login_at is None:
             return None
 
@@ -158,6 +287,20 @@ class User:
 
     @staticmethod
     def _validate_public_id(public_id: uuid.UUID) -> uuid.UUID:
+        """Validates public_id.
+
+        Ensures value is not None and is a UUID.
+
+        Args:
+            public_id (UUID): Public identifier.
+
+        Returns:
+            UUID: Validated identifier.
+
+        Raises:
+            RequiredFieldError: If None.
+            TypeError: If not a UUID.
+        """
         ensure_not_none(public_id, 'public_id')
 
         if not isinstance(public_id, uuid.UUID):
@@ -169,6 +312,20 @@ class User:
 
     @staticmethod
     def _validate_email_verified(email_verified: bool) -> bool:
+        """Validates email_verified flag.
+
+        Ensures value is not None and is a boolean.
+
+        Args:
+            email_verified (bool): Verification status.
+
+        Returns:
+            bool: Validated value.
+
+        Raises:
+            RequiredFieldError: If None.
+            TypeError: If not a bool.
+        """
         ensure_not_none(email_verified, 'email_verified')
 
         if not isinstance(email_verified, bool):
@@ -181,6 +338,20 @@ class User:
 
     @staticmethod
     def _validate_is_active(is_active: bool) -> bool:
+        """Validates is_active flag.
+
+        Ensures value is not None and is a boolean.
+
+        Args:
+            is_active (bool): Active status.
+
+        Returns:
+            bool: Validated value.
+
+        Raises:
+            RequiredFieldError: If None.
+            TypeError: If not a bool.
+        """
         ensure_not_none(is_active, 'is_active')
 
         if not isinstance(is_active, bool):
