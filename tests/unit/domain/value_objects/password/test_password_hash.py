@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 
 from domain.exceptions import InvalidPasswordError
-from domain.value_objects import PasswordHash
+from domain.value_objects.password import PasswordHash
 
 value_binary = b'1234357'
 

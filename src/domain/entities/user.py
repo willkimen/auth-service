@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 from domain.exceptions import InvalidTimestampError
 from domain.utils import ensure_aware, ensure_not_future, ensure_not_none
-from domain.value_objects import Email, PlainPassword
+from domain.value_objects.email import Email
+from domain.value_objects.password import PlainPassword
 
 
 class User:
@@ -32,6 +33,7 @@ class User:
         InvalidEmailError: If email is invalid.
         InvalidPasswordError: If password is invalid.
     """
+
     def __init__(
         self,
         public_id: uuid.UUID,

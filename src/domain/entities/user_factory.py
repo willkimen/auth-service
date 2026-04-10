@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from domain.user import User
+from domain.entities.user import User
 
 
 def create_new_user(email: str, plain_password: str) -> User:

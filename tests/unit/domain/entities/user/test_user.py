@@ -2,13 +2,13 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from domain.entities.user import User
 from domain.exceptions import (
     InvalidEmailError,
     InvalidPasswordError,
     InvalidTimestampError,
     RequiredFieldError,
 )
-from domain.user import User
 
 
 def test_create_user_success(initial_state: dict):

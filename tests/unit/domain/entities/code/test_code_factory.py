@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.code_factory import (
+from domain.entities.code_factory import (
     new_activation_account_code,
     new_change_email_code,
     new_change_password_code,

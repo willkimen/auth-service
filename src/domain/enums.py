@@ -6,6 +6,7 @@ class CodeType(str, Enum):
 
     Used to represent the purpose of a verification code.
     """
+
     ACCOUNT_ACTIVATION = 'ACCOUNT_ACTIVATION'
     CHANGE_EMAIL = 'CHANGE_EMAIL'
     CHANGE_PASSWORD = 'CHANGE_PASSWORD'

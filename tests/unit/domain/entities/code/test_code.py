@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.code import VerificationCode
+from domain.entities.code import VerificationCode
 from domain.exceptions import (
     CodeStatusError,
     CodeTypeError,

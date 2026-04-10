@@ -1,7 +1,7 @@
 import pytest
 
+from domain.entities.user_factory import create_new_user
 from domain.exceptions import InvalidEmailError, InvalidPasswordError
-from domain.user_factory import create_new_user
 
 
 def test_create_new_user_success():

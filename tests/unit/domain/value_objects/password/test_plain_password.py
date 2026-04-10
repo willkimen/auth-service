@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 
 from domain.exceptions import InvalidPasswordError
-from domain.value_objects import PlainPassword
+from domain.value_objects.password import PlainPassword
 
 correct_password = 'PASSword1234!'
 

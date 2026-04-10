@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from domain.code import VerificationCode
+from domain.entities.code import VerificationCode
 from domain.enums import CodeType
-from domain.value_objects import Email
+from domain.value_objects.email import Email
 
 
 def new_activation_account_code(

@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 
 from domain.exceptions import InvalidEmailError
-from domain.value_objects import Email
+from domain.value_objects.email import Email
 
 correct_email = 'user@email.com'
 
