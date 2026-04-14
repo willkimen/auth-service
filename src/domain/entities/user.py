@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime, timezone
 
@@ -177,6 +179,14 @@ class User:
         """
         now = datetime.now(timezone.utc)
         self._last_login_at = self._validate_last_login_at(now)
+
+    def __hash__(self):
+        return hash(self.public_id)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, User):
+            return NotImplemented
+        return self.public_id == other.public_id
 
     def _validate_not_before_created_at(
         self, date: datetime, field: str

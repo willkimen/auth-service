@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import secrets
 from datetime import datetime
@@ -67,6 +69,14 @@ class VerificationCode:
         self._used_at: datetime | None = self._validate_used_at(used_at)
 
         self._payload: dict | None = payload
+
+    def __hash__(self):
+        return hash(self.code)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, VerificationCode):
+            return NotImplemented
+        return self.code == other.code
 
     @property
     def code(self) -> str:

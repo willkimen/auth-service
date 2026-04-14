@@ -29,7 +29,7 @@ class Email:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Email):
-            return False
+            return NotImplemented
         return self._value == other._value
 
     @staticmethod

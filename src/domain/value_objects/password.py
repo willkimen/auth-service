@@ -96,7 +96,7 @@ class PasswordHash:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PasswordHash):
-            return False
+            return NotImplemented
         return self._value == other._value
 
     @staticmethod
