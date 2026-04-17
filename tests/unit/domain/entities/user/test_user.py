@@ -4,19 +4,19 @@ import pytest
 
 from domain.entities.user import User
 from domain.exceptions import (
-    InvalidEmailError,
-    InvalidPasswordError,
     InvalidTimestampError,
     RequiredFieldError,
 )
+from domain.value_objects.email import Email
+from domain.value_objects.password import PasswordHash
 
 
 def test_create_user_success(initial_state: dict):
     user = User(**initial_state)
 
     assert user.public_id == initial_state['public_id']
-    assert user.plain_password.value == initial_state['plain_password']
-    assert user.email.value == initial_state['email']
+    assert user.hash_password.value == initial_state['hash_password'].value
+    assert user.email.value == initial_state['email'].value
     assert user.email_verified == initial_state['email_verified']
     assert user.is_active == initial_state['is_active']
     assert user.created_at == initial_state['created_at']
@@ -84,22 +84,6 @@ def test_is_active_must_be_bool_type(initial_state: dict):
     )
 
     with pytest.raises(TypeError, match=msg_error):
-        User(**initial_state)
-
-
-# ============ email =================
-def test_email_with_invalid_format_is_not_accepted(initial_state: dict):
-    initial_state['email'] = 'invalid'
-
-    with pytest.raises(InvalidEmailError):
-        User(**initial_state)
-
-
-# ============ plain_password =================
-def test_password_invalid_is_not_accepted(initial_state: dict):
-    initial_state['plain_password'] = 'invalid'
-
-    with pytest.raises(InvalidPasswordError):
         User(**initial_state)
 
 
@@ -206,27 +190,20 @@ def test_last_login_date_cannot_be_earlier_than_creation_date(
 
 # ========== change_password ===========
 def test_password_changed_successfully(initial_state: dict):
-    new_password = 'NewPassword!20'
+    new_password = PasswordHash(b'NewPassword!20')
 
     user = User(**initial_state)
 
     user.change_password(new_password)
 
-    assert user.plain_password.value == new_password
-
-
-def test_password_not_change_if_invalid(initial_state: dict):
-    user = User(**initial_state)
-
-    with pytest.raises(InvalidPasswordError):
-        user.change_password('invalid')
+    assert user.hash_password.value == new_password.value
 
 
 def test_change_password_updated_user_state(initial_state: dict):
     user = User(**initial_state)
     previous_updated_at = user.updated_at
 
-    user.change_password('NewPassword!20')
+    user.change_password(PasswordHash(b'NewPassword!20'))
 
     assert user.updated_at != previous_updated_at
     assert user.updated_at > previous_updated_at
@@ -241,7 +218,7 @@ def test_change_password_to_same_value_does_not_update_user_state(
     to the current one. This is verified by asserting that updated_at
     remains unchanged after the second call.
     """
-    same_password = 'NewPassword!10'
+    same_password = PasswordHash(b'NewPassword!20')
     user = User(**initial_state)
 
     user.change_password(same_password)
@@ -254,26 +231,19 @@ def test_change_password_to_same_value_does_not_update_user_state(
 
 # ========== change_email ===========
 def test_email_changed_successfully(initial_state: dict):
-    new_email = 'newuser@email.com'
+    new_email = Email('newuser@email.com')
 
     user = User(**initial_state)
     user.change_email(new_email)
 
-    assert user.email.value == new_email
-
-
-def test_email_not_change_if_invalid(initial_state: dict):
-    user = User(**initial_state)
-
-    with pytest.raises(InvalidEmailError):
-        user.change_email('invalid')
+    assert user.email.value == new_email.value
 
 
 def test_change_email_update_user_state(initial_state: dict):
     user = User(**initial_state)
     previous_updated_at = user.updated_at
 
-    user.change_email('newuser@email.com')
+    user.change_email(Email('newuser@email.com'))
 
     assert user.updated_at != previous_updated_at
     assert user.updated_at > previous_updated_at
@@ -290,7 +260,7 @@ def test_change_email_to_same_value_does_not_update_user_state(
     """
     user = User(**initial_state)
 
-    same_email = 'NewEmail@email.com'
+    same_email = Email('NewEmail@email.com')
     user.change_email(same_email)
     updated_at_after_first_change = user.updated_at
 

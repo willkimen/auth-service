@@ -22,7 +22,7 @@ def test_password_hash_objects_with_same_state_are_equals():
 
 
 def test_password_hash_should_not_be_none():
-    with pytest.raises(InvalidPasswordError) as exc:
-        PasswordHash(cast(bytes, None))
+    msg_error = 'password hash cannot be empty'
 
-    assert 'password hash cannot be empty' in str(exc.value)
+    with pytest.raises(InvalidPasswordError, match=msg_error):
+        PasswordHash(cast(bytes, None))

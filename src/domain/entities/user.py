@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from domain.exceptions import InvalidTimestampError
 from domain.utils import ensure_aware, ensure_not_future, ensure_not_none
 from domain.value_objects.email import Email
-from domain.value_objects.password import PlainPassword
+from domain.value_objects.password import PasswordHash
 
 
 class User:
@@ -20,8 +20,8 @@ class User:
 
     Args:
         public_id (UUID): Public user identifier.
-        email (str): User email.
-        plain_password (str): Raw password.
+        email (Email): Email instance.
+        hash_password (PasswordHash): PasswordHash instance.
         email_verified (bool): Email verification status.
         is_active (bool): Active status.
         created_at (datetime): Creation timestamp.
@@ -32,15 +32,13 @@ class User:
         RequiredFieldError: If required fields are None.
         InvalidTimestampError: If timestamps are invalid.
         TypeError: If fields have invalid types.
-        InvalidEmailError: If email is invalid.
-        InvalidPasswordError: If password is invalid.
     """
 
     def __init__(
         self,
         public_id: uuid.UUID,
-        email: str,
-        plain_password: str,
+        email: Email,
+        hash_password: PasswordHash,
         email_verified: bool,
         is_active: bool,
         created_at: datetime,
@@ -49,8 +47,8 @@ class User:
     ):
         self._public_id: uuid.UUID = User._validate_public_id(public_id)
 
-        self._email: Email = Email(email)
-        self._plain_password: PlainPassword = PlainPassword(plain_password)
+        self._email: Email = email
+        self._hash_password: PasswordHash = hash_password
 
         self._email_verified: bool = User._validate_email_verified(
             email_verified
@@ -64,48 +62,38 @@ class User:
         )
 
     @property
-    def plain_password(self) -> PlainPassword:
-        return self._plain_password
+    def hash_password(self) -> PasswordHash:
+        return self._hash_password
 
-    def change_password(self, new: str):
-        """Changes the user's password and updates updated_at.
+    def change_password(self, new: PasswordHash):
+        """Changes the user's password hash and updates updated_at.
 
         Args:
-            new (str): New raw password.
-
-        Raises:
-            InvalidPasswordError: If the password is invalid.
+            new (PasswordHash): PasswordHash instance.
         """
-        new_password = PlainPassword(new)
-
-        if new_password == self._plain_password:
+        if new == self._hash_password:
             return
 
         self._register_update()
 
-        self._plain_password = new_password
+        self._hash_password = new
 
     @property
     def email(self) -> Email:
         return self._email
 
-    def change_email(self, new: str):
+    def change_email(self, new: Email):
         """Changes the user's email and updates updated_at.
 
         Args:
-            new (str): New email value.
-
-        Raises:
-            InvalidEmailError: If the email is invalid.
+            new (Email): Email instance.
         """
-        new_email = Email(new)
-
-        if new_email == self._email:
+        if new == self._email:
             return
 
         self._register_update()
 
-        self._email = new_email
+        self._email = new
 
     @property
     def is_active(self) -> bool:

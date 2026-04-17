@@ -2,30 +2,28 @@ import uuid
 from datetime import datetime, timezone
 
 from domain.entities.user import User
+from domain.value_objects.email import Email
+from domain.value_objects.password import PasswordHash
 
 
-def create_new_user(email: str, plain_password: str) -> User:
+def create_new_user(email: Email, hash_password: PasswordHash) -> User:
     """Creates a new user with default initial state.
 
     Generates public_id and sets timestamps using current UTC.
 
     Args:
-        email (str): User email.
-        plain_password (str): Raw password.
+        email (Email): Email instance.
+        hash_password (PasswordHash): PasswordHash instance.
 
     Returns:
         User: Created user.
-
-    Raises:
-        InvalidEmailError: If email is invalid.
-        InvalidPasswordError: If password is invalid.
     """
     now = datetime.now(timezone.utc)
 
     return User(
         public_id=uuid.uuid4(),
         email=email,
-        plain_password=plain_password,
+        hash_password=hash_password,
         email_verified=False,
         is_active=False,
         created_at=now,

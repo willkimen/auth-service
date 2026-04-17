@@ -3,6 +3,9 @@ from datetime import datetime, timezone
 
 import pytest
 
+from domain.value_objects.email import Email
+from domain.value_objects.password import PasswordHash
+
 
 @pytest.fixture
 def initial_state() -> dict:
@@ -11,10 +14,11 @@ def initial_state() -> dict:
     Simulates a newly created user with valid default data.
     """
     now = datetime.now(timezone.utc)
+
     return {
         'public_id': uuid.uuid4(),
-        'email': 'user@email.com',
-        'plain_password': 'Password!10',
+        'email': Email('user@email.com'),
+        'hash_password': PasswordHash(b'somepassword'),
         'email_verified': False,
         'is_active': False,
         'created_at': now,
