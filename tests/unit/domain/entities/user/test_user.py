@@ -188,6 +188,45 @@ def test_last_login_date_cannot_be_earlier_than_creation_date(
         User(**initial_state)
 
 
+# ========== should_be_deleted ===========
+def test_unverified_and_verification_window_has_expired_should_be_deleted(
+    initial_state: dict,
+):
+    user = User(**initial_state)
+
+    deadline = timedelta(days=7)
+    now = user.created_at + deadline + timedelta(seconds=1)
+
+    result = user.should_be_deleted(now, deadline)
+
+    assert result is True
+
+
+def test_should_not_be_deleted_when_user_is_already_verified(initial_state):
+    initial_state['email_verified'] = True
+    user = User(**initial_state)
+
+    deadline = timedelta(days=7)
+    now = user.created_at + deadline + timedelta(days=1)
+
+    result = user.should_be_deleted(now, deadline)
+
+    assert result is False
+
+
+def test_should_not_be_deleted_when_verification_window_has_not_expired(
+    initial_state: dict,
+):
+    user = User(**initial_state)
+
+    deadline = timedelta(days=7)
+    now = user.created_at + timedelta(days=3)
+
+    result = user.should_be_deleted(now, deadline)
+
+    assert result is False
+
+
 # ========== change_password ===========
 def test_password_changed_successfully(initial_state: dict):
     new_password = PasswordHash(b'NewPassword!20')

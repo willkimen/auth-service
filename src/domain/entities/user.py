@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from domain.exceptions import InvalidTimestampError
 from domain.utils import ensure_aware, ensure_not_future, ensure_not_none
@@ -138,6 +138,23 @@ class User:
         self._register_update()
 
         self._email_verified = True
+
+    def should_be_deleted(self, now: datetime, deadline: timedelta) -> bool:
+        """Checks if the user should be deleted.
+
+        User must be unverified and past the deadline since created_at.
+
+        Args:
+            now (datetime): Current timestamp.
+            deadline (timedelta): Allowed time window.
+
+        Returns:
+            bool: True if should be deleted.
+        """
+        if self.email_verified:
+            return False
+
+        return now > self.created_at + deadline
 
     @property
     def public_id(self) -> uuid.UUID:
