@@ -12,6 +12,6 @@ def test_create_new_user_success():
     assert user.email.value == email.value
     assert user.hash_password.value == hash_password.value
     assert user.email_verified is False
-    assert user.is_active is False
+    assert user.is_active is True
     assert user.last_login_at is None
     assert user.created_at == user.updated_at

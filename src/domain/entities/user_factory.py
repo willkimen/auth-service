@@ -25,7 +25,7 @@ def create_new_user(email: Email, hash_password: PasswordHash) -> User:
         email=email,
         hash_password=hash_password,
         email_verified=False,
-        is_active=False,
+        is_active=True,
         created_at=now,
         updated_at=now,
         last_login_at=None,
