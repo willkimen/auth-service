@@ -17,7 +17,7 @@ def initial_state() -> dict:
     return {
         'code': None,
         'user_id': 100,
-        'type': CodeType.ACCOUNT_ACTIVATION,
+        'type': CodeType.EMAIL_VERIFICATION,
         'created_at': created_at,
         'expires_at': expires_at,
     }

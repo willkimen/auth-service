@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from domain.entities.code_factory import (
-    new_activation_account_code,
     new_change_email_code,
     new_change_password_code,
     new_delete_account_code,
+    new_email_verification_code,
     new_reset_password_code,
 )
 from domain.enums import CodeType
@@ -20,8 +20,8 @@ incorrect_format_email = 'email.com'
 current_time = datetime.now(timezone.utc)
 
 
-def test_create_activation_code_success():
-    code = new_activation_account_code(
+def test_create__code_success():
+    code = new_email_verification_code(
         user_id,
         created_at,
         expires_at,
@@ -30,7 +30,7 @@ def test_create_activation_code_success():
     assert code.code is not None
     assert code.user_id == user_id
     assert code.is_active(current_time)
-    assert code.type == CodeType.ACCOUNT_ACTIVATION
+    assert code.type == CodeType.EMAIL_VERIFICATION
     assert not code.has_new_email()
     assert code.payload is None
     assert code.created_at == created_at

@@ -5,12 +5,12 @@ from domain.enums import CodeType
 from domain.value_objects.email import Email
 
 
-def new_activation_account_code(
+def new_email_verification_code(
     user_id: int,
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
-    """Creates an account activation verification code.
+    """Creates an email verification code.
 
     Args:
         user_id (int): Owner user identifier.
@@ -29,7 +29,7 @@ def new_activation_account_code(
     return VerificationCode(
         code=None,
         user_id=user_id,
-        type=CodeType.ACCOUNT_ACTIVATION,
+        type=CodeType.EMAIL_VERIFICATION,
         created_at=created_at,
         expires_at=expires_at,
     )
