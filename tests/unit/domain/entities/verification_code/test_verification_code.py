@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.entities.code import VerificationCode
+from domain.entities.verification_code import VerificationCode
 from domain.exceptions import (
     CodeStatusError,
     CodeTypeError,
@@ -17,6 +17,7 @@ def test_create_code_success(initial_state: dict):
     code = VerificationCode(**initial_state)
 
     assert code.code is not None
+    assert code.code.value == initial_state['code'].value
     assert code.user_id == initial_state['user_id']
     assert code.is_active(current_time)
     assert code.type == initial_state['type']
@@ -31,6 +32,7 @@ def test_create_code_with_payload_success(initial_state: dict):
     code = VerificationCode(**initial_state)
 
     assert code.code is not None
+    assert code.code.value == initial_state['code'].value
     assert code.user_id == initial_state['user_id']
     assert code.is_active(current_time)
     assert code.type == initial_state['type']
@@ -39,36 +41,6 @@ def test_create_code_with_payload_success(initial_state: dict):
     assert code.payload['new_email'] == 'email@email.com'
     assert code.expires_at == initial_state['expires_at']
     assert code.used_at is None
-
-
-# ============= code ====================
-def test_should_return_same_code_when_code_is_provided(initial_state: dict):
-    expected_code = '012345'
-    initial_state['code'] = expected_code
-
-    code = VerificationCode(**initial_state)
-
-    assert code.code == expected_code
-
-
-def test_code_must_be_string_type(initial_state: dict):
-    incorrect_type = 123456
-    initial_state['code'] = incorrect_type
-    msg_error = (
-        f'Invalid code: expected str, got {type(incorrect_type).__name__}'
-    )
-
-    with pytest.raises(TypeError, match=msg_error):
-        VerificationCode(**initial_state)
-
-
-def test_code_must_not_be_empty_string(initial_state: dict):
-    empty = ' '
-    initial_state['code'] = empty
-    msg_error = 'code cannot be empty'
-
-    with pytest.raises(ValueError, match=msg_error):
-        VerificationCode(**initial_state)
 
 
 # ============= user_id ====================

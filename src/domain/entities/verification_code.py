@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import secrets
 from datetime import datetime
 
 from domain.enums import CodeType
@@ -15,6 +14,7 @@ from domain.utils import (
     ensure_not_future,
     ensure_not_none,
 )
+from domain.value_objects.code import Code
 
 
 class VerificationCode:
@@ -26,7 +26,7 @@ class VerificationCode:
     future. expires_at and used_at must not be before created_at.
 
     Args:
-        code (str | None): Code value or None to auto-generate.
+        code (Code | None): Code instance or None to auto-generate.
         user_id (int): Owner user identifier.
         type (CodeType): Verification code type.
         created_at (datetime): Creation timestamp.
@@ -40,12 +40,11 @@ class VerificationCode:
         CodeTypeError: If type is not a valid CodeType.
         CodeStatusError: If marking as used when not active.
         TypeError: If code or user_id have invalid types.
-        ValueError: If code is empty.
     """
 
     def __init__(
         self,
-        code: str | None,
+        code: Code | None,
         user_id: int,
         type: CodeType,
         created_at: datetime,
@@ -53,10 +52,7 @@ class VerificationCode:
         used_at: datetime | None = None,
         payload: dict | None = None,
     ):
-        if code is None:
-            self._code: str = VerificationCode._generate_code()
-        else:
-            self._code: str = VerificationCode._validate_code(code)
+        self._code = code or Code.generate()
 
         self._user_id: int = VerificationCode._validate_user_id(user_id)
 
@@ -79,7 +75,7 @@ class VerificationCode:
         return self.code == other.code
 
     @property
-    def code(self) -> str:
+    def code(self) -> Code:
         return self._code
 
     @property
@@ -171,11 +167,6 @@ class VerificationCode:
             raise CodeStatusError('code cannot be used')
         self._used_at = now
 
-    # private methods
-    @staticmethod
-    def _generate_code() -> str:
-        return ''.join(secrets.choice('0123456789') for _ in range(6))
-
     def _validate_not_before_created_at(
         self, at: datetime, field: str
     ) -> datetime:
@@ -197,30 +188,6 @@ class VerificationCode:
             )
 
         return at
-
-    @staticmethod
-    def _validate_code(code: str) -> str:
-        """Validates the code value.
-
-        Args:
-            code (str): Code value.
-
-        Returns:
-            str: Validated code.
-
-        Raises:
-            TypeError: If code is not a string.
-            ValueError: If code is empty.
-        """
-        if not isinstance(code, str):
-            raise TypeError(
-                f'Invalid code: expected str, got {type(code).__name__}'
-            )
-
-        if not code.strip():
-            raise ValueError('code cannot be empty')
-
-        return code
 
     @staticmethod
     def _validate_user_id(id: int) -> int:

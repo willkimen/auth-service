@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from domain.enums import CodeType
+from domain.value_objects.code import Code
 
 
 @pytest.fixture
@@ -13,9 +14,10 @@ def initial_state() -> dict:
     """
     created_at = datetime.now(timezone.utc) - timedelta(days=1)
     expires_at = created_at + timedelta(days=7)
+    code = Code.generate()
 
     return {
-        'code': None,
+        'code': code,
         'user_id': 100,
         'type': CodeType.EMAIL_VERIFICATION,
         'created_at': created_at,

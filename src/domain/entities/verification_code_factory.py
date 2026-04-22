@@ -1,12 +1,14 @@
 from datetime import datetime
 
-from domain.entities.code import VerificationCode
+from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
+from domain.value_objects.code import Code
 from domain.value_objects.email import Email
 
 
 def new_email_verification_code(
     user_id: int,
+    code: Code | None,
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
@@ -14,6 +16,7 @@ def new_email_verification_code(
 
     Args:
         user_id (int): Owner user identifier.
+        code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
 
@@ -27,7 +30,7 @@ def new_email_verification_code(
         TypeError: If user_id has invalid type.
     """
     return VerificationCode(
-        code=None,
+        code=code,
         user_id=user_id,
         type=CodeType.EMAIL_VERIFICATION,
         created_at=created_at,
@@ -37,6 +40,7 @@ def new_email_verification_code(
 
 def new_change_email_code(
     user_id: int,
+    code: Code | None,
     created_at: datetime,
     expires_at: datetime,
     new_email: str,
@@ -45,6 +49,7 @@ def new_change_email_code(
 
     Args:
         user_id (int): Owner user identifier.
+        code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
         new_email (str): New email value.
@@ -63,7 +68,7 @@ def new_change_email_code(
     Email(new_email)
 
     return VerificationCode(
-        code=None,
+        code=code,
         user_id=user_id,
         type=CodeType.CHANGE_EMAIL,
         created_at=created_at,
@@ -74,6 +79,7 @@ def new_change_email_code(
 
 def new_change_password_code(
     user_id: int,
+    code: Code | None,
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
@@ -81,6 +87,7 @@ def new_change_password_code(
 
     Args:
         user_id (int): Owner user identifier.
+        code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
 
@@ -94,7 +101,7 @@ def new_change_password_code(
         TypeError: If user_id has invalid type.
     """
     return VerificationCode(
-        code=None,
+        code=code,
         user_id=user_id,
         type=CodeType.CHANGE_PASSWORD,
         created_at=created_at,
@@ -104,6 +111,7 @@ def new_change_password_code(
 
 def new_reset_password_code(
     user_id: int,
+    code: Code | None,
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
@@ -111,6 +119,7 @@ def new_reset_password_code(
 
     Args:
         user_id (int): Owner user identifier.
+        code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
 
@@ -124,7 +133,7 @@ def new_reset_password_code(
         TypeError: If user_id has invalid type.
     """
     return VerificationCode(
-        code=None,
+        code=code,
         user_id=user_id,
         type=CodeType.RESET_PASSWORD,
         created_at=created_at,
@@ -134,6 +143,7 @@ def new_reset_password_code(
 
 def new_delete_account_code(
     user_id: int,
+    code: Code | None,
     created_at: datetime,
     expires_at: datetime,
 ) -> VerificationCode:
@@ -141,6 +151,7 @@ def new_delete_account_code(
 
     Args:
         user_id (int): Owner user identifier.
+        code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
 
@@ -154,7 +165,7 @@ def new_delete_account_code(
         TypeError: If user_id has invalid type.
     """
     return VerificationCode(
-        code=None,
+        code=code,
         user_id=user_id,
         type=CodeType.DELETE_ACCOUNT,
         created_at=created_at,
