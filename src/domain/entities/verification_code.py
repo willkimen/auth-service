@@ -169,13 +169,17 @@ class VerificationCode:
             now (datetime): Usage timestamp.
 
         Raises:
-            InvalidTimestampError: If now is not timezone-aware.
+            InvalidTimestampError: If not aware or before created_at.
             CodeStatusError: If the code is not active.
         """
-        ensure_aware(now, 'now')
+        if self.is_used():
+            return
 
-        if not self.is_active(now):
-            raise CodeStatusError('code cannot be used')
+        self._validate_used_at(now)
+
+        if self.is_expired(now):
+            raise CodeStatusError('code cannot be used because is has expired')
+
         self._used_at = now
 
     def mark_as_sent(self, now: datetime):

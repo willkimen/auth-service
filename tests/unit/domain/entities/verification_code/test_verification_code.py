@@ -46,7 +46,12 @@ def test_create_code_with_payload_success(initial_state: dict):
 
 
 # ============= user_id ====================
-def test_user_id_it_is_required(initial_state: dict):
+def test_check_if_user_id_is_assigned_correctly(initial_state: dict):
+    code = VerificationCode(**initial_state)
+    assert code.user_id == initial_state['user_id']
+
+
+def test_user_id_is_required(initial_state: dict):
     initial_state['user_id'] = None
     msg_error = 'user_id it is required'
 
@@ -54,7 +59,7 @@ def test_user_id_it_is_required(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_user_id_must_be_int_type(initial_state: dict):
+def test_user_id_must_be_correct_type(initial_state: dict):
     incorrect_type = '100'
     initial_state['user_id'] = incorrect_type
     msg_error = (
@@ -66,7 +71,12 @@ def test_user_id_must_be_int_type(initial_state: dict):
 
 
 # ============= type ====================
-def test_type_it_is_required(initial_state: dict):
+def test_check_if_type_code_is_assigned_correctly(initial_state: dict):
+    code = VerificationCode(**initial_state)
+    assert code.type == initial_state['type']
+
+
+def test_type_code_is_required(initial_state: dict):
     initial_state['type'] = None
     msg_error = 'type it is required'
 
@@ -74,7 +84,7 @@ def test_type_it_is_required(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_type_must_be_codetype_type(initial_state: dict):
+def test_code_must_be_correct_type(initial_state: dict):
     incorrect_type = 'ACTIVE'
     initial_state['type'] = incorrect_type
     msg_error = (
@@ -87,7 +97,12 @@ def test_type_must_be_codetype_type(initial_state: dict):
 
 
 # ============= created_at ====================
-def test_created_at_it_is_required(initial_state: dict):
+def test_check_if_creation_date_is_assigned_correctly(initial_state: dict):
+    code = VerificationCode(**initial_state)
+    assert code.created_at == initial_state['created_at']
+
+
+def test_creation_date_is_required(initial_state: dict):
     initial_state['created_at'] = None
     msg_error = 'created_at it is required'
 
@@ -95,7 +110,9 @@ def test_created_at_it_is_required(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_created_at_must_be_timezone_aware(initial_state: dict):
+def test_creation_date_must_be_include_timezone_information(
+    initial_state: dict,
+):
     initial_state['created_at'] = datetime.now()
     msg_error = 'created_at must be timezone-aware'
 
@@ -103,7 +120,7 @@ def test_created_at_must_be_timezone_aware(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_created_at_must_not_be_in_future(initial_state: dict):
+def test_creation_date_must_not_be_in_future(initial_state: dict):
     in_future = datetime.now(timezone.utc) + timedelta(seconds=5)
     initial_state['created_at'] = in_future
     msg_error = 'created_at must not be in the future'
@@ -113,7 +130,12 @@ def test_created_at_must_not_be_in_future(initial_state: dict):
 
 
 # ============= expires_at ====================
-def test_expires_at_it_is_required(initial_state: dict):
+def test_check_if_expiration_date_is_assigned_correctly(initial_state: dict):
+    code = VerificationCode(**initial_state)
+    assert code.expires_at == initial_state['expires_at']
+
+
+def test_expiration_date_is_required(initial_state: dict):
     initial_state['expires_at'] = None
     msg_error = 'expires_at it is required'
 
@@ -121,7 +143,7 @@ def test_expires_at_it_is_required(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_expires_at_must_be_timezone_aware(initial_state: dict):
+def test_expiration_date_must_be_timezone_aware(initial_state: dict):
     initial_state['expires_at'] = datetime.now()
     msg_error = 'expires_at must be timezone-aware'
 
@@ -129,7 +151,9 @@ def test_expires_at_must_be_timezone_aware(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_expires_at_must_not_be_before_that_created_at(initial_state: dict):
+def test_expiration_date_must_not_be_before_that_created_at(
+    initial_state: dict,
+):
     before = initial_state['created_at'] - timedelta(microseconds=1)
     initial_state['expires_at'] = before
     msg_error = 'expires_at must not be before created_at'
@@ -139,16 +163,7 @@ def test_expires_at_must_not_be_before_that_created_at(initial_state: dict):
 
 
 # ============= used_at ====================
-def test_used_at_accept_none(initial_state: dict):
-    initial_state['used_at'] = None
-
-    code = VerificationCode(**initial_state)
-
-    assert code.used_at is None
-    assert not code.is_used()
-
-
-def test_should_return_same_used_at_when_is_provided(initial_state: dict):
+def test_check_if_usage_date_is_assigned_correctly(initial_state: dict):
     initial_state['used_at'] = datetime.now(timezone.utc)
 
     code = VerificationCode(**initial_state)
@@ -157,7 +172,16 @@ def test_should_return_same_used_at_when_is_provided(initial_state: dict):
     assert code.is_used()
 
 
-def test_used_at_must_be_timezone_aware(initial_state: dict):
+def test_date_of_use_accept_none(initial_state: dict):
+    initial_state['used_at'] = None
+
+    code = VerificationCode(**initial_state)
+
+    assert code.used_at is None
+    assert not code.is_used()
+
+
+def test_date_of_use_must_be_include_timezone_information(initial_state: dict):
     initial_state['used_at'] = datetime.now()
     msg_error = 'used_at must be timezone-aware'
 
@@ -165,7 +189,9 @@ def test_used_at_must_be_timezone_aware(initial_state: dict):
         VerificationCode(**initial_state)
 
 
-def test_used_at_must_not_be_before_that_created_at(initial_state: dict):
+def test_date_of_use_must_not_be_before_that_creation_date(
+    initial_state: dict,
+):
     before = initial_state['created_at'] - timedelta(microseconds=1)
     initial_state['used_at'] = before
     msg_error = 'used_at must not be before created_at'
@@ -175,17 +201,13 @@ def test_used_at_must_not_be_before_that_created_at(initial_state: dict):
 
 
 # ============= is_active =====================
-def test_is_active_returns_true_when_not_used_and_not_expired(
-    initial_state: dict,
-):
+def test_code_unused_and_not_expired_is_active(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     assert user.is_active(datetime.now(timezone.utc))
 
 
-def test_is_active_returns_false_when_used_and_not_expired(
-    initial_state: dict,
-):
+def test_code_used_but_not_expired_is_not_active(initial_state: dict):
     initial_state['used_at'] = datetime.now(timezone.utc)
     user = VerificationCode(**initial_state)
 
@@ -195,9 +217,7 @@ def test_is_active_returns_false_when_used_and_not_expired(
     assert user.is_used()
 
 
-def test_is_active_returns_false_when_not_used_and_expired(
-    initial_state: dict,
-):
+def test_code_unused_but_expired_is_not_active(initial_state: dict):
     initial_state['expires_at'] = datetime.now(timezone.utc)
 
     user = VerificationCode(**initial_state)
@@ -208,7 +228,7 @@ def test_is_active_returns_false_when_not_used_and_expired(
     assert user.is_expired(datetime.now(timezone.utc))
 
 
-def test_is_active_returns_false_when_used_and_expired(initial_state: dict):
+def test_code_used_and_expired_is_not_active(initial_state: dict):
     initial_state['used_at'] = datetime.now(timezone.utc)
     initial_state['expires_at'] = datetime.now(timezone.utc)
 
@@ -221,7 +241,9 @@ def test_is_active_returns_false_when_used_and_expired(initial_state: dict):
     assert user.is_used()
 
 
-def test_is_active_expect_timestamp_aware(initial_state: dict):
+def test_check_if_is_active_wait_date_with_timezone_information(
+    initial_state: dict,
+):
     user = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
@@ -230,7 +252,7 @@ def test_is_active_expect_timestamp_aware(initial_state: dict):
 
 
 # ============= is_used =====================
-def test_is_used_returns_true_when_marked_used(initial_state: dict):
+def test_marking_as_used_should_guarantee_used_condition(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     # previous state
@@ -244,48 +266,40 @@ def test_is_used_returns_true_when_marked_used(initial_state: dict):
     assert not user.is_active(datetime.now(timezone.utc))
 
 
-def test_is_used_returns_false_when_not_marked_used(initial_state: dict):
-    user = VerificationCode(**initial_state)
-
-    assert not user.is_used()
-
-    # extra assert
-    assert user.is_active(datetime.now(timezone.utc))
-
-
 # ============= mark_as_used =====================
-def test_mark_as_used_raise_exception_when_already_used(initial_state: dict):
-    user = VerificationCode(**initial_state)
-
-    # already used
-    user.mark_as_used(datetime.now(timezone.utc))
-
-    msg_error = 'code cannot be used'
-    with pytest.raises(CodeStatusError, match=msg_error):
-        user.mark_as_used(datetime.now(timezone.utc))
-
-
-def test_mark_as_used_raise_exception_when_expired_code(initial_state: dict):
+def test_cannot_mark_as_used_expired_code(initial_state: dict):
     timestamp_expired = datetime.now(timezone.utc) - timedelta(seconds=1)
     initial_state['expires_at'] = timestamp_expired
 
     user = VerificationCode(**initial_state)
 
-    msg_error = 'code cannot be used'
+    msg_error = 'code cannot be used because is has expired'
     with pytest.raises(CodeStatusError, match=msg_error):
         user.mark_as_used(datetime.now(timezone.utc))
 
 
-def test_mark_as_used_expect_timestamp_aware(initial_state: dict):
+def test_mark_as_used_expect_timezone_date_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 
-    msg_error = 'now must be timezone-aware'
+    msg_error = 'used_at must be timezone-aware'
     with pytest.raises(InvalidTimestampError, match=msg_error):
         user.mark_as_used(datetime.now())
 
 
+def test_mark_as_used_cannot_be_earlier_than_creation_date(
+    initial_state: dict,
+):
+    user = VerificationCode(**initial_state)
+
+    before_created = initial_state['created_at'] - timedelta(microseconds=1)
+
+    msg_error = 'used_at must not be before created_at'
+    with pytest.raises(InvalidTimestampError, match=msg_error):
+        user.mark_as_used(before_created)
+
+
 # ============= is_expired =====================
-def test_is_expired_returns_true_if_expired_code(initial_state: dict):
+def test_code_expired_successfully(initial_state: dict):
     timestamp_expired = datetime.now(timezone.utc) - timedelta(seconds=1)
     initial_state['expires_at'] = timestamp_expired
 
@@ -294,13 +308,13 @@ def test_is_expired_returns_true_if_expired_code(initial_state: dict):
     assert user.is_expired(datetime.now(timezone.utc))
 
 
-def test_is_expired_returns_false_if_not_expired_code(initial_state: dict):
+def test_expiration_date_not_reached_code_not_expired(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     assert not user.is_expired(datetime.now(timezone.utc))
 
 
-def test_is_expired_expect_timestamp_aware(initial_state: dict):
+def test_is_expired_expect_timezone_date_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
@@ -309,7 +323,7 @@ def test_is_expired_expect_timestamp_aware(initial_state: dict):
 
 
 # ============= mark_as_sent =====================
-def test_code_is_marked_as_successfully_sent(initial_state: dict):
+def test_code_is_marked_as_sent_successfully(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     assert not user.has_been_sent()
