@@ -11,7 +11,6 @@ from domain.exceptions import (
 )
 from domain.utils import (
     ensure_aware,
-    ensure_not_future,
     ensure_not_none,
 )
 from domain.value_objects.code import Code
@@ -22,8 +21,8 @@ class VerificationCode:
 
     Handles lifecycle, status, and validation of verification codes.
 
-    Timestamps must be timezone-aware. created_at must not be in the
-    future. expires_at and used_at must not be before created_at.
+    - Timestamps must be timezone-aware.
+    - expires_at and used_at must not be before created_at.
 
     Args:
         code (Code | None): Code instance or None to auto-generate.
@@ -275,11 +274,10 @@ class VerificationCode:
 
         Raises:
             RequiredFieldError: If None.
-            InvalidTimestampError: If not aware or in future.
+            InvalidTimestampError: If not aware.
         """
         ensure_not_none(at, 'created_at')
         ensure_aware(at, 'created_at')
-        ensure_not_future(at, 'created_at')
 
         return at
 

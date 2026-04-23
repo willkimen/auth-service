@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -107,15 +107,6 @@ def test_creation_date_must_include_a_timezone_information(
         User(**initial_state)
 
 
-def test_creation_date_cannot_be_in_the_future(initial_state: dict):
-    future_date = datetime.now(timezone.utc) + timedelta(seconds=1)
-    initial_state['created_at'] = future_date
-
-    msg_error = 'created_at must not be in the future'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
-        User(**initial_state)
-
-
 # ============ updated_at =================
 def test_user_must_have_an_update_date(initial_state: dict):
     initial_state['updated_at'] = None
@@ -132,15 +123,6 @@ def test_update_date_must_include_a_timezone_information(
     initial_state['updated_at'] = without_timezone
 
     msg_error = 'updated_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
-        User(**initial_state)
-
-
-def test_update_date_cannot_be_in_the_future(initial_state: dict):
-    future_date = datetime.now(timezone.utc) + timedelta(seconds=1)
-    initial_state['updated_at'] = future_date
-
-    msg_error = 'updated_at must not be in the future'
     with pytest.raises(InvalidTimestampError, match=msg_error):
         User(**initial_state)
 
@@ -164,15 +146,6 @@ def test_last_login_date_must_include_a_timezone_information(
     initial_state['last_login_at'] = without_timezone
 
     msg_error = 'last_login_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
-        User(**initial_state)
-
-
-def test_last_login_date_cannot_be_in_the_future(initial_state: dict):
-    future_date = datetime.now(timezone.utc) + timedelta(seconds=1)
-    initial_state['last_login_at'] = future_date
-
-    msg_error = 'last_login_at must not be in the future'
     with pytest.raises(InvalidTimestampError, match=msg_error):
         User(**initial_state)
 

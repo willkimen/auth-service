@@ -1,21 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from domain.exceptions import InvalidTimestampError, RequiredFieldError
-
-
-def ensure_not_future(date: datetime, field: str):
-    """Ensures a timestamp is not in the future.
-
-    Args:
-        date (datetime): Timestamp to validate.
-        field (str): Field name.
-
-    Raises:
-        InvalidTimestampError: If date is in the future.
-    """
-    now = datetime.now(timezone.utc)
-    if date > now:
-        raise InvalidTimestampError(f'{field} must not be in the future')
 
 
 def ensure_aware(dt: datetime, field: str):

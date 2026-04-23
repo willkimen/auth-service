@@ -120,15 +120,6 @@ def test_creation_date_must_be_include_timezone_information(
         VerificationCode(**initial_state)
 
 
-def test_creation_date_must_not_be_in_future(initial_state: dict):
-    in_future = datetime.now(timezone.utc) + timedelta(seconds=5)
-    initial_state['created_at'] = in_future
-    msg_error = 'created_at must not be in the future'
-
-    with pytest.raises(InvalidTimestampError, match=msg_error):
-        VerificationCode(**initial_state)
-
-
 # ============= expires_at ====================
 def test_check_if_expiration_date_is_assigned_correctly(initial_state: dict):
     code = VerificationCode(**initial_state)

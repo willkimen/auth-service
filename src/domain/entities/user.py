@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from domain.exceptions import InvalidTimestampError
-from domain.utils import ensure_aware, ensure_not_future, ensure_not_none
+from domain.utils import ensure_aware, ensure_not_none
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
 
@@ -14,9 +14,8 @@ class User:
 
     Ensures all fields are valid and timestamps are consistent.
 
-    Timestamps must be timezone-aware. created_at and updated_at must
-    not be in the future. updated_at and last_login_at must not be
-    before created_at.
+    Timestamps must be timezone-aware.
+    updated_at and last_login_at must not be before created_at.
 
     Args:
         public_id (UUID): Public user identifier.
@@ -175,8 +174,8 @@ class User:
     def record_login(self):
         """Records a login and updates last_login_at.
 
-        Uses current UTC time. Timestamp must be timezone-aware, not
-        in the future, and not before created_at.
+        Uses current UTC time. Timestamp must be timezone-aware
+        and not before created_at.
 
         Raises:
             InvalidTimestampError: If timestamp is invalid or before
@@ -218,8 +217,7 @@ class User:
     def _register_update(self):
         """Updates updated_at with current UTC time.
 
-        Validates timestamp as timezone-aware, not in the future,
-        and not before created_at.
+        Validates timestamp as timezone-aware and not before created_at.
 
         Raises:
             InvalidTimestampError: If timestamp is invalid or before
@@ -232,8 +230,7 @@ class User:
     def _validate_created_at(created_at: datetime) -> datetime:
         """Validates created_at timestamp.
 
-        Ensures value is not None, is timezone-aware, and not in the
-        future.
+        Ensures value is not None and is timezone-aware.
 
         Args:
             created_at (datetime): Creation timestamp.
@@ -243,19 +240,18 @@ class User:
 
         Raises:
             RequiredFieldError: If None.
-            InvalidTimestampError: If not aware or in the future.
+            InvalidTimestampError: If not aware.
         """
         ensure_not_none(created_at, 'created_at')
         ensure_aware(created_at, 'created_at')
-        ensure_not_future(created_at, 'created_at')
 
         return created_at
 
     def _validate_updated_at(self, updated_at: datetime) -> datetime:
         """Validates updated_at timestamp.
 
-        Ensures value is not None, is timezone-aware, not in the
-        future, and not before created_at.
+        Ensures value is not None, is timezone-aware and
+        and not before created_at.
 
         Args:
             updated_at (datetime): Update timestamp.
@@ -265,12 +261,10 @@ class User:
 
         Raises:
             RequiredFieldError: If None.
-            InvalidTimestampError: If not aware, in future, or before
-            created_at.
+            InvalidTimestampError: If not aware, or before created_at.
         """
         ensure_not_none(updated_at, 'updated_at')
         ensure_aware(updated_at, 'updated_at')
-        ensure_not_future(updated_at, 'updated_at')
         self._validate_not_before_created_at(updated_at, 'updated_at')
 
         return updated_at
@@ -280,8 +274,8 @@ class User:
     ) -> datetime | None:
         """Validates last_login_at timestamp.
 
-        Allows None. If provided, must be timezone-aware, not in the
-        future, and not before created_at.
+        Allows None. If provided, must be timezone-aware and
+        not before created_at.
 
         Args:
             last_login_at (datetime | None): Login timestamp.
@@ -290,14 +284,12 @@ class User:
             datetime | None: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware, in future, or before
-            created_at.
+            InvalidTimestampError: If not aware or before created_at.
         """
         if last_login_at is None:
             return None
 
         ensure_aware(last_login_at, 'last_login_at')
-        ensure_not_future(last_login_at, 'last_login_at')
         self._validate_not_before_created_at(last_login_at, 'last_login_at')
 
         return last_login_at
