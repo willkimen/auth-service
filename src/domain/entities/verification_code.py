@@ -170,11 +170,11 @@ class VerificationCode:
         """
         return self._sent_at is not None
 
-    def mark_as_used(self, now: datetime):
+    def mark_as_used(self, used_at: datetime):
         """Marks the code as used.
 
         Args:
-            now (datetime): Usage timestamp.
+            used_at (datetime): Usage timestamp.
 
         Raises:
             InvalidTimestampError: If not aware or before created_at.
@@ -183,24 +183,24 @@ class VerificationCode:
         if self.is_used():
             return
 
-        self._validate_used_at(now)
+        self._validate_used_at(used_at)
 
-        if self.is_expired(now):
+        if self.is_expired(used_at):
             raise CodeStatusError('code cannot be used because is has expired')
 
-        self._used_at = now
+        self._used_at = used_at
 
-    def mark_as_sent(self, now: datetime):
+    def mark_as_sent(self, sent_at: datetime):
         """Marks the code as sent.
 
         Args:
-            now (datetime): Usage timestamp.
+            sent_at (datetime): Sent timestamp.
 
         Raises:
             InvalidTimestampError: If not aware or before created_at.
         """
-        self._validate_sent_at(now)
-        self._sent_at = now
+        self._validate_sent_at(sent_at)
+        self._sent_at = sent_at
 
     def _validate_not_before_created_at(
         self, at: datetime, field: str
@@ -273,11 +273,11 @@ class VerificationCode:
         return code_type
 
     @staticmethod
-    def _validate_created_at(at: datetime) -> datetime:
+    def _validate_created_at(created_at: datetime) -> datetime:
         """Validates created_at timestamp.
 
         Args:
-            at (datetime): Creation timestamp.
+            created_at (datetime): Creation timestamp.
 
         Returns:
             datetime: Validated timestamp.
@@ -286,16 +286,16 @@ class VerificationCode:
             RequiredFieldError: If None.
             InvalidTimestampError: If not aware.
         """
-        ensure_not_none(at, 'created_at')
-        ensure_aware(at, 'created_at')
+        ensure_not_none(created_at, 'created_at')
+        ensure_aware(created_at, 'created_at')
 
-        return at
+        return created_at
 
-    def _validate_expires_at(self, at: datetime) -> datetime:
+    def _validate_expires_at(self, expires_at: datetime) -> datetime:
         """Validates expires_at timestamp.
 
         Args:
-            at (datetime): Expiration timestamp.
+            expires_at (datetime): Expiration timestamp.
 
         Returns:
             datetime: Validated timestamp.
@@ -304,17 +304,17 @@ class VerificationCode:
             RequiredFieldError: If None.
             InvalidTimestampError: If not aware or before created_at.
         """
-        ensure_not_none(at, 'expires_at')
-        ensure_aware(at, 'expires_at')
-        self._validate_not_before_created_at(at, 'expires_at')
+        ensure_not_none(expires_at, 'expires_at')
+        ensure_aware(expires_at, 'expires_at')
+        self._validate_not_before_created_at(expires_at, 'expires_at')
 
-        return at
+        return expires_at
 
-    def _validate_used_at(self, at: datetime | None) -> datetime | None:
+    def _validate_used_at(self, used_at: datetime | None) -> datetime | None:
         """Validates used_at timestamp.
 
         Args:
-            at (datetime | None): Usage timestamp.
+            used_at (datetime | None): Usage timestamp.
 
         Returns:
             datetime | None: Validated timestamp.
@@ -322,19 +322,19 @@ class VerificationCode:
         Raises:
             InvalidTimestampError: If not aware or before created_at.
         """
-        if at is None:
+        if used_at is None:
             return None
 
-        ensure_aware(at, 'used_at')
-        self._validate_not_before_created_at(at, 'used_at')
+        ensure_aware(used_at, 'used_at')
+        self._validate_not_before_created_at(used_at, 'used_at')
 
-        return at
+        return used_at
 
-    def _validate_sent_at(self, at: datetime | None) -> datetime | None:
+    def _validate_sent_at(self, sent_at: datetime | None) -> datetime | None:
         """Validates sent_at timestamp.
 
         Args:
-            at (datetime | None): Usage timestamp.
+            sent_at (datetime | None): Sent timestamp.
 
         Returns:
             datetime | None: Validated timestamp.
@@ -342,10 +342,10 @@ class VerificationCode:
         Raises:
             InvalidTimestampError: If not aware or before created_at.
         """
-        if at is None:
+        if sent_at is None:
             return None
 
-        ensure_aware(at, 'sent_at')
-        self._validate_not_before_created_at(at, 'sent_at')
+        ensure_aware(sent_at, 'sent_at')
+        self._validate_not_before_created_at(sent_at, 'sent_at')
 
-        return at
+        return sent_at
