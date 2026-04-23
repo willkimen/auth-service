@@ -14,23 +14,34 @@ def new_email_verification_code(
     expires_at: datetime,
     sent_at: datetime | None,
 ) -> VerificationCode:
-    """Creates an email verification code.
+    """
+    Creates an email verification code.
 
     Args:
-        user_id (UUID): Owner user identifier.
-        code (Code | None): Code instance or None to auto-generate.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        sent_at (datetime): Send timestamp.
+        `user_id` (UUID): Owner user identifier.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        CodeTypeError: If type is invalid.
-        TypeError: If user_id has invalid type.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        TypeError:
+            - If `user_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
@@ -50,27 +61,38 @@ def new_change_email_code(
     sent_at: datetime | None,
     new_email: str,
 ) -> VerificationCode:
-    """Creates an email change verification code.
+    """
+    Creates an email change verification code.
 
     Args:
-        user_id (UUID): Owner user identifier.
-        code (Code | None): Code instance or None to auto-generate.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        sent_at (datetime): Send timestamp.
-        new_email (str): New email value.
+        `user_id` (UUID): Owner user identifier.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `sent_at` (datetime): Send timestamp.
+        `new_email` (str): New email value.
 
     Returns:
         VerificationCode: Created verification code.
 
     Raises:
-        InvalidEmailError: If new_email is invalid.
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        CodeTypeError: If type is invalid.
-        TypeError: If user_id has invalid type.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        TypeError:
+            - If `user_id` is not UUID type.
+        InvalidEmailError:
+            - If `new_email` is None, empty, or invalid.
     """
-
     Email(new_email)
 
     return VerificationCode(
@@ -91,23 +113,34 @@ def new_change_password_code(
     expires_at: datetime,
     sent_at: datetime | None,
 ) -> VerificationCode:
-    """Creates a password change verification code.
+    """
+    Creates a password change verification code.
 
     Args:
-        user_id (UUID): Owner user identifier.
-        code (Code | None): Code instance or None to auto-generate.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        sent_at (datetime): Send timestamp.
+        `user_id` (UUID): Owner user identifier.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        CodeTypeError: If type is invalid.
-        TypeError: If user_id has invalid type.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        TypeError:
+            - If `user_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
@@ -126,23 +159,34 @@ def new_reset_password_code(
     expires_at: datetime,
     sent_at: datetime | None,
 ) -> VerificationCode:
-    """Creates a password reset verification code.
+    """
+    Creates a password reset verification code.
 
     Args:
-        user_id (UUID): Owner user identifier.
-        code (Code | None): Code instance or None to auto-generate.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        sent_at (datetime): Send timestamp.
+        `user_id` (UUID): Owner user identifier.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        CodeTypeError: If type is invalid.
-        TypeError: If user_id has invalid type.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        TypeError:
+            - If `user_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
@@ -161,23 +205,34 @@ def new_delete_account_code(
     expires_at: datetime,
     sent_at: datetime | None,
 ) -> VerificationCode:
-    """Creates an account deletion verification code.
+    """
+    Creates an account deletion verification code.
 
     Args:
-        user_id (UUID): Owner user identifier.
-        code (Code | None): Code instance or None to auto-generate.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        sent_at (datetime): Send timestamp.
+        `user_id` (UUID): Owner user identifier.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        CodeTypeError: If type is invalid.
-        TypeError: If user_id has invalid type.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        TypeError:
+            - If `user_id` is not UUID type.
     """
     return VerificationCode(
         code=code,

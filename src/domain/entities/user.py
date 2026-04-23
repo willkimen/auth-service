@@ -10,27 +10,36 @@ from domain.value_objects.password import PasswordHash
 
 
 class User:
-    """Represents a user entity with validation and domain rules.
-
-    Ensures all fields are valid and timestamps are consistent.
-
-    Timestamps must be timezone-aware.
-    updated_at and last_login_at must not be before created_at.
+    """
+    Represents a user entity with validation and domain rules.
 
     Args:
-        public_id (UUID): Public user identifier.
-        email (Email): Email instance.
-        hash_password (PasswordHash): PasswordHash instance.
-        email_verified (bool): Email verification status.
-        is_active (bool): Active status.
-        created_at (datetime): Creation timestamp.
-        updated_at (datetime): Update timestamp.
-        last_login_at (datetime | None): Last login timestamp.
+        `public_id` (UUID): Public user identifier.
+        `email` (Email): Email instance.
+        `hash_password` (PasswordHash): PasswordHash instance.
+        `email_verified` (bool): Email verification status.
+        `is_active` (bool): Active status.
+        `created_at` (datetime): Creation timestamp.
+        `updated_at` (datetime): Update timestamp.
+        `last_login_at` (datetime | None): Last login timestamp.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid.
-        TypeError: If fields have invalid types.
+        RequiredFieldError:
+            - If `public_id` is None.
+            - If `email_verified` is None.
+            - If `is_active` is None.
+            - If `created_at` is None.
+            - If `updated_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `updated_at` has no timezone information.
+            - If `updated_at` is earlier than `created_at`.
+            - If `last_login_at` has no timezone information.
+            - If `last_login_at` is earlier than `created_at`.
+        TypeError:
+            - If `public_id` is not UUID type.
+            - If `email_verified` is not bool type.
+            - If `is_active` is not bool type.
     """
 
     def __init__(
@@ -261,7 +270,7 @@ class User:
 
         Raises:
             RequiredFieldError: If None.
-            InvalidTimestampError: If not aware, or before created_at.
+            InvalidTimestampError: If not aware or before created_at.
         """
         ensure_not_none(updated_at, 'updated_at')
         ensure_aware(updated_at, 'updated_at')

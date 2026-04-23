@@ -9,16 +9,24 @@ class PasswordPolicy:
 
     @staticmethod
     def validate(raw_password: str) -> None:
-        """Validates a raw password against security rules.
-
-        Enforces length and requires letter, number, special char,
-        uppercase, and lowercase.
+        """
+        Validates a raw password against security rules.
 
         Args:
-            raw_password (str): Raw password.
+            `raw_password` (str): Raw password.
 
         Raises:
-            InvalidPasswordError
+            InvalidPasswordError:
+                - If password is None or empty.
+                - If password is shorter than the minimum allowed length.
+                - If password is longer than the maximum allowed length.
+                - If password does not contain at least one letter.
+                - If password does not contain at least one number.
+                - If password does not contain at least one special character.
+                - If password does not contain at least
+                    one uppercase character.
+                - If password does not contain at least
+                    one lowercase character.
         """
         if raw_password is None or not raw_password.strip():
             raise InvalidPasswordError('password cannot be empty')

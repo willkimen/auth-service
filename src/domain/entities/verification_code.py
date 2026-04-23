@@ -18,24 +18,37 @@ from domain.value_objects.code import Code
 
 
 class VerificationCode:
-    """Represents a verification code entity with validation rules.
+    """
+    Represents a verification code entity with validation rules.
 
     Args:
-        code (Code | None): Code instance or None to auto-generate.
-        user_id (UUID): Owner user identifier.
-        type (CodeType): Verification code type.
-        created_at (datetime): Creation timestamp.
-        expires_at (datetime): Expiration timestamp.
-        used_at (datetime | None): Usage timestamp.
-        sent_at (datetime | None): Send timestamp.
-        payload (dict | None): Optional metadata.
+        `code` (Code | None): Code instance or None to auto-generate.
+        `user_id` (UUID): Owner user identifier.
+        `type` (CodeType): Verification code type.
+        `created_at` (datetime): Creation timestamp.
+        `expires_at` (datetime): Expiration timestamp.
+        `used_at` (datetime | None): Usage timestamp.
+        `sent_at` (datetime | None): Send timestamp.
+        `payload` (dict | None): Optional metadata.
 
     Raises:
-        RequiredFieldError: If required fields are None.
-        InvalidTimestampError: If timestamps are invalid or inconsistent.
-        CodeTypeError: If type is not a valid CodeType.
-        CodeStatusError: If marking as used when not active.
-        TypeError: If code or user_id have invalid types.
+        RequiredFieldError:
+            - If `user_id` is None.
+            - If `code_type` is None.
+            - If `created_at` is None.
+            - If `expires_at` is None.
+        InvalidTimestampError:
+            - If `created_at` has no timezone information.
+            - If `expires_at` has no timezone information.
+            - If `expires_at` is earlier than `created_at`.
+            - If `used_at` has no timezone information.
+            - If `used_at` is earlier than `created_at`.
+            - If `sent_at` has no timezone information.
+            - If `sent_at` is earlier than `created_at`.
+        CodeTypeError:
+            - If `code_type` is not CodeType type.
+        TypeError:
+            - If `user_id` is not UUID type.
     """
 
     def __init__(
