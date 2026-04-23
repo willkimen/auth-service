@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -18,7 +19,7 @@ def initial_state() -> dict:
 
     return {
         'code': code,
-        'user_id': 100,
+        'user_id': uuid.uuid4(),
         'type': CodeType.EMAIL_VERIFICATION,
         'created_at': created_at,
         'expires_at': expires_at,

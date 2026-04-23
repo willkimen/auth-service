@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from domain.entities.verification_code import VerificationCode
@@ -7,7 +8,7 @@ from domain.value_objects.email import Email
 
 
 def new_email_verification_code(
-    user_id: int,
+    user_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -16,7 +17,7 @@ def new_email_verification_code(
     """Creates an email verification code.
 
     Args:
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
@@ -42,7 +43,7 @@ def new_email_verification_code(
 
 
 def new_change_email_code(
-    user_id: int,
+    user_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -52,7 +53,7 @@ def new_change_email_code(
     """Creates an email change verification code.
 
     Args:
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
@@ -84,7 +85,7 @@ def new_change_email_code(
 
 
 def new_change_password_code(
-    user_id: int,
+    user_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -93,7 +94,7 @@ def new_change_password_code(
     """Creates a password change verification code.
 
     Args:
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
@@ -119,7 +120,7 @@ def new_change_password_code(
 
 
 def new_reset_password_code(
-    user_id: int,
+    user_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -128,7 +129,7 @@ def new_reset_password_code(
     """Creates a password reset verification code.
 
     Args:
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
@@ -154,7 +155,7 @@ def new_reset_password_code(
 
 
 def new_delete_account_code(
-    user_id: int,
+    user_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -163,7 +164,7 @@ def new_delete_account_code(
     """Creates an account deletion verification code.
 
     Args:
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         code (Code | None): Code instance or None to auto-generate.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.

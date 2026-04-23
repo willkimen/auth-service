@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import uuid
 from datetime import datetime
 
 from domain.enums import CodeType
@@ -19,14 +20,9 @@ from domain.value_objects.code import Code
 class VerificationCode:
     """Represents a verification code entity with validation rules.
 
-    Handles lifecycle, status, and validation of verification codes.
-
-    - Timestamps must be timezone-aware.
-    - expires_at and used_at must not be before created_at.
-
     Args:
         code (Code | None): Code instance or None to auto-generate.
-        user_id (int): Owner user identifier.
+        user_id (UUID): Owner user identifier.
         type (CodeType): Verification code type.
         created_at (datetime): Creation timestamp.
         expires_at (datetime): Expiration timestamp.
@@ -45,7 +41,7 @@ class VerificationCode:
     def __init__(
         self,
         code: Code | None,
-        user_id: int,
+        user_id: uuid.UUID,
         type: CodeType,
         created_at: datetime,
         expires_at: datetime,
@@ -55,7 +51,7 @@ class VerificationCode:
     ):
         self._code = code or Code.generate()
 
-        self._user_id: int = VerificationCode._validate_user_id(user_id)
+        self._user_id: uuid.UUID = VerificationCode._validate_user_id(user_id)
 
         self._type: CodeType = VerificationCode._validate_type(type)
 
@@ -81,7 +77,7 @@ class VerificationCode:
         return self._code
 
     @property
-    def user_id(self) -> int:
+    def user_id(self) -> uuid.UUID:
         return self._user_id
 
     @property
@@ -216,27 +212,28 @@ class VerificationCode:
         return at
 
     @staticmethod
-    def _validate_user_id(id: int) -> int:
+    def _validate_user_id(user_id: uuid.UUID) -> uuid.UUID:
         """Validates the user id.
 
         Args:
-            id (int): User identifier.
+            user_id (UUID): User identifier.
 
         Returns:
-            int: Validated id.
+            int: Validated user_id.
 
         Raises:
-            RequiredFieldError: If id is None.
-            TypeError: If id is not an int.
+            RequiredFieldError: If user_id is None.
+            TypeError: If user_id is not an uuid type.
         """
-        ensure_not_none(id, 'user_id')
+        ensure_not_none(user_id, 'user_id')
 
-        if type(id) is not int:
+        if not isinstance(user_id, uuid.UUID):
             raise TypeError(
-                f'Invalid id: expected int, got {type(id).__name__}'
+                f'Invalid user_id: expected uuid type, '
+                f'got {type(user_id).__name__}'
             )
 
-        return id
+        return user_id
 
     @staticmethod
     def _validate_type(code_type: CodeType) -> CodeType:

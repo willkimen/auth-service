@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -13,7 +14,7 @@ from domain.enums import CodeType
 from domain.exceptions import InvalidEmailError
 from domain.value_objects.code import Code
 
-user_id = 100
+user_id = uuid.uuid4()
 created_at = datetime.now(timezone.utc)
 expires_at = created_at + timedelta(days=7)
 new_email = 'user@email.com'

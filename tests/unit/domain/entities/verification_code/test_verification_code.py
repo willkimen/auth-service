@@ -60,10 +60,11 @@ def test_user_id_is_required(initial_state: dict):
 
 
 def test_user_id_must_be_correct_type(initial_state: dict):
-    incorrect_type = '100'
+    incorrect_type = 100
     initial_state['user_id'] = incorrect_type
     msg_error = (
-        f'Invalid id: expected int, got {type(incorrect_type).__name__}'
+        f'Invalid user_id: expected uuid type, '
+        f'got {type(incorrect_type).__name__}'
     )
 
     with pytest.raises(TypeError, match=msg_error):
