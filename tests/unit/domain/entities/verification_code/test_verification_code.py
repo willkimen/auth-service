@@ -18,7 +18,7 @@ def test_create_code_success(initial_state: dict):
 
     assert code.code is not None
     assert code.code.value == initial_state['code'].value
-    assert code.user_id == initial_state['user_id']
+    assert code.user_public_id == initial_state['user_public_id']
     assert code.is_active(current_time)
     assert code.type == initial_state['type']
     assert not code.has_new_email()
@@ -34,7 +34,7 @@ def test_create_code_with_payload_success(initial_state: dict):
 
     assert code.code is not None
     assert code.code.value == initial_state['code'].value
-    assert code.user_id == initial_state['user_id']
+    assert code.user_public_id == initial_state['user_public_id']
     assert code.is_active(current_time)
     assert code.type == initial_state['type']
     assert code.has_new_email()
@@ -45,25 +45,25 @@ def test_create_code_with_payload_success(initial_state: dict):
     assert not code.has_been_sent()
 
 
-# ============= user_id ====================
-def test_check_if_user_id_is_assigned_correctly(initial_state: dict):
+# ============= user_public_id ====================
+def test_check_if_user_public_id_is_assigned_correctly(initial_state: dict):
     code = VerificationCode(**initial_state)
-    assert code.user_id == initial_state['user_id']
+    assert code.user_public_id == initial_state['user_public_id']
 
 
-def test_user_id_is_required(initial_state: dict):
-    initial_state['user_id'] = None
-    msg_error = 'user_id it is required'
+def test_user_public_id_is_required(initial_state: dict):
+    initial_state['user_public_id'] = None
+    msg_error = 'user_public_id it is required'
 
     with pytest.raises(RequiredFieldError, match=msg_error):
         VerificationCode(**initial_state)
 
 
-def test_user_id_must_be_correct_type(initial_state: dict):
+def test_user_public_id_must_be_correct_type(initial_state: dict):
     incorrect_type = 100
-    initial_state['user_id'] = incorrect_type
+    initial_state['user_public_id'] = incorrect_type
     msg_error = (
-        f'Invalid user_id: expected uuid type, '
+        f'Invalid user_public_id: expected uuid type, '
         f'got {type(incorrect_type).__name__}'
     )
 

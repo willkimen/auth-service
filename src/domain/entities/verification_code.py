@@ -23,7 +23,7 @@ class VerificationCode:
 
     Args:
         `code` (Code | None): Code instance or None to auto-generate.
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `type` (CodeType): Verification code type.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -33,7 +33,7 @@ class VerificationCode:
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `code_type` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
@@ -48,13 +48,13 @@ class VerificationCode:
         CodeTypeError:
             - If `code_type` is not CodeType type.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
     """
 
     def __init__(
         self,
         code: Code | None,
-        user_id: uuid.UUID,
+        user_public_id: uuid.UUID,
         type: CodeType,
         created_at: datetime,
         expires_at: datetime,
@@ -64,7 +64,9 @@ class VerificationCode:
     ):
         self._code = code or Code.generate()
 
-        self._user_id: uuid.UUID = VerificationCode._validate_user_id(user_id)
+        self._user_public_id: uuid.UUID = (
+            VerificationCode._validate_user_public_id(user_public_id)
+        )
 
         self._type: CodeType = VerificationCode._validate_type(type)
 
@@ -90,8 +92,8 @@ class VerificationCode:
         return self._code
 
     @property
-    def user_id(self) -> uuid.UUID:
-        return self._user_id
+    def user_public_id(self) -> uuid.UUID:
+        return self._user_public_id
 
     @property
     def type(self) -> CodeType:
@@ -225,28 +227,28 @@ class VerificationCode:
         return at
 
     @staticmethod
-    def _validate_user_id(user_id: uuid.UUID) -> uuid.UUID:
+    def _validate_user_public_id(user_public_id: uuid.UUID) -> uuid.UUID:
         """Validates the user id.
 
         Args:
-            user_id (UUID): User identifier.
+            user_public_id (UUID): User identifier.
 
         Returns:
-            int: Validated user_id.
+            int: Validated user_public_id.
 
         Raises:
-            RequiredFieldError: If user_id is None.
-            TypeError: If user_id is not an uuid type.
+            RequiredFieldError: If user_public_id is None.
+            TypeError: If user_public_id is not an uuid type.
         """
-        ensure_not_none(user_id, 'user_id')
+        ensure_not_none(user_public_id, 'user_public_id')
 
-        if not isinstance(user_id, uuid.UUID):
+        if not isinstance(user_public_id, uuid.UUID):
             raise TypeError(
-                f'Invalid user_id: expected uuid type, '
-                f'got {type(user_id).__name__}'
+                f'Invalid user_public_id: expected uuid type, '
+                f'got {type(user_public_id).__name__}'
             )
 
-        return user_id
+        return user_public_id
 
     @staticmethod
     def _validate_type(code_type: CodeType) -> CodeType:

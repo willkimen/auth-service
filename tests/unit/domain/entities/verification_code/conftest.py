@@ -19,7 +19,7 @@ def initial_state() -> dict:
 
     return {
         'code': code,
-        'user_id': uuid.uuid4(),
+        'user_public_id': uuid.uuid4(),
         'type': CodeType.EMAIL_VERIFICATION,
         'created_at': created_at,
         'expires_at': expires_at,

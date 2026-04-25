@@ -8,7 +8,7 @@ from domain.value_objects.email import Email
 
 
 def new_email_verification_code(
-    user_id: uuid.UUID,
+    user_public_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -18,7 +18,7 @@ def new_email_verification_code(
     Creates an email verification code.
 
     Args:
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -29,7 +29,7 @@ def new_email_verification_code(
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
         InvalidTimestampError:
@@ -41,11 +41,11 @@ def new_email_verification_code(
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
-        user_id=user_id,
+        user_public_id=user_public_id,
         type=CodeType.EMAIL_VERIFICATION,
         created_at=created_at,
         expires_at=expires_at,
@@ -54,7 +54,7 @@ def new_email_verification_code(
 
 
 def new_change_email_code(
-    user_id: uuid.UUID,
+    user_public_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -65,7 +65,7 @@ def new_change_email_code(
     Creates an email change verification code.
 
     Args:
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -77,7 +77,7 @@ def new_change_email_code(
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
         InvalidTimestampError:
@@ -89,7 +89,7 @@ def new_change_email_code(
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
         InvalidEmailError:
             - If `new_email` is None, empty, or invalid.
     """
@@ -97,7 +97,7 @@ def new_change_email_code(
 
     return VerificationCode(
         code=code,
-        user_id=user_id,
+        user_public_id=user_public_id,
         type=CodeType.CHANGE_EMAIL,
         created_at=created_at,
         expires_at=expires_at,
@@ -107,7 +107,7 @@ def new_change_email_code(
 
 
 def new_change_password_code(
-    user_id: uuid.UUID,
+    user_public_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -117,7 +117,7 @@ def new_change_password_code(
     Creates a password change verification code.
 
     Args:
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -128,7 +128,7 @@ def new_change_password_code(
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
         InvalidTimestampError:
@@ -140,11 +140,11 @@ def new_change_password_code(
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
-        user_id=user_id,
+        user_public_id=user_public_id,
         type=CodeType.CHANGE_PASSWORD,
         created_at=created_at,
         expires_at=expires_at,
@@ -153,7 +153,7 @@ def new_change_password_code(
 
 
 def new_reset_password_code(
-    user_id: uuid.UUID,
+    user_public_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -163,7 +163,7 @@ def new_reset_password_code(
     Creates a password reset verification code.
 
     Args:
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -174,7 +174,7 @@ def new_reset_password_code(
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
         InvalidTimestampError:
@@ -186,11 +186,11 @@ def new_reset_password_code(
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
-        user_id=user_id,
+        user_public_id=user_public_id,
         type=CodeType.RESET_PASSWORD,
         created_at=created_at,
         expires_at=expires_at,
@@ -199,7 +199,7 @@ def new_reset_password_code(
 
 
 def new_delete_account_code(
-    user_id: uuid.UUID,
+    user_public_id: uuid.UUID,
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
@@ -209,7 +209,7 @@ def new_delete_account_code(
     Creates an account deletion verification code.
 
     Args:
-        `user_id` (UUID): Owner user identifier.
+        `user_public_id` (UUID): Owner user identifier.
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
@@ -220,7 +220,7 @@ def new_delete_account_code(
 
     Raises:
         RequiredFieldError:
-            - If `user_id` is None.
+            - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
         InvalidTimestampError:
@@ -232,11 +232,11 @@ def new_delete_account_code(
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
         TypeError:
-            - If `user_id` is not UUID type.
+            - If `user_public_id` is not UUID type.
     """
     return VerificationCode(
         code=code,
-        user_id=user_id,
+        user_public_id=user_public_id,
         type=CodeType.DELETE_ACCOUNT,
         created_at=created_at,
         expires_at=expires_at,
