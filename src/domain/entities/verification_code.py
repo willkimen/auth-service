@@ -5,11 +5,7 @@ import uuid
 from datetime import datetime
 
 from domain.enums import CodeType
-from domain.exceptions import (
-    CodeStatusError,
-    CodeTypeError,
-    InvalidTimestampError,
-)
+from domain.exceptions import CodeExpiredError
 from domain.utils import (
     ensure_aware,
     ensure_not_none,
@@ -32,12 +28,12 @@ class VerificationCode:
         `payload` (dict | None): Optional metadata.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `code_type` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -45,10 +41,9 @@ class VerificationCode:
             - If `used_at` is earlier than `created_at`.
             - If `sent_at` has no timezone information.
             - If `sent_at` is earlier than `created_at`.
-        CodeTypeError:
-            - If `code_type` is not CodeType type.
         TypeError:
             - If `user_public_id` is not UUID type.
+            - If `code_type` is not CodeType type.
     """
 
     def __init__(
@@ -136,7 +131,7 @@ class VerificationCode:
             bool: True if active.
 
         Raises:
-            InvalidTimestampError: If now is not timezone-aware.
+            ValueError: If now is not timezone-aware.
         """
         return not self.is_used() and not self.is_expired(now)
 
@@ -158,7 +153,7 @@ class VerificationCode:
             bool: True if expired.
 
         Raises:
-            InvalidTimestampError: If now is not timezone-aware.
+            ValueError: If now is not timezone-aware.
         """
         ensure_aware(now, 'now')
 
@@ -179,8 +174,8 @@ class VerificationCode:
             used_at (datetime): Usage timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware or before created_at.
-            CodeStatusError: If the code is not active.
+            ValueError: If not aware or before created_at.
+            CodeExpiredError: If the code is expired.
         """
         if self.is_used():
             return
@@ -188,7 +183,9 @@ class VerificationCode:
         self._validate_used_at(used_at)
 
         if self.is_expired(used_at):
-            raise CodeStatusError('code cannot be used because is has expired')
+            raise CodeExpiredError(
+                'code cannot be used because is has expired'
+            )
 
         self._used_at = used_at
 
@@ -199,7 +196,7 @@ class VerificationCode:
             sent_at (datetime): Sent timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If not aware or before created_at.
         """
         self._validate_sent_at(sent_at)
         self._sent_at = sent_at
@@ -217,12 +214,10 @@ class VerificationCode:
             datetime: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If before created_at.
+            ValueError: If before created_at.
         """
         if at < self._created_at:
-            raise InvalidTimestampError(
-                f'{field} must not be before created_at'
-            )
+            raise ValueError(f'{field} must not be before created_at')
 
         return at
 
@@ -237,7 +232,7 @@ class VerificationCode:
             int: Validated user_public_id.
 
         Raises:
-            RequiredFieldError: If user_public_id is None.
+            ValueError: If user_public_id is None.
             TypeError: If user_public_id is not an uuid type.
         """
         ensure_not_none(user_public_id, 'user_public_id')
@@ -261,13 +256,13 @@ class VerificationCode:
             CodeType: Validated type.
 
         Raises:
-            RequiredFieldError: If type is None.
-            CodeTypeError: If not a valid CodeType.
+            ValueError: If type is None.
+            TypeError: If not a valid CodeType.
         """
         ensure_not_none(code_type, 'type')
 
         if not isinstance(code_type, CodeType):
-            raise CodeTypeError(
+            raise TypeError(
                 f'Invalid code type: expected CodeType, '
                 f'got {type(code_type).__name__}'
             )
@@ -285,8 +280,7 @@ class VerificationCode:
             datetime: Validated timestamp.
 
         Raises:
-            RequiredFieldError: If None.
-            InvalidTimestampError: If not aware.
+            ValueError: If None or not aware.
         """
         ensure_not_none(created_at, 'created_at')
         ensure_aware(created_at, 'created_at')
@@ -303,8 +297,7 @@ class VerificationCode:
             datetime: Validated timestamp.
 
         Raises:
-            RequiredFieldError: If None.
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If None, not aware or before created_at.
         """
         ensure_not_none(expires_at, 'expires_at')
         ensure_aware(expires_at, 'expires_at')
@@ -322,7 +315,7 @@ class VerificationCode:
             datetime | None: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If not aware or before created_at.
         """
         if used_at is None:
             return None
@@ -342,7 +335,7 @@ class VerificationCode:
             datetime | None: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If not aware or before created_at.
         """
         if sent_at is None:
             return None

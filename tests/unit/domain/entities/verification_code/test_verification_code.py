@@ -3,12 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from domain.entities.verification_code import VerificationCode
-from domain.exceptions import (
-    CodeStatusError,
-    CodeTypeError,
-    InvalidTimestampError,
-    RequiredFieldError,
-)
+from domain.exceptions import CodeExpiredError
 
 current_time = datetime.now(timezone.utc)
 
@@ -55,7 +50,7 @@ def test_user_public_id_is_required(initial_state: dict):
     initial_state['user_public_id'] = None
     msg_error = 'user_public_id it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -81,7 +76,7 @@ def test_type_code_is_required(initial_state: dict):
     initial_state['type'] = None
     msg_error = 'type it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -93,7 +88,7 @@ def test_code_must_be_correct_type(initial_state: dict):
         f'got {type(incorrect_type).__name__}'
     )
 
-    with pytest.raises(CodeTypeError, match=msg_error):
+    with pytest.raises(TypeError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -107,7 +102,7 @@ def test_creation_date_is_required(initial_state: dict):
     initial_state['created_at'] = None
     msg_error = 'created_at it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -117,7 +112,7 @@ def test_creation_date_must_be_include_timezone_information(
     initial_state['created_at'] = datetime.now()
     msg_error = 'created_at must be timezone-aware'
 
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -131,7 +126,7 @@ def test_expiration_date_is_required(initial_state: dict):
     initial_state['expires_at'] = None
     msg_error = 'expires_at it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -139,7 +134,7 @@ def test_expiration_date_must_be_timezone_aware(initial_state: dict):
     initial_state['expires_at'] = datetime.now()
     msg_error = 'expires_at must be timezone-aware'
 
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -150,7 +145,7 @@ def test_expiration_date_must_not_be_before_that_created_at(
     initial_state['expires_at'] = before
     msg_error = 'expires_at must not be before created_at'
 
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -177,7 +172,7 @@ def test_date_of_use_must_be_include_timezone_information(initial_state: dict):
     initial_state['used_at'] = datetime.now()
     msg_error = 'used_at must be timezone-aware'
 
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -188,7 +183,7 @@ def test_date_of_use_must_not_be_before_that_creation_date(
     initial_state['used_at'] = before
     msg_error = 'used_at must not be before created_at'
 
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         VerificationCode(**initial_state)
 
 
@@ -239,7 +234,7 @@ def test_check_if_is_active_wait_date_with_timezone_information(
     user = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.is_active(datetime.now())
 
 
@@ -266,7 +261,7 @@ def test_cannot_mark_as_used_expired_code(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'code cannot be used because is has expired'
-    with pytest.raises(CodeStatusError, match=msg_error):
+    with pytest.raises(CodeExpiredError, match=msg_error):
         user.mark_as_used(datetime.now(timezone.utc))
 
 
@@ -274,7 +269,7 @@ def test_mark_as_used_expect_timezone_date_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'used_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.mark_as_used(datetime.now())
 
 
@@ -286,7 +281,7 @@ def test_mark_as_used_cannot_be_earlier_than_creation_date(
     before_created = initial_state['created_at'] - timedelta(microseconds=1)
 
     msg_error = 'used_at must not be before created_at'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.mark_as_used(before_created)
 
 
@@ -310,7 +305,7 @@ def test_is_expired_expect_timezone_date_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.is_expired(datetime.now())
 
 
@@ -329,7 +324,7 @@ def test_mark_as_sent_must_include_a_timezone_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'sent_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.mark_as_sent(datetime.now())
 
 
@@ -341,5 +336,5 @@ def test_mark_as_sent_cannot_be_earlier_than_creation_date(
     before_created = initial_state['created_at'] - timedelta(microseconds=1)
 
     msg_error = 'sent_at must not be before created_at'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         user.mark_as_sent(before_created)

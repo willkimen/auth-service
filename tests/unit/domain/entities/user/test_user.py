@@ -3,10 +3,6 @@ from datetime import datetime, timedelta
 import pytest
 
 from domain.entities.user import User
-from domain.exceptions import (
-    InvalidTimestampError,
-    RequiredFieldError,
-)
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
 
@@ -30,7 +26,7 @@ def test_public_id_it_is_required(initial_state: dict):
     initial_state['public_id'] = None
     msg_error = 'public_id it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -50,7 +46,7 @@ def test_email_verified_it_is_required(initial_state: dict):
     initial_state['email_verified'] = None
     msg_error = 'email_verified it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -71,7 +67,7 @@ def test_is_active_it_is_required(initial_state: dict):
     initial_state['is_active'] = None
     msg_error = 'is_active it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -92,7 +88,7 @@ def test_user_must_have_an_creation_date(initial_state: dict):
     initial_state['created_at'] = None
     msg_error = 'created_at it is required'
 
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -103,7 +99,7 @@ def test_creation_date_must_include_a_timezone_information(
     initial_state['created_at'] = without_timezone
 
     msg_error = 'created_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -112,7 +108,7 @@ def test_user_must_have_an_update_date(initial_state: dict):
     initial_state['updated_at'] = None
 
     msg_error = 'updated_at it is required'
-    with pytest.raises(RequiredFieldError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -123,7 +119,7 @@ def test_update_date_must_include_a_timezone_information(
     initial_state['updated_at'] = without_timezone
 
     msg_error = 'updated_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -134,7 +130,7 @@ def test_update_date_cannot_be_earlier_than_creation_date(
     initial_state['updated_at'] = before_created_at
 
     msg_error = 'updated_at must not be before created_at'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -146,7 +142,7 @@ def test_last_login_date_must_include_a_timezone_information(
     initial_state['last_login_at'] = without_timezone
 
     msg_error = 'last_login_at must be timezone-aware'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 
@@ -157,7 +153,7 @@ def test_last_login_date_cannot_be_earlier_than_creation_date(
     initial_state['last_login_at'] = before_created_at
 
     msg_error = 'last_login_at must not be before created_at'
-    with pytest.raises(InvalidTimestampError, match=msg_error):
+    with pytest.raises(ValueError, match=msg_error):
         User(**initial_state)
 
 

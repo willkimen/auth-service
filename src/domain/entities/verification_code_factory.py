@@ -28,11 +28,11 @@ def new_email_verification_code(
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -76,11 +76,11 @@ def new_change_email_code(
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -127,11 +127,11 @@ def new_change_password_code(
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -173,11 +173,11 @@ def new_reset_password_code(
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -219,11 +219,11 @@ def new_delete_account_code(
         VerificationCode: Created verification code.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `user_public_id` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.

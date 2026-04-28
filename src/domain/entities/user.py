@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from domain.exceptions import InvalidTimestampError
 from domain.utils import ensure_aware, ensure_not_none
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
@@ -24,13 +23,13 @@ class User:
         `last_login_at` (datetime | None): Last login timestamp.
 
     Raises:
-        RequiredFieldError:
+        ValueError:
             - If `public_id` is None.
             - If `email_verified` is None.
             - If `is_active` is None.
             - If `created_at` is None.
             - If `updated_at` is None.
-        InvalidTimestampError:
+        ValueError:
             - If `created_at` has no timezone information.
             - If `updated_at` has no timezone information.
             - If `updated_at` is earlier than `created_at`.
@@ -187,7 +186,7 @@ class User:
         and not before created_at.
 
         Raises:
-            InvalidTimestampError: If timestamp is invalid or before
+            ValueError: If timestamp is invalid or before
             created_at.
         """
         now = datetime.now(timezone.utc)
@@ -214,12 +213,10 @@ class User:
             datetime: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If date is before created_at.
+            ValueError: If date is before created_at.
         """
         if date < self._created_at:
-            raise InvalidTimestampError(
-                f'{field} must not be before created_at'
-            )
+            raise ValueError(f'{field} must not be before created_at')
 
         return date
 
@@ -229,7 +226,7 @@ class User:
         Validates timestamp as timezone-aware and not before created_at.
 
         Raises:
-            InvalidTimestampError: If timestamp is invalid or before
+            ValueError: If timestamp is invalid or before
             created_at.
         """
         now = datetime.now(timezone.utc)
@@ -248,8 +245,7 @@ class User:
             datetime: Validated timestamp.
 
         Raises:
-            RequiredFieldError: If None.
-            InvalidTimestampError: If not aware.
+            ValueError: If None or not aware.
         """
         ensure_not_none(created_at, 'created_at')
         ensure_aware(created_at, 'created_at')
@@ -269,8 +265,7 @@ class User:
             datetime: Validated timestamp.
 
         Raises:
-            RequiredFieldError: If None.
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If None, not aware or before created_at.
         """
         ensure_not_none(updated_at, 'updated_at')
         ensure_aware(updated_at, 'updated_at')
@@ -293,7 +288,7 @@ class User:
             datetime | None: Validated timestamp.
 
         Raises:
-            InvalidTimestampError: If not aware or before created_at.
+            ValueError: If not aware or before created_at.
         """
         if last_login_at is None:
             return None
@@ -316,7 +311,7 @@ class User:
             UUID: Validated identifier.
 
         Raises:
-            RequiredFieldError: If None.
+            ValueError: If None.
             TypeError: If not a UUID.
         """
         ensure_not_none(public_id, 'public_id')
@@ -341,7 +336,7 @@ class User:
             bool: Validated value.
 
         Raises:
-            RequiredFieldError: If None.
+            ValueError: If None.
             TypeError: If not a bool.
         """
         ensure_not_none(email_verified, 'email_verified')
@@ -367,7 +362,7 @@ class User:
             bool: Validated value.
 
         Raises:
-            RequiredFieldError: If None.
+            ValueError: If None.
             TypeError: If not a bool.
         """
         ensure_not_none(is_active, 'is_active')
