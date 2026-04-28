@@ -1,4 +1,4 @@
-from domain.exceptions import InvalidPasswordError
+from domain.exceptions import InvalidPasswordError, PasswordErrorCode
 
 
 class PasswordHash:
@@ -31,6 +31,8 @@ class PasswordHash:
     @staticmethod
     def _validate(value: bytes) -> bytes:
         if not value:
-            raise InvalidPasswordError('password hash cannot be empty')
+            raise InvalidPasswordError(
+                'password hash cannot be empty', PasswordErrorCode.REQUIRED
+            )
 
         return value

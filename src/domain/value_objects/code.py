@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import secrets
 
-from domain.exceptions import InvalidCodeError
+from domain.exceptions import CodeErrorCode, InvalidCodeError
 
 
 class Code:
@@ -58,7 +58,10 @@ class Code:
             raise ValueError('code cannot be empty')
 
         if len(value) != self._LENGTH or not value.isdigit():
-            raise InvalidCodeError('code must be a 6-digit numeric string')
+            raise InvalidCodeError(
+                'code must be a 6-digit numeric string',
+                CodeErrorCode.INVALID_FORMAT,
+            )
 
         return value
 

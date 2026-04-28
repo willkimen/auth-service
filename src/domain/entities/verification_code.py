@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 
 from domain.enums import CodeType
-from domain.exceptions import CodeExpiredError
+from domain.exceptions import VerificationCodeExpiredError
 from domain.utils import (
     ensure_aware,
     ensure_not_none,
@@ -183,7 +183,7 @@ class VerificationCode:
         self._validate_used_at(used_at)
 
         if self.is_expired(used_at):
-            raise CodeExpiredError(
+            raise VerificationCodeExpiredError(
                 'code cannot be used because is has expired'
             )
 

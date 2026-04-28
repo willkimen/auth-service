@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from domain.entities.verification_code import VerificationCode
-from domain.exceptions import CodeExpiredError
+from domain.exceptions import VerificationCodeExpiredError
 
 current_time = datetime.now(timezone.utc)
 
@@ -261,7 +261,7 @@ def test_cannot_mark_as_used_expired_code(initial_state: dict):
     user = VerificationCode(**initial_state)
 
     msg_error = 'code cannot be used because is has expired'
-    with pytest.raises(CodeExpiredError, match=msg_error):
+    with pytest.raises(VerificationCodeExpiredError, match=msg_error):
         user.mark_as_used(datetime.now(timezone.utc))
 
 

@@ -1,6 +1,6 @@
 import re
 
-from domain.exceptions import InvalidEmailError
+from domain.exceptions import EmailErrorCode, InvalidEmailError
 
 _EMAIL_PATTERN = re.compile(r'^[\w\.\+-]+@[\w\.-]+\.\w+$')
 
@@ -35,11 +35,16 @@ class Email:
     @staticmethod
     def _validate(value: str) -> str:
         if value is None or not value.strip():
-            raise InvalidEmailError('email cannot be None or empty')
+            raise InvalidEmailError(
+                'email cannot be None or empty', EmailErrorCode.REQUIRED
+            )
 
         value = value.strip().lower()
 
         if _EMAIL_PATTERN.match(value) is None:
-            raise InvalidEmailError('email must be in a valid format')
+            raise InvalidEmailError(
+                'email must be in a valid format',
+                EmailErrorCode.INVALID_FORMAT,
+            )
 
         return value

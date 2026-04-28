@@ -1,4 +1,4 @@
-from domain.exceptions import InvalidPasswordError
+from domain.exceptions import InvalidPasswordError, PasswordErrorCode
 
 _min_length_password = 8
 _max_length_password = 128
@@ -29,35 +29,46 @@ class PasswordPolicy:
                     one lowercase character.
         """
         if raw_password is None or not raw_password.strip():
-            raise InvalidPasswordError('password cannot be empty')
+            raise InvalidPasswordError(
+                'password cannot be empty', PasswordErrorCode.REQUIRED
+            )
 
         if len(raw_password) < _min_length_password:
-            raise InvalidPasswordError('password too short')
+            raise InvalidPasswordError(
+                'password too short', PasswordErrorCode.TOO_SHORT
+            )
 
         if len(raw_password) > _max_length_password:
-            raise InvalidPasswordError('password too long')
+            raise InvalidPasswordError(
+                'password too long', PasswordErrorCode.TOO_LONG
+            )
 
         if not any(c.isalpha() for c in raw_password):
             raise InvalidPasswordError(
-                'password must contain at least one letter'
+                'password must contain at least one letter',
+                PasswordErrorCode.MISSING_LETTER,
             )
 
         if not any(c.isdigit() for c in raw_password):
             raise InvalidPasswordError(
-                'password must contain at least one number'
+                'password must contain at least one number',
+                PasswordErrorCode.MISSING_NUMBER,
             )
 
         if not any(not c.isalnum() for c in raw_password):
             raise InvalidPasswordError(
-                'password must contain at least one special character'
+                'password must contain at least one special character',
+                PasswordErrorCode.MISSING_SPECIAL,
             )
 
         if not any(c.isupper() for c in raw_password):
             raise InvalidPasswordError(
-                'password must contain at least one uppercase character'
+                'password must contain at least one uppercase character',
+                PasswordErrorCode.MISSING_UPPERCASE,
             )
 
         if not any(c.islower() for c in raw_password):
             raise InvalidPasswordError(
-                'password must contain at least one lowercase character'
+                'password must contain at least one lowercase character',
+                PasswordErrorCode.MISSING_LOWERCASE,
             )
