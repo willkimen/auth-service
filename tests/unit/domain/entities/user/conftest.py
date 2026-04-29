@@ -18,7 +18,7 @@ def initial_state() -> dict:
     return {
         'public_id': uuid.uuid4(),
         'email': Email('user@email.com'),
-        'hash_password': PasswordHash(b'somepassword'),
+        'hash_password': PasswordHash('somepassword'),
         'email_verified': False,
         'is_active': False,
         'created_at': now,

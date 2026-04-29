@@ -7,17 +7,17 @@ class PasswordHash:
     Ensures the hash is non-empty and compared by value.
 
     Args:
-        value (bytes): Password hash bytes.
+        value (str): Password hash.
 
     Raises:
         InvalidPasswordError: If the hash is empty.
     """
 
-    def __init__(self, value: bytes):
+    def __init__(self, value: str):
         self._value = PasswordHash._validate(value)
 
     @property
-    def value(self) -> bytes:
+    def value(self) -> str:
         return self._value
 
     def __hash__(self):
@@ -29,7 +29,7 @@ class PasswordHash:
         return self._value == other._value
 
     @staticmethod
-    def _validate(value: bytes) -> bytes:
+    def _validate(value: str) -> str:
         if not value:
             raise InvalidPasswordError(
                 'password hash cannot be empty', PasswordErrorCode.REQUIRED

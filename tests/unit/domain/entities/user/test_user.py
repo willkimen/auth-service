@@ -198,7 +198,7 @@ def test_should_not_be_deleted_when_verification_window_has_not_expired(
 
 # ========== change_password ===========
 def test_password_changed_successfully(initial_state: dict):
-    new_password = PasswordHash(b'NewPassword!20')
+    new_password = PasswordHash('NewPassword!20')
 
     user = User(**initial_state)
 
@@ -211,7 +211,7 @@ def test_change_password_updated_user_state(initial_state: dict):
     user = User(**initial_state)
     previous_updated_at = user.updated_at
 
-    user.change_password(PasswordHash(b'NewPassword!20'))
+    user.change_password(PasswordHash('NewPassword!20'))
 
     assert user.updated_at != previous_updated_at
     assert user.updated_at > previous_updated_at
@@ -226,7 +226,7 @@ def test_change_password_to_same_value_does_not_update_user_state(
     to the current one. This is verified by asserting that updated_at
     remains unchanged after the second call.
     """
-    same_password = PasswordHash(b'NewPassword!20')
+    same_password = PasswordHash('NewPassword!20')
     user = User(**initial_state)
 
     user.change_password(same_password)

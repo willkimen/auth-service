@@ -2,7 +2,7 @@ from domain.entities.user_factory import create_new_user
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
 
-hash_password = PasswordHash(b'somepassword')
+hash_password = PasswordHash('somepassword')
 email = Email('user@email.com')
 
 
