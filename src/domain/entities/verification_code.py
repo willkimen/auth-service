@@ -175,7 +175,7 @@ class VerificationCode:
 
         Raises:
             ValueError: If not aware or before created_at.
-            CodeExpiredError: If the code is expired.
+            VerificationCodeExpiredError: If the code is expired.
         """
         if self.is_used():
             return
