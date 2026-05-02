@@ -2,8 +2,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from domain.enums import CodeType
 from domain.entities.verification_code import VerificationCode
-from domain.exceptions import VerificationCodeExpiredError
+from domain.exceptions import (
+    MissingNewEmailError,
+    VerificationCodeExpiredError
+)
 
 current_time = datetime.now(timezone.utc)
 
@@ -16,7 +20,6 @@ def test_create_code_success(initial_state: dict):
     assert code.user_public_id == initial_state['user_public_id']
     assert code.is_active(current_time)
     assert code.type == initial_state['type']
-    assert not code.has_new_email()
     assert code.payload is None
     assert code.expires_at == initial_state['expires_at']
     assert code.used_at is None
@@ -25,19 +28,20 @@ def test_create_code_success(initial_state: dict):
 
 def test_create_code_with_payload_success(initial_state: dict):
     initial_state['payload'] = {'new_email': 'email@email.com'}
+    initial_state['type'] = CodeType.CHANGE_EMAIL
     code = VerificationCode(**initial_state)
 
-    assert code.code is not None
-    assert code.code.value == initial_state['code'].value
-    assert code.user_public_id == initial_state['user_public_id']
-    assert code.is_active(current_time)
-    assert code.type == initial_state['type']
-    assert code.has_new_email()
     assert code.payload is not None
     assert code.payload['new_email'] == 'email@email.com'
-    assert code.expires_at == initial_state['expires_at']
-    assert code.used_at is None
-    assert not code.has_been_sent()
+    assert code.get_new_email() == 'email@email.com'
+
+
+def test_code_type_change_email_must_contain_new_email_in_payload(initial_state: dict):
+    initial_state['type'] = CodeType.CHANGE_EMAIL
+    msg_error = "CHANGE_EMAIL codes require 'new_email' in payload"
+
+    with pytest.raises(MissingNewEmailError, match=msg_error):
+        VerificationCode(**initial_state)
 
 
 # ============= user_public_id ====================

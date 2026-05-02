@@ -5,7 +5,10 @@ import uuid
 from datetime import datetime
 
 from domain.enums import CodeType
-from domain.exceptions import VerificationCodeExpiredError
+from domain.exceptions import (
+    MissingNewEmailError,
+    VerificationCodeExpiredError
+)
 from domain.utils import (
     ensure_aware,
     ensure_not_none,
@@ -74,6 +77,10 @@ class VerificationCode:
 
         self._payload: dict | None = payload
 
+        if self._type == CodeType.CHANGE_EMAIL:
+            if self._payload is None or self._payload.get("new_email") is None:
+                raise MissingNewEmailError()
+
     def __hash__(self):
         return hash(self.code)
 
@@ -110,16 +117,11 @@ class VerificationCode:
     def payload(self) -> dict | None:
         return copy.copy(self._payload)
 
-    def has_new_email(self) -> bool:
-        """Verifica se o payload contém um novo email.
+    def get_new_email(self) -> str | None:
+        if self._payload is None:
+            return None
 
-        Returns:
-            bool: True se houver 'new_email' no payload.
-        """
-        if self._payload is not None:
-            return self._payload.get('new_email') is not None
-
-        return False
+        return self._payload.get('new_email')
 
     def is_active(self, now: datetime) -> bool:
         """Checks if the code is active.

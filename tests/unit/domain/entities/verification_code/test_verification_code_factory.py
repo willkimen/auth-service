@@ -23,7 +23,7 @@ current_time = datetime.now(timezone.utc)
 new_code = Code.generate()
 
 
-def test_create_code_success():
+def test_create_verification_code_success():
     code = new_email_verification_code(
         user_public_id, new_code, created_at, expires_at, None
     )
@@ -33,7 +33,6 @@ def test_create_code_success():
     assert code.user_public_id == user_public_id
     assert code.is_active(current_time)
     assert code.type == CodeType.EMAIL_VERIFICATION
-    assert not code.has_new_email()
     assert code.payload is None
     assert code.created_at == created_at
     assert code.expires_at == expires_at
@@ -56,9 +55,9 @@ def test_create_change_email_code_success():
     assert code.user_public_id == user_public_id
     assert code.is_active(current_time)
     assert code.type == CodeType.CHANGE_EMAIL
-    assert code.has_new_email()
     assert code.payload is not None
     assert code.payload['new_email'] == new_email
+    assert code.get_new_email() == new_email
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
@@ -75,7 +74,6 @@ def test_create_change_password_code_success():
     assert code.user_public_id == user_public_id
     assert code.is_active(current_time)
     assert code.type == CodeType.CHANGE_PASSWORD
-    assert not code.has_new_email()
     assert code.payload is None
     assert code.created_at == created_at
     assert code.expires_at == expires_at
@@ -93,7 +91,6 @@ def test_create_reset_password_code_success():
     assert code.user_public_id == user_public_id
     assert code.is_active(current_time)
     assert code.type == CodeType.RESET_PASSWORD
-    assert not code.has_new_email()
     assert code.payload is None
     assert code.created_at == created_at
     assert code.expires_at == expires_at
@@ -111,7 +108,6 @@ def test_create_delete_account_code_success():
     assert code.user_public_id == user_public_id
     assert code.is_active(current_time)
     assert code.type == CodeType.DELETE_ACCOUNT
-    assert not code.has_new_email()
     assert code.payload is None
     assert code.created_at == created_at
     assert code.expires_at == expires_at
