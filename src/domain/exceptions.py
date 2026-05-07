@@ -13,6 +13,7 @@ class DomainError(Exception):
 # User Errors
 # =========================
 
+
 class UserErrorCode(StrEnum):
     """Enumerates user-related domain error codes."""
 
@@ -47,6 +48,7 @@ class UnverifiedEmailError(DomainError):
 # Password Validation Errors
 # =========================
 
+
 class PasswordErrorCode(StrEnum):
     """Enumerates password validation error codes."""
 
@@ -71,6 +73,7 @@ class InvalidPasswordError(DomainError):
 # Email Validation Errors
 # =========================
 
+
 class EmailErrorCode(StrEnum):
     """Enumerates email validation error codes."""
 
@@ -89,6 +92,7 @@ class InvalidEmailError(DomainError):
 # Code Validation Errors (Input level)
 # =========================
 
+
 class CodeErrorCode(StrEnum):
     """Enumerates verification code validation error codes."""
 
@@ -106,6 +110,7 @@ class InvalidCodeError(DomainError):
 # Verification Code Domain Errors
 # =========================
 
+
 class VerificationCodeErrorCode(StrEnum):
     """Enumerates verification code domain error codes."""
 
@@ -118,8 +123,7 @@ class VerificationCodeAlreadyUsedError(DomainError):
     """Raised when verification code has already been used."""
 
     def __init__(
-            self,
-            message: str = 'Verification code has already been used'
+        self, message: str = 'Verification code has already been used'
     ):
         super().__init__(message, VerificationCodeErrorCode.ALREADY_USED)
 
@@ -142,7 +146,7 @@ class MissingNewEmailError(DomainError):
     """Raised when new_email is required but missing in payload."""
 
     def __init__(
-            self,
-            message: str = "CHANGE_EMAIL codes require 'new_email' in payload"
+        self,
+        message: str = 'CHANGE_EMAIL codes require "new_email" in payload',
     ):
         super().__init__(message, UserErrorCode.MISSING_NEW_EMAIL)

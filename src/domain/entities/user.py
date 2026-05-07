@@ -29,7 +29,6 @@ class User:
             - If `is_active` is None.
             - If `created_at` is None.
             - If `updated_at` is None.
-        ValueError:
             - If `created_at` has no timezone information.
             - If `updated_at` has no timezone information.
             - If `updated_at` is earlier than `created_at`.

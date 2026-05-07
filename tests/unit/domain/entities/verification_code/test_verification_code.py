@@ -2,11 +2,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.enums import CodeType
 from domain.entities.verification_code import VerificationCode
+from domain.enums import CodeType
 from domain.exceptions import (
     MissingNewEmailError,
-    VerificationCodeExpiredError
+    VerificationCodeExpiredError,
 )
 
 current_time = datetime.now(timezone.utc)
@@ -36,9 +36,11 @@ def test_create_code_with_payload_success(initial_state: dict):
     assert code.get_new_email() == 'email@email.com'
 
 
-def test_code_type_change_email_must_contain_new_email_in_payload(initial_state: dict):
+def test_code_type_change_email_must_contain_new_email_in_payload(
+    initial_state: dict,
+):
     initial_state['type'] = CodeType.CHANGE_EMAIL
-    msg_error = "CHANGE_EMAIL codes require 'new_email' in payload"
+    msg_error = 'CHANGE_EMAIL codes require "new_email" in payload'
 
     with pytest.raises(MissingNewEmailError, match=msg_error):
         VerificationCode(**initial_state)

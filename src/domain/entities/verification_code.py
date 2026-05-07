@@ -7,7 +7,7 @@ from datetime import datetime
 from domain.enums import CodeType
 from domain.exceptions import (
     MissingNewEmailError,
-    VerificationCodeExpiredError
+    VerificationCodeExpiredError,
 )
 from domain.utils import (
     ensure_aware,
@@ -31,12 +31,14 @@ class VerificationCode:
         `payload` (dict | None): Optional metadata.
 
     Raises:
+        MissingNewEmailError:
+            - If type is CHANGE_EMAIL and payload does not
+          contain new_email.
         ValueError:
             - If `user_public_id` is None.
             - If `code_type` is None.
             - If `created_at` is None.
             - If `expires_at` is None.
-        ValueError:
             - If `created_at` has no timezone information.
             - If `expires_at` has no timezone information.
             - If `expires_at` is earlier than `created_at`.
@@ -78,7 +80,7 @@ class VerificationCode:
         self._payload: dict | None = payload
 
         if self._type == CodeType.CHANGE_EMAIL:
-            if self._payload is None or self._payload.get("new_email") is None:
+            if self._payload is None or self._payload.get('new_email') is None:
                 raise MissingNewEmailError()
 
     def __hash__(self):
