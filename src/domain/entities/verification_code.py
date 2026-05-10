@@ -79,6 +79,7 @@ class VerificationCode:
 
         self._payload: dict | None = payload
 
+        # Email change codes must include the target email in the payload.
         if self._type == CodeType.CHANGE_EMAIL:
             if self._payload is None or self._payload.get('new_email') is None:
                 raise MissingNewEmailError()
@@ -137,6 +138,8 @@ class VerificationCode:
         Raises:
             ValueError: If now is not timezone-aware.
         """
+        # A verification code is considered active only if
+        # it has not been used or expired.
         return not self.is_used() and not self.is_expired(now)
 
     def is_used(self) -> bool:
@@ -181,6 +184,8 @@ class VerificationCode:
             ValueError: If not aware or before created_at.
             VerificationCodeExpiredError: If the code is expired.
         """
+        # If the code has already been used,
+        # there is no need to mark it again.
         if self.is_used():
             return
 

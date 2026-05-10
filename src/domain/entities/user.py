@@ -77,12 +77,17 @@ class User:
         Args:
             new (PasswordHash): PasswordHash instance.
         """
+        # If the received instance has the same value,
+        # there is no need to change the state.
         if new == self._hash_password:
             return
 
+        # Every time the state changes, the
+        # update timestamp must be recorded.
         self._register_update()
 
         self._hash_password = new
+
 
     @property
     def email(self) -> Email:
@@ -94,9 +99,13 @@ class User:
         Args:
             new (Email): Email instance.
         """
+        # If the received instance has the same value,
+        # there is no need to change the state.
         if new == self._email:
             return
 
+        # Every time the state changes, the
+        # update timestamp must be recorded.
         self._register_update()
 
         self._email = new
@@ -110,9 +119,13 @@ class User:
 
         Does nothing if already active.
         """
+        # If the user is already active,
+        # there is no need to change the state.
         if self._is_active:
             return
 
+        # Every time the state changes, the
+        # update timestamp must be recorded.
         self._register_update()
 
         self._is_active = True
@@ -122,9 +135,13 @@ class User:
 
         Does nothing if already inactive.
         """
+        # If the user is already deactive,
+        # there is no need to change the state.
         if not self._is_active:
             return
 
+        # Every time the state changes, the
+        # update timestamp must be recorded.
         self._register_update()
 
         self._is_active = False
@@ -138,9 +155,13 @@ class User:
 
         Does nothing if already verified.
         """
+        # If the user is email verified,
+        # there is no need to change the state.
         if self._email_verified:
             return
 
+        # Every time the state changes, the
+        # update timestamp must be recorded.
         self._register_update()
 
         self._email_verified = True
