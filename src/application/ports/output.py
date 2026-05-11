@@ -173,28 +173,6 @@ class TokenRepositoryPort(Protocol):
         ...
 
 
-class UnitOfWorkPort(Protocol):
-    """Defines transactional boundaries for application operations."""
-
-    async def __enter__(self) -> 'UnitOfWorkPort':
-        """Starts a transaction context.
-
-        Raises:
-            InfrastructureError:
-                If transaction initialization fails.
-        """
-        ...
-
-    async def __exit__(self, exc_type, exc_value, traceback):
-        """Ends a transaction, committing or rolling back.
-
-        Raises:
-            InfrastructureError:
-                If commit or rollback fails.
-        """
-        ...
-
-
 class HasherPort(Protocol):
     """Defines password hashing and verification operations."""
 
@@ -232,6 +210,33 @@ class MessagePublisherPort(Protocol):
         Raises:
             InfrastructureError:
                 If event persistence or dispatch scheduling fails.
+        """
+        ...
+
+
+class UnitOfWorkPort(Protocol):
+    """Defines transactional boundaries for application operations."""
+
+    user_repo: UserRepositoryPort
+    code_repo: VerificationCodeRepositoryPort
+    publisher: MessagePublisherPort
+    token_repo: TokenRepositoryPort
+
+    async def __aenter__(self) -> 'UnitOfWorkPort':
+        """Starts a transaction context.
+
+        Raises:
+            InfrastructureError:
+                If transaction initialization fails.
+        """
+        ...
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        """Ends a transaction, committing or rolling back.
+
+        Raises:
+            InfrastructureError:
+                If commit or rollback fails.
         """
         ...
 
