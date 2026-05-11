@@ -4,7 +4,7 @@ from datetime import datetime
 
 @dataclass(frozen=True)
 class PayloadTokenDTO:
-    """Represents decoded JWT payload data."""
+    """Represents decoded token payload data."""
 
     jti: str
     sub: str
@@ -13,7 +13,7 @@ class PayloadTokenDTO:
 
 @dataclass(frozen=True)
 class AccessTokenDTO:
-    """Represents an access token returned by the authentication layer."""
+    """Represents an access token."""
 
     token: str
 
@@ -26,3 +26,9 @@ class RefreshTokenDTO:
     payload: PayloadTokenDTO
 
 
+@dataclass(frozen=True)
+class PairTokensDTO:
+    """Represents a pair tokens: access and refresh."""
+
+    access: AccessTokenDTO
+    refresh: RefreshTokenDTO

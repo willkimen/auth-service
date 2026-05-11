@@ -1,12 +1,11 @@
 from datetime import datetime
 from typing import Protocol
 
-from application.dto.user_dto import UserPersistenceDTO
 from application.dto.token_dto import (
-    AccessTokenDTO,
-    RefreshTokenDTO,
-    PayloadTokenDTO
+    PairTokensDTO,
+    PayloadTokenDTO,
 )
+from application.dto.user_dto import UserPersistenceDTO
 from application.dto.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
@@ -240,10 +239,7 @@ class MessagePublisherPort(Protocol):
 class TokenManagerPort(Protocol):
     """Defines token generation and validation operations."""
 
-    def new_pair_token(
-            self,
-            sub: str
-    ) -> tuple[AccessTokenDTO, RefreshTokenDTO]:
+    def new_pair_token(self, sub: str) -> PairTokensDTO:
         """Generates access and refresh token pair.
 
         Raises:
