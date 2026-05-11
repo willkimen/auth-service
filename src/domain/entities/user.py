@@ -88,7 +88,6 @@ class User:
 
         self._hash_password = new
 
-
     @property
     def email(self) -> Email:
         return self._email
