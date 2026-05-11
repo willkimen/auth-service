@@ -9,9 +9,9 @@ class InfrastructureErrorCode(StrEnum):
     """Enumerates infrastructure failure error codes."""
 
     UNKNOWN = 'INFRA_UNKNOWN_ERROR'
-    DATABASE = 'DATABASE_ERROR'
-    EMAIL_PROVIDER = 'INFRA_EMAIL_PROVIDER_ERROR'
-    JWT = 'INFRA_JWT_ERROR'
+    DATABASE = 'INFRA_DATABASE_ERROR'
+    PASSWORD_HASHER = 'INFRA_PASSWORD_HASHER_ERROR'
+    AUTH_TOKEN = 'INFRA_AUTH_TOKEN_ERROR'
 
 
 class InfrastructureError(Exception):
