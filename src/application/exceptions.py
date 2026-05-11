@@ -64,7 +64,7 @@ class ApplicationError(Exception):
 # =========================
 
 
-class EmailAlreadyUseError(ApplicationError):
+class EmailAlreadyUsedError(ApplicationError):
     """Raised when email is already associated with an account."""
 
     def __init__(self):
