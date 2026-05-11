@@ -1,14 +1,14 @@
-from enum import Enum
+from enum import auto, StrEnum
 
 
-class CodeType(str, Enum):
+class CodeType(StrEnum):
     """Defines the types of verification codes.
 
     Used to represent the purpose of a verification code.
     """
 
-    EMAIL_VERIFICATION = 'EMAIL_VERIFICATION'
-    CHANGE_EMAIL = 'CHANGE_EMAIL'
-    CHANGE_PASSWORD = 'CHANGE_PASSWORD'
-    RESET_PASSWORD = 'RESET_PASSWORD'
-    DELETE_ACCOUNT = 'DELETE_ACCOUNT'
+    EMAIL_VERIFICATION = auto()
+    CHANGE_EMAIL = auto()
+    CHANGE_PASSWORD = auto()
+    RESET_PASSWORD = auto()
+    DELETE_ACCOUNT = auto()
