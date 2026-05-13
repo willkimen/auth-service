@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
-from enum import auto, StrEnum
+from enum import StrEnum, auto
 
 from application.events.email_payload import EmailPayload
 
@@ -17,10 +17,10 @@ class IntegrationEventType(StrEnum):
     SEND_PASSWORD_CHANGE_CODE = auto()
     SEND_NOTIFICATION_PASSWORD_CHANGED = auto()
 
-    SEND_EMAIL_CHANGE_CODE =  auto()
+    SEND_EMAIL_CHANGE_CODE = auto()
     SEND_NOTIFICATION_EMAIL_CHANGED = auto()
 
-    SEND_DELETE_CODE =  auto()
+    SEND_DELETE_CODE = auto()
     SEND_NOTIFICATION_DELETED = auto()
 
 
