@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Protocol
 
@@ -33,7 +34,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def delete(self, public_id: str):
+    async def delete(self, public_id: uuid.UUID):
         """Deletes a user by public identifier.
 
         Raises:
@@ -52,7 +53,7 @@ class UserRepositoryPort(Protocol):
         ...
 
     async def get_by_public_id(
-        self, public_id: str
+        self, public_id: uuid.UUID
     ) -> UserPersistenceDTO | None:
         """Retrieves a user by public identifier.
 
@@ -71,7 +72,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def exists_by_public_id(self, public_id: str) -> bool:
+    async def exists_by_public_id(self, public_id: uuid.UUID) -> bool:
         """Checks if a user exists by public identifier.
 
         Raises:
@@ -80,7 +81,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def is_active(self, public_id: str) -> bool:
+    async def is_active(self, public_id: uuid.UUID) -> bool:
         """Checks if a user is active.
 
         Raises:
@@ -112,7 +113,7 @@ class VerificationCodeRepositoryPort(Protocol):
         ...
 
     async def get_by_user_id_and_code(
-        self, user_public_id: str, code: str
+        self, user_public_id: uuid.UUID, code: str
     ) -> VerificationCodePersistenceDTO | None:
         """Retrieves a verification code by user and code value.
 
@@ -122,7 +123,7 @@ class VerificationCodeRepositoryPort(Protocol):
         """
         ...
 
-    async def delete_all(self, public_id: str):
+    async def delete_all(self, user_public_id: uuid.UUID):
         """Deletes all verification codes for a user.
 
         Raises:
@@ -135,7 +136,12 @@ class VerificationCodeRepositoryPort(Protocol):
 class TokenRepositoryPort(Protocol):
     """Defines persistence operations for tokens."""
 
-    async def save_refresh(self, sub: str, jti: str, expires_at: datetime):
+    async def save_refresh(
+            self,
+            sub: uuid.UUID,
+            jti: str,
+            expires_at: datetime
+    ):
         """Stores a refresh token.
 
         Raises:
@@ -145,7 +151,7 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
-    async def revoke_all_refreshes(self, sub: str):
+    async def revoke_all_refreshes(self, sub: uuid.UUID):
         """Revokes all refresh tokens for a subject.
 
         Raises:
@@ -244,7 +250,7 @@ class UnitOfWorkPort(Protocol):
 class TokenManagerPort(Protocol):
     """Defines token generation and validation operations."""
 
-    def new_pair_token(self, sub: str) -> PairTokensDTO:
+    def new_pair_token(self, sub: uuid.UUID) -> PairTokensDTO:
         """Generates access and refresh token pair.
 
         Raises:
@@ -253,7 +259,7 @@ class TokenManagerPort(Protocol):
         """
         ...
 
-    def new_access(self, sub: str) -> str:
+    def new_access(self, sub: uuid.UUID) -> str:
         """Generates a new access token.
 
         Raises:
