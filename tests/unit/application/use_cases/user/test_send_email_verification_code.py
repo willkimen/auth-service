@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import pytest
 
 from application.dto.user_dto import UserPersistenceDTO
+from application.events.integration_events import IntegrationEventType
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
@@ -12,6 +13,7 @@ from application.exceptions import (
 from application.use_cases.user.send_email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
+from domain.enums import CodeType
 from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
 from unit.application.use_cases.user.types import (
     SendEmailVerificationCodeDependencies,
@@ -22,9 +24,11 @@ async def test_initialize_email_verification_process_successfully(
     send_email_verification_code_dependencies,
 ):
     # arrange
+    public_id = uuid.uuid4()
+    email = 'email@email.com'
     user_persistence = UserPersistenceDTO(
-        public_id=uuid.uuid4(),
-        email='email@email.com',
+        public_id=public_id,
+        email=email,
         hash_password='password-hashed',
         email_verified=False,
         is_active=True,
@@ -47,12 +51,42 @@ async def test_initialize_email_verification_process_successfully(
         deadline=7,
     )
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
+    # Assert that .get_by_email() was called with the
+    # correct expected arguments.
+    deps.user_repo.get_by_email.assert_called_once_with(email)
     deps.uow.__aenter__.assert_called()
     deps.uow.__aexit__.assert_called()
-    deps.uow.code_repo.create.assert_called()
+
+    # Assert that .create() was called with the correct expected arguments.
+    deps.uow.code_repo.create.assert_called_once()
+    saved_code_dto = deps.uow.code_repo.create.call_args[0][0]
+    assert saved_code_dto.user_public_id == public_id
+    assert saved_code_dto.used_at is None
+    assert saved_code_dto.sent_at is None
+
+    code_value = saved_code_dto.code
+    assert isinstance(code_value, str)
+    number_digits = 6
+    assert len(code_value) == number_digits
+    assert code_value.isdigit()
+
+    assert saved_code_dto.expires_at > saved_code_dto.created_at
+    assert saved_code_dto.payload is None
+
+    assert saved_code_dto.type is CodeType.EMAIL_VERIFICATION.value
+
+    # Assert that .publish() was called with the correct expected arguments.
     deps.uow.publisher.publish.assert_called()
+    published_event = deps.uow.publisher.publish.call_args[0][0]
+    assert (
+        published_event.type
+        == IntegrationEventType.SEND_EMAIL_VERIFICATION_CODE.value
+    )
+    assert published_event.data.to == 'email@email.com'
+    assert published_event.data.link == 'www.test.com/send-code'
+    assert published_event.data.expiration == '15'
+    assert published_event.data.deadline == '7'
+    assert published_event.data.code == saved_code_dto.code
 
 
 async def test_verification_process_not_initialize_when_user_not_found(
