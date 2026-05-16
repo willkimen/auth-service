@@ -31,9 +31,9 @@ async def test_register_user_successfully(
     )
 
     # assert
-    deps.user_repo.exists_by_email.assert_awaited_once_with(email_input)
+    deps.user_repo.exists_by_email.assert_called_once_with(email_input)
     deps.hasher.hash.assert_called_once_with(password_input)
-    deps.user_repo.create.assert_awaited_once()
+    deps.user_repo.create.assert_called_once()
 
     assert isinstance(result.public_id, uuid.UUID)
     assert result.email == email_input
