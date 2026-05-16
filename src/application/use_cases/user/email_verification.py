@@ -33,7 +33,7 @@ class EmailVerificationUseCase:
 
     Retrieves the user and verification code, validates verification
     eligibility, marks the email as verified, marks the verification
-    code as used, and registers an asynchronous message to notify
+    code as used, and persists a message to notify
     the user about successful email verification.
     """
 

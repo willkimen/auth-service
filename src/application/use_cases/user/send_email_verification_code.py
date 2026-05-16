@@ -23,7 +23,7 @@ class SendEmailVerificationCodeUseCase:
 
     Retrieves the target user, validates account eligibility for
     email verification, generates a verification code, persists it,
-    and registers an asynchronous message for email delivery.
+    and persists a message.
     """
 
     def __init__(self, user_repo: UserRepositoryPort, uow: UnitOfWorkPort):
@@ -37,7 +37,7 @@ class SendEmailVerificationCodeUseCase:
         link: str,
         deadline: int,
     ):
-        """Generates and registers an email verification message.
+        """Generates a code and persists an email verification message.
 
         Args:
             email (str):
