@@ -12,6 +12,7 @@ class InfrastructureErrorCode(StrEnum):
     DATABASE = 'INFRA_DATABASE_ERROR'
     PASSWORD_HASHER = 'INFRA_PASSWORD_HASHER_ERROR'
     AUTH_TOKEN = 'INFRA_AUTH_TOKEN_ERROR'
+    CORRUPTED_PERSISTENCE_STATE = 'INFRA_CORRUPTED_PERSISTENCE_STATE'
 
 
 class InfrastructureError(Exception):
@@ -36,6 +37,26 @@ class InfrastructureError(Exception):
         super().__init__(message)
         self.code = code
         self.cause = cause
+
+
+class CorruptedPersistenceStateError(InfrastructureError):
+    """
+    Raised when persisted data cannot be reconstructed
+    into valid domain objects.
+
+    This usually indicates that the persistence layer
+    contains invalid, inconsistent, or corrupted data.
+    """
+
+    def __init__(self, cause: Exception | None = None):
+        super().__init__(
+            message=(
+                'Persisted data is invalid and could not '
+                'be reconstructed into domain objects'
+            ),
+            code=InfrastructureErrorCode.CORRUPTED_PERSISTENCE_STATE,
+            cause=cause,
+        )
 
 
 # =========================
