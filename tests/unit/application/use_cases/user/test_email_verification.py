@@ -1,0 +1,660 @@
+import uuid
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from application.dto.user_dto import UserPersistenceDTO
+from application.dto.verification_code_dto import (
+    VerificationCodePersistenceDTO,
+)
+from application.events.integration_events import (
+    IntegrationEvent,
+    IntegrationEventType,
+)
+from application.exceptions import (
+    InfrastructureError,
+    InfrastructureErrorCode,
+    UserNotFoundError,
+    VerificationCodeNotFoundError,
+)
+from application.use_cases.user.email_verification import (
+    EmailVerificationUseCase,
+)
+from domain.enums import CodeType
+from domain.exceptions import (
+    EmailAlreadyVerifiedError,
+    InactiveUserError,
+    VerificationCodeAlreadyUsedError,
+    VerificationCodeExpiredError,
+    VerificationCodeTypeError,
+)
+from unit.application.use_cases.user.types import EmailVerificationDependencies
+
+publid_id = uuid.uuid4()
+email = 'email@email.com'
+created_at = datetime.now(timezone.utc)
+updated_at = created_at
+hash_password = 'password_hashed'
+email_not_verified = False
+email_verified = True
+is_active = True
+is_inactive = False
+last_login_at = None
+code = '123456'
+correct_code_type = CodeType.EMAIL_VERIFICATION.value
+incorrect_code_type = CodeType.CHANGE_PASSWORD.value
+code_not_expired = created_at + timedelta(minutes=15)
+code_expired = datetime.now(timezone.utc) + +timedelta(milliseconds=1)
+code_not_used = None
+code_used = datetime.now(timezone.utc)
+code_not_sent = None
+without_payload = None
+login_link = 'www.auth.com/login'
+
+
+async def test_email_verified_successfully(email_verification_dependencies):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence,
+        code_persistence,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once_with(email)
+    deps.code_repo.get_by_user_id_and_code.assert_called_once_with(
+        publid_id, code
+    )
+    deps.uow.__aenter__.assert_called_once()
+    deps.uow.__aexit__.assert_called_once()
+
+    deps.uow.user_repo.update.assert_called_once()
+    user_persistence: UserPersistenceDTO = deps.uow.user_repo.update.call_args[
+        0
+    ][0]
+    assert user_persistence.public_id == publid_id
+    assert user_persistence.email == email
+    assert user_persistence.hash_password == hash_password
+    assert user_persistence.created_at == created_at
+    assert user_persistence.email_verified == email_verified
+    assert user_persistence.is_active == is_active
+    assert user_persistence.last_login_at == last_login_at
+    assert user_persistence.updated_at > created_at
+
+    deps.uow.code_repo.update.assert_called_once()
+    code_persistence: VerificationCodePersistenceDTO = (
+        deps.uow.code_repo.update.call_args[0][0]
+    )
+    assert code_persistence.code == code
+    assert code_persistence.user_public_id == publid_id
+    assert code_persistence.payload == without_payload
+    assert code_persistence.created_at == created_at
+    assert code_persistence.expires_at == code_not_expired
+    assert isinstance(code_persistence.used_at, datetime)
+    assert code_persistence.sent_at == code_not_sent
+    assert code_persistence.type == CodeType.EMAIL_VERIFICATION.value
+
+    deps.uow.publisher.publish.assert_called_once()
+    event: IntegrationEvent = deps.uow.publisher.publish.call_args[0][0]
+    assert event.id is not None
+    assert event.type == IntegrationEventType.SEND_NOTIFICATION_EMAIL_VERIFIED
+    payload = event.data.to_dict()
+    assert payload['to'] == user_persistence.email
+    assert payload['link'] == login_link
+    assert payload['subject'] == 'Email verified successfully'
+
+
+async def test_verification_fails_when_user_does_not_exist(
+    email_verification_dependencies,
+):
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        None,
+        code_persistence,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(UserNotFoundError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+
+    deps.code_repo.get_by_user_id_and_code.assert_not_called()
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_user_already_verified(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_verified,  # set email as verified
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence,
+        code_persistence,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(EmailAlreadyVerifiedError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+
+    deps.code_repo.get_by_user_id_and_code.assert_not_called()
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_user_inactive(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_inactive,  # set inactive
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence,
+        code_persistence,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(InactiveUserError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+
+    deps.code_repo.get_by_user_id_and_code.assert_not_called()
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_get_user_fails(
+    email_verification_dependencies,
+):
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        None,
+        None,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    deps.user_repo.get_by_email.side_effect = InfrastructureError(
+        'Error attempting to get user',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    with pytest.raises(InfrastructureError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+
+    deps.code_repo.get_by_user_id_and_code.assert_not_called()
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_code_does_not_exist(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, None
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(VerificationCodeNotFoundError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_code_already_used(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_used,  # set code as used
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(VerificationCodeAlreadyUsedError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_code_expired(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_expired,  # set code as expired
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(VerificationCodeExpiredError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_code_type_is_invalid(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=incorrect_code_type,  # set code as incorrect tye
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    with pytest.raises(VerificationCodeTypeError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+
+
+async def test_verification_fails_when_get_code_fails(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence,
+        None,
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    deps.code_repo.get_by_user_id_and_code.side_effect = InfrastructureError(
+        'Error attempting to get code',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    with pytest.raises(InfrastructureError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    deps.uow.user_repo.update.assert_not_called()
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.__aenter__.assert_not_called()
+    deps.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_persist_user_update_fails(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    deps.uow.user_repo.update.side_effect = InfrastructureError(
+        'Error attempting to update user',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    with pytest.raises(InfrastructureError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+    deps.uow.user_repo.update.assert_called_once()
+    deps.uow.__aexit__.assert_called_once()
+    deps.uow.__aenter__.assert_called_once()
+
+    deps.uow.code_repo.update.assert_not_called()
+    deps.uow.publisher.publish.assert_not_called()
+
+
+async def test_verification_fails_when_persist_code_update_fails(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    deps.uow.code_repo.update.side_effect = InfrastructureError(
+        'Error attempting to update code',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    with pytest.raises(InfrastructureError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+    deps.uow.user_repo.update.assert_called_once()
+    deps.uow.code_repo.update.assert_called_once()
+    deps.uow.__aexit__.assert_called_once()
+    deps.uow.__aenter__.assert_called_once()
+
+    deps.uow.publisher.publish.assert_not_called()
+
+
+async def test_verification_fails_when_event_publish_fails(
+    email_verification_dependencies,
+):
+    user_persistence = UserPersistenceDTO(
+        public_id=publid_id,
+        email=email,
+        hash_password=hash_password,
+        email_verified=email_not_verified,
+        is_active=is_active,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=last_login_at,
+    )
+
+    code_persistence = VerificationCodePersistenceDTO(
+        code=code,
+        user_public_id=publid_id,
+        type=correct_code_type,
+        created_at=created_at,
+        expires_at=code_not_expired,
+        used_at=code_not_used,
+        sent_at=code_not_sent,
+        payload=without_payload,
+    )
+
+    deps: EmailVerificationDependencies = email_verification_dependencies(
+        user_persistence, code_persistence
+    )
+
+    use_case = EmailVerificationUseCase(
+        deps.user_repo, deps.code_repo, deps.uow
+    )
+
+    deps.uow.publisher.publish.side_effect = InfrastructureError(
+        'Error attempting to publish event',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    with pytest.raises(InfrastructureError):
+        await use_case.execute(email, code, login_link)
+
+    deps.user_repo.get_by_email.assert_called_once()
+    deps.code_repo.get_by_user_id_and_code.assert_called_once()
+    deps.uow.user_repo.update.assert_called_once()
+    deps.uow.code_repo.update.assert_called_once()
+    deps.uow.publisher.publish.assert_called_once()
+    deps.uow.__aexit__.assert_called_once()
+    deps.uow.__aenter__.assert_called_once()

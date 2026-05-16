@@ -12,3 +12,10 @@ class RegisterUserDependencies:
 class SendEmailVerificationCodeDependencies:
     user_repo: AsyncMock
     uow: AsyncMock
+
+
+@dataclass(frozen=True)
+class EmailVerificationDependencies:
+    user_repo: AsyncMock
+    code_repo: AsyncMock
+    uow: AsyncMock
