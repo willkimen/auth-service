@@ -1,9 +1,10 @@
+import uuid
+from datetime import datetime, timezone
 from typing import Callable
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.user_dto import UserPersistenceDTO
 from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
@@ -14,6 +15,9 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
+from domain.entities.user import User
+from domain.value_objects.email import Email
+from domain.value_objects.password import PasswordHash
 from unit.application.use_cases.user.types import (
     EmailVerificationDependencies,
     RegisterUserDependencies,
@@ -38,13 +42,13 @@ def register_user_dependencies() -> RegisterUserDependencies:
 
 @pytest.fixture
 def send_email_verification_code_dependencies() -> Callable[
-    [UserPersistenceDTO], SendEmailVerificationCodeDependencies
+    [User], SendEmailVerificationCodeDependencies
 ]:
     def dependecies(
-        user_persitence_dto: UserPersistenceDTO,
+        user: User,
     ) -> SendEmailVerificationCodeDependencies:
         user_repo = AsyncMock(spec=UserRepositoryPort)
-        user_repo.get_by_email.return_value = user_persitence_dto
+        user_repo.get_by_email.return_value = user
 
         uow = AsyncMock(spec=UnitOfWorkPort)
         uow.__aenter__.return_value = uow
@@ -63,15 +67,15 @@ def send_email_verification_code_dependencies() -> Callable[
 
 @pytest.fixture
 def email_verification_dependencies() -> Callable[
-    [UserPersistenceDTO, VerificationCodePersistenceDTO],
+    [User, VerificationCodePersistenceDTO],
     EmailVerificationDependencies,
 ]:
     def dependecies(
-        user_persitence_dto: UserPersistenceDTO,
+        user: User,
         code_persistence_dto: VerificationCodePersistenceDTO,
     ) -> EmailVerificationDependencies:
         user_repo = AsyncMock(spec=UserRepositoryPort)
-        user_repo.get_by_email.return_value = user_persitence_dto
+        user_repo.get_by_email.return_value = user
 
         code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
         code_repo.get_by_user_id_and_code.return_value = code_persistence_dto
@@ -92,3 +96,52 @@ def email_verification_dependencies() -> Callable[
         return EmailVerificationDependencies(user_repo, code_repo, uow)
 
     return dependecies
+
+
+public_id = uuid.uuid4()
+email = Email('email@email.com')
+password_hash = PasswordHash('password-hashed')
+created_at = datetime.now(timezone.utc)
+updated_at = datetime.now(timezone.utc)
+
+
+@pytest.fixture
+def unverified_user() -> User:
+    return User(
+        public_id=public_id,
+        email=email,
+        hash_password=password_hash,
+        email_verified=False,
+        is_active=True,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=None,
+    )
+
+
+@pytest.fixture
+def verified_user() -> User:
+    return User(
+        public_id=public_id,
+        email=email,
+        hash_password=password_hash,
+        email_verified=True,
+        is_active=True,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=None,
+    )
+
+
+@pytest.fixture
+def inactive_user() -> User:
+    return User(
+        public_id=public_id,
+        email=email,
+        hash_password=password_hash,
+        email_verified=False,
+        is_active=False,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=None,
+    )

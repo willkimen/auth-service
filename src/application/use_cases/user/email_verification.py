@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-from application.dtos.user_dto import UserPersistenceDTO
 from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
@@ -80,14 +79,10 @@ class EmailVerificationUseCase:
             InfrastructureError:
                 If persistence or registration fails.
         """
-        user_persitence: (
-            UserPersistenceDTO | None
-        ) = await self.user_repo.get_by_email(email)
+        user: User | None = await self.user_repo.get_by_email(email)
 
-        if user_persitence is None:
+        if user is None:
             raise UserNotFoundError()
-
-        user: User = user_persitence.to_entity()
 
         if user.email_verified is True:
             raise EmailAlreadyVerifiedError()
@@ -119,10 +114,7 @@ class EmailVerificationUseCase:
         user.mark_email_as_verified()
         verification_code.mark_as_used(datetime.now(timezone.utc))
 
-        payload = EmailVerifiedPayload(
-            user.email.value,
-            link=login_link,
-        )
+        payload = EmailVerifiedPayload(user.email.value, link=login_link)
 
         message = Message(
             type=MessageType.SEND_NOTIFICATION_EMAIL_VERIFIED,
@@ -130,9 +122,7 @@ class EmailVerificationUseCase:
         )
 
         async with self.uow:
-            await self.uow.user_repo.update(
-                UserPersistenceDTO.from_entity(user)
-            )
+            await self.uow.user_repo.update(user)
             await self.uow.code_repo.update(
                 VerificationCodePersistenceDTO.from_entity(verification_code)
             )

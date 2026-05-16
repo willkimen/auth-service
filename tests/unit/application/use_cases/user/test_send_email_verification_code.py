@@ -1,9 +1,5 @@
-import uuid
-from datetime import datetime, timezone
-
 import pytest
 
-from application.dtos.user_dto import UserPersistenceDTO
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
@@ -13,6 +9,7 @@ from application.messages.message_types import MessageType
 from application.use_cases.user.send_email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
+from domain.entities.user import User
 from domain.enums import CodeType
 from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
 from unit.application.use_cases.user.types import (
@@ -21,31 +18,18 @@ from unit.application.use_cases.user.types import (
 
 
 async def test_initialize_email_verification_process_successfully(
-    send_email_verification_code_dependencies,
+    send_email_verification_code_dependencies, unverified_user: User
 ):
     # arrange
-    public_id = uuid.uuid4()
-    email = 'email@email.com'
-    user_persistence = UserPersistenceDTO(
-        public_id=public_id,
-        email=email,
-        hash_password='password-hashed',
-        email_verified=False,
-        is_active=True,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        last_login_at=None,
-    )
-
     deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(user_persistence)
+        send_email_verification_code_dependencies(unverified_user)
     )
 
     use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
 
     # act
     await use_case.execute(
-        email='email@email.com',
+        email=unverified_user.email.value,
         code_expiration_time=15,
         link='www.test.com/send-code',
         deadline=7,
@@ -53,14 +37,16 @@ async def test_initialize_email_verification_process_successfully(
 
     # Assert that .get_by_email() was called with the
     # correct expected arguments.
-    deps.user_repo.get_by_email.assert_called_once_with(email)
+    deps.user_repo.get_by_email.assert_called_once_with(
+        unverified_user.email.value
+    )
     deps.uow.__aenter__.assert_called()
     deps.uow.__aexit__.assert_called()
 
     # Assert that .create() was called with the correct expected arguments.
     deps.uow.code_repo.create.assert_called_once()
     saved_code_dto = deps.uow.code_repo.create.call_args[0][0]
-    assert saved_code_dto.user_public_id == public_id
+    assert saved_code_dto.user_public_id == unverified_user.public_id
     assert saved_code_dto.used_at is None
     assert saved_code_dto.sent_at is None
 
@@ -79,7 +65,7 @@ async def test_initialize_email_verification_process_successfully(
     deps.uow.message_repo.create.assert_called()
     message = deps.uow.message_repo.create.call_args[0][0]
     assert message.type == (MessageType.SEND_EMAIL_VERIFICATION_CODE.value)
-    assert message.payload.to == 'email@email.com'
+    assert message.payload.to == unverified_user.email.value
     assert message.payload.link == 'www.test.com/send-code'
     assert message.payload.expiration == '15'
     assert message.payload.deadline == '7'
@@ -114,23 +100,11 @@ async def test_verification_process_not_initialize_when_user_not_found(
 
 
 async def test_verification_process_not_initialize_when_user_already_verified(
-    send_email_verification_code_dependencies,
+    send_email_verification_code_dependencies, verified_user: User
 ):
     # arrange
-    # Create an user already verified
-    user_persistence = UserPersistenceDTO(
-        public_id=uuid.uuid4(),
-        email='email@email.com',
-        hash_password='password-hashed',
-        email_verified=True,  # already verified
-        is_active=True,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        last_login_at=None,
-    )
-
     deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(user_persistence)
+        send_email_verification_code_dependencies(verified_user)
     )
 
     use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
@@ -138,7 +112,7 @@ async def test_verification_process_not_initialize_when_user_already_verified(
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
         await use_case.execute(
-            email='email@email.com',
+            email=verified_user.email.value,
             code_expiration_time=15,
             link='www.test.com/send-code',
             deadline=7,
@@ -153,23 +127,11 @@ async def test_verification_process_not_initialize_when_user_already_verified(
 
 
 async def test_verification_process_not_initialize_when_user_is_inactive(
-    send_email_verification_code_dependencies,
+    send_email_verification_code_dependencies, inactive_user: User
 ):
     # arrange
-    # Create an user is inactive
-    user_persistence = UserPersistenceDTO(
-        public_id=uuid.uuid4(),
-        email='email@email.com',
-        hash_password='password-hashed',
-        email_verified=False,
-        is_active=False,  # inactive
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        last_login_at=None,
-    )
-
     deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(user_persistence)
+        send_email_verification_code_dependencies(inactive_user)
     )
 
     use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
@@ -177,7 +139,7 @@ async def test_verification_process_not_initialize_when_user_is_inactive(
     # act and assert
     with pytest.raises(InactiveUserError):
         await use_case.execute(
-            email='email@email.com',
+            email=inactive_user.email.value,
             code_expiration_time=15,
             link='www.test.com/send-code',
             deadline=7,
@@ -192,22 +154,10 @@ async def test_verification_process_not_initialize_when_user_is_inactive(
 
 
 async def test_verification_process_not_initialize_when_persists_code_fails(
-    send_email_verification_code_dependencies,
+    send_email_verification_code_dependencies, unverified_user: User
 ):
-    # arrange
-    user_persistence = UserPersistenceDTO(
-        public_id=uuid.uuid4(),
-        email='email@email.com',
-        hash_password='password-hashed',
-        email_verified=False,
-        is_active=True,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        last_login_at=None,
-    )
-
     deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(user_persistence)
+        send_email_verification_code_dependencies(unverified_user)
     )
 
     deps.uow.code_repo.create.side_effect = InfrastructureError(
@@ -221,7 +171,7 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            email='email@email.com',
+            email=unverified_user.email.value,
             code_expiration_time=15,
             link='www.test.com/send-code',
             deadline=7,
@@ -236,22 +186,11 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
 
 
 async def test_verification_process_not_initialize_when_message_persits_fails(
-    send_email_verification_code_dependencies,
+    send_email_verification_code_dependencies, unverified_user: User
 ):
     # arrange
-    user_persistence = UserPersistenceDTO(
-        public_id=uuid.uuid4(),
-        email='email@email.com',
-        hash_password='password-hashed',
-        email_verified=False,
-        is_active=True,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        last_login_at=None,
-    )
-
     deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(user_persistence)
+        send_email_verification_code_dependencies(unverified_user)
     )
 
     deps.uow.message_repo.create.side_effect = InfrastructureError(
@@ -265,7 +204,7 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
     # act and arrange
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            email='email@email.com',
+            email=unverified_user.email.value,
             code_expiration_time=15,
             link='www.test.com/send-code',
             deadline=7,

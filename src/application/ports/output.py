@@ -6,17 +6,17 @@ from application.dtos.token_dto import (
     PairTokensDTO,
     PayloadTokenDTO,
 )
-from application.dtos.user_dto import UserPersistenceDTO
 from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
 from application.messages.message import Message
+from domain.entities.user import User
 
 
 class UserRepositoryPort(Protocol):
     """Defines persistence operations for User entities."""
 
-    async def create(self, user_record: UserPersistenceDTO) -> None:
+    async def create(self, user: User) -> None:
         """Persists a new user record.
 
         Raises:
@@ -25,7 +25,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def update(self, user_record: UserPersistenceDTO) -> None:
+    async def update(self, user: User) -> None:
         """Updates an existing user record.
 
         Raises:
@@ -43,7 +43,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def get_by_email(self, email: str) -> UserPersistenceDTO | None:
+    async def get_by_email(self, email: str) -> User | None:
         """Retrieves a user by email.
 
         Raises:
@@ -52,9 +52,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def get_by_public_id(
-        self, public_id: uuid.UUID
-    ) -> UserPersistenceDTO | None:
+    async def get_by_public_id(self, public_id: uuid.UUID) -> User | None:
         """Retrieves a user by public identifier.
 
         Raises:

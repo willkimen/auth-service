@@ -1,4 +1,4 @@
-from application.dtos.user_dto import UserPersistenceDTO, UserPublicDTO
+from application.dtos.user_dto import UserPublicDTO
 from application.exceptions import EmailAlreadyUsedError
 from application.ports.output import HasherPort, UserRepositoryPort
 from domain.entities.user import User
@@ -54,11 +54,7 @@ class RegisterUserUseCase:
 
         user: User = create_new_user(email_vo, password_hash_vo)
 
-        user_persistence: UserPersistenceDTO = UserPersistenceDTO.from_entity(
-            user
-        )
-
-        await self.user_repo.create(user_persistence)
+        await self.user_repo.create(user)
 
         # Sensitive data such as password hashes must never be exposed.
         return UserPublicDTO.from_entity(user)

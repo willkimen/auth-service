@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from application.dtos.user_dto import UserPersistenceDTO
 from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
@@ -18,6 +17,7 @@ from application.messages.message_types import MessageType
 from application.use_cases.user.email_verification import (
     EmailVerificationUseCase,
 )
+from domain.entities.user import User
 from domain.enums import CodeType
 from domain.exceptions import (
     EmailAlreadyVerifiedError,
@@ -28,7 +28,7 @@ from domain.exceptions import (
 )
 from unit.application.use_cases.user.types import EmailVerificationDependencies
 
-publid_id = uuid.uuid4()
+public_id = uuid.uuid4()
 email = 'email@email.com'
 created_at = datetime.now(timezone.utc)
 updated_at = created_at
@@ -50,21 +50,12 @@ without_payload = None
 login_link = 'www.auth.com/login'
 
 
-async def test_email_verified_successfully(email_verification_dependencies):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
+async def test_email_verified_successfully(
+    email_verification_dependencies, unverified_user: User
+):
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=unverified_user.public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -74,7 +65,7 @@ async def test_email_verified_successfully(email_verification_dependencies):
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence,
+        unverified_user,
         code_persistence,
     )
 
@@ -82,47 +73,47 @@ async def test_email_verified_successfully(email_verification_dependencies):
         deps.user_repo, deps.code_repo, deps.uow
     )
 
-    await use_case.execute(email, code, login_link)
+    await use_case.execute(unverified_user.email.value, code, login_link)
 
-    deps.user_repo.get_by_email.assert_called_once_with(email)
+    deps.user_repo.get_by_email.assert_called_once_with(
+        unverified_user.email.value
+    )
     deps.code_repo.get_by_user_id_and_code.assert_called_once_with(
-        publid_id, code
+        unverified_user.public_id, code
     )
     deps.uow.__aenter__.assert_called_once()
     deps.uow.__aexit__.assert_called_once()
 
     deps.uow.user_repo.update.assert_called_once()
-    user_persistence: UserPersistenceDTO = deps.uow.user_repo.update.call_args[
-        0
-    ][0]
-    assert user_persistence.public_id == publid_id
-    assert user_persistence.email == email
-    assert user_persistence.hash_password == hash_password
-    assert user_persistence.created_at == created_at
-    assert user_persistence.email_verified == email_verified
-    assert user_persistence.is_active == is_active
-    assert user_persistence.last_login_at == last_login_at
-    assert user_persistence.updated_at > created_at
+    user: User = deps.uow.user_repo.update.call_args[0][0]
+    assert user.public_id == unverified_user.public_id
+    assert user.email.value == unverified_user.email.value
+    assert user.hash_password.value == unverified_user.hash_password.value
+    assert user.created_at == unverified_user.created_at
+    assert user.email_verified is True
+    assert user.is_active is True
+    assert user.last_login_at == unverified_user.last_login_at
+    assert user.updated_at > unverified_user.created_at
 
     deps.uow.code_repo.update.assert_called_once()
-    code_persistence: VerificationCodePersistenceDTO = (
+    code_args: VerificationCodePersistenceDTO = (
         deps.uow.code_repo.update.call_args[0][0]
     )
-    assert code_persistence.code == code
-    assert code_persistence.user_public_id == publid_id
-    assert code_persistence.payload == without_payload
-    assert code_persistence.created_at == created_at
-    assert code_persistence.expires_at == code_not_expired
-    assert isinstance(code_persistence.used_at, datetime)
-    assert code_persistence.sent_at == code_not_sent
-    assert code_persistence.type == CodeType.EMAIL_VERIFICATION.value
+    assert code_args.code == code_persistence.code
+    assert code_args.user_public_id == code_persistence.user_public_id
+    assert code_args.payload is None
+    assert code_args.created_at == code_persistence.created_at
+    assert code_args.expires_at == code_persistence.expires_at
+    assert isinstance(code_args.used_at, datetime)
+    assert code_args.sent_at is None
+    assert code_args.type == CodeType.EMAIL_VERIFICATION.value
 
     deps.uow.message_repo.create.assert_called_once()
     message: Message = deps.uow.message_repo.create.call_args[0][0]
     assert message.id is not None
     assert message.type == MessageType.SEND_NOTIFICATION_EMAIL_VERIFIED
     payload = message.payload.to_dict()
-    assert payload['to'] == user_persistence.email
+    assert payload['to'] == user.email.value
     assert payload['link'] == login_link
     assert payload['subject'] == 'Email verified successfully'
 
@@ -132,7 +123,7 @@ async def test_verification_fails_when_user_does_not_exist(
 ):
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -164,22 +155,11 @@ async def test_verification_fails_when_user_does_not_exist(
 
 
 async def test_verification_fails_when_user_already_verified(
-    email_verification_dependencies,
+    email_verification_dependencies, verified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_verified,  # set email as verified
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=verified_user.public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -189,7 +169,7 @@ async def test_verification_fails_when_user_already_verified(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence,
+        verified_user,
         code_persistence,
     )
 
@@ -211,22 +191,12 @@ async def test_verification_fails_when_user_already_verified(
 
 
 async def test_verification_fails_when_user_inactive(
-    email_verification_dependencies,
+    email_verification_dependencies, inactive_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_inactive,  # set inactive
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
 
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=inactive_user.public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -236,7 +206,7 @@ async def test_verification_fails_when_user_inactive(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence,
+        inactive_user,
         code_persistence,
     )
 
@@ -289,21 +259,11 @@ async def test_verification_fails_when_get_user_fails(
 
 
 async def test_verification_fails_when_code_does_not_exist(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, None
+        unverified_user, None
     )
 
     use_case = EmailVerificationUseCase(
@@ -324,22 +284,11 @@ async def test_verification_fails_when_code_does_not_exist(
 
 
 async def test_verification_fails_when_code_already_used(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -349,7 +298,7 @@ async def test_verification_fails_when_code_already_used(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(
@@ -370,22 +319,11 @@ async def test_verification_fails_when_code_already_used(
 
 
 async def test_verification_fails_when_code_expired(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_expired,  # set code as expired
@@ -395,7 +333,7 @@ async def test_verification_fails_when_code_expired(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(
@@ -416,22 +354,11 @@ async def test_verification_fails_when_code_expired(
 
 
 async def test_verification_fails_when_code_type_is_invalid(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=incorrect_code_type,  # set code as incorrect tye
         created_at=created_at,
         expires_at=code_not_expired,
@@ -441,7 +368,7 @@ async def test_verification_fails_when_code_type_is_invalid(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(
@@ -462,21 +389,10 @@ async def test_verification_fails_when_code_type_is_invalid(
 
 
 async def test_verification_fails_when_get_code_fails(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence,
+        unverified_user,
         None,
     )
 
@@ -504,22 +420,11 @@ async def test_verification_fails_when_get_code_fails(
 
 
 async def test_verification_fails_when_persist_user_update_fails(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -529,7 +434,7 @@ async def test_verification_fails_when_persist_user_update_fails(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(
@@ -556,22 +461,11 @@ async def test_verification_fails_when_persist_user_update_fails(
 
 
 async def test_verification_fails_when_persist_code_update_fails(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -581,7 +475,7 @@ async def test_verification_fails_when_persist_code_update_fails(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(
@@ -608,22 +502,11 @@ async def test_verification_fails_when_persist_code_update_fails(
 
 
 async def test_verification_fails_when_message_persists_fails(
-    email_verification_dependencies,
+    email_verification_dependencies, unverified_user: User
 ):
-    user_persistence = UserPersistenceDTO(
-        public_id=publid_id,
-        email=email,
-        hash_password=hash_password,
-        email_verified=email_not_verified,
-        is_active=is_active,
-        created_at=created_at,
-        updated_at=updated_at,
-        last_login_at=last_login_at,
-    )
-
     code_persistence = VerificationCodePersistenceDTO(
         code=code,
-        user_public_id=publid_id,
+        user_public_id=public_id,
         type=correct_code_type,
         created_at=created_at,
         expires_at=code_not_expired,
@@ -633,7 +516,7 @@ async def test_verification_fails_when_message_persists_fails(
     )
 
     deps: EmailVerificationDependencies = email_verification_dependencies(
-        user_persistence, code_persistence
+        unverified_user, code_persistence
     )
 
     use_case = EmailVerificationUseCase(

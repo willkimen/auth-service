@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 
-from application.dtos.user_dto import UserPersistenceDTO
 from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
@@ -63,14 +62,10 @@ class SendEmailVerificationCodeUseCase:
             InfrastructureError:
                 - If persistence or registration fails.
         """
-        user_persistence: (
-            UserPersistenceDTO | None
-        ) = await self.user_repo.get_by_email(email)
+        user: User | None = await self.user_repo.get_by_email(email)
 
-        if user_persistence is None:
+        if user is None:
             raise UserNotFoundError()
-
-        user: User = user_persistence.to_entity()
 
         if user.email_verified:
             raise EmailAlreadyVerifiedError()
