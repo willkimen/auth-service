@@ -9,7 +9,7 @@ from application.dto.verification_code_dto import (
 )
 from application.ports.output import (
     HasherPort,
-    MessagePublisherPort,
+    MessageRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
@@ -53,8 +53,8 @@ def send_email_verification_code_dependencies() -> Callable[
         uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
         uow.code_repo.create.return_value = None
 
-        uow.publisher = AsyncMock(spec=MessagePublisherPort)
-        uow.publisher.publish.return_value = None
+        uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
+        uow.message_repo.create.return_value = None
 
         return SendEmailVerificationCodeDependencies(user_repo, uow)
 
@@ -86,8 +86,8 @@ def email_verification_dependencies() -> Callable[
         uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
         uow.code_repo.update.return_value = None
 
-        uow.publisher = AsyncMock(spec=MessagePublisherPort)
-        uow.publisher.publish.return_value = None
+        uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
+        uow.message_repo.create.return_value = None
 
         return EmailVerificationDependencies(user_repo, code_repo, uow)
 

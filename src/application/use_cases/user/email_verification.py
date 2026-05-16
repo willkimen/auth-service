@@ -4,15 +4,13 @@ from application.dto.user_dto import UserPersistenceDTO
 from application.dto.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
-from application.events.email_payload import EmailVerifiedPayload
-from application.events.integration_events import (
-    IntegrationEvent,
-    IntegrationEventType,
-)
 from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
+from application.messages.email_payloads import EmailVerifiedPayload
+from application.messages.message import Message
+from application.messages.message_types import MessageType
 from application.ports.output import (
     UnitOfWorkPort,
     UserRepositoryPort,
@@ -31,12 +29,13 @@ from domain.exceptions import (
 
 
 class EmailVerificationUseCase:
-    """Completes the user email verification process.
+    """
+    Completes the user email verification process.
 
     Retrieves the user and verification code, validates verification
     eligibility, marks the email as verified, marks the verification
-    code as used, and registers an integration event to notify the
-    user about successful email verification.
+    code as used, and registers an asynchronous message to notify
+    the user about successful email verification.
     """
 
     def __init__(
@@ -50,7 +49,9 @@ class EmailVerificationUseCase:
         self.uow = uow
 
     async def execute(self, email: str, code: str, login_link: str):
-        """Verifies a user's email using a verification code.
+        """
+        Verifies a user's email using a verification code and
+        registers an asynchronous notification message.
 
         Args:
             email (str):
@@ -77,7 +78,7 @@ class EmailVerificationUseCase:
             VerificationCodeTypeError:
                 If verification code type is incorrect.
             InfrastructureError:
-                If persistence or event registration fails.
+                If persistence or registration fails.
         """
         user_persitence: (
             UserPersistenceDTO | None
@@ -123,9 +124,9 @@ class EmailVerificationUseCase:
             link=login_link,
         )
 
-        event = IntegrationEvent(
-            type=IntegrationEventType.SEND_NOTIFICATION_EMAIL_VERIFIED,
-            data=payload,
+        message = Message(
+            type=MessageType.SEND_NOTIFICATION_EMAIL_VERIFIED,
+            payload=payload,
         )
 
         async with self.uow:
@@ -135,4 +136,4 @@ class EmailVerificationUseCase:
             await self.uow.code_repo.update(
                 VerificationCodePersistenceDTO.from_entity(verification_code)
             )
-            await self.uow.publisher.publish(event)
+            await self.uow.message_repo.create(message)

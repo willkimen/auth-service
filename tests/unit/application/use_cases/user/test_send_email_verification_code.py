@@ -4,12 +4,12 @@ from datetime import datetime, timezone
 import pytest
 
 from application.dto.user_dto import UserPersistenceDTO
-from application.events.integration_events import IntegrationEventType
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
 )
+from application.messages.message_types import MessageType
 from application.use_cases.user.send_email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
@@ -75,18 +75,15 @@ async def test_initialize_email_verification_process_successfully(
 
     assert saved_code_dto.type is CodeType.EMAIL_VERIFICATION.value
 
-    # Assert that .publish() was called with the correct expected arguments.
-    deps.uow.publisher.publish.assert_called()
-    published_event = deps.uow.publisher.publish.call_args[0][0]
-    assert (
-        published_event.type
-        == IntegrationEventType.SEND_EMAIL_VERIFICATION_CODE.value
-    )
-    assert published_event.data.to == 'email@email.com'
-    assert published_event.data.link == 'www.test.com/send-code'
-    assert published_event.data.expiration == '15'
-    assert published_event.data.deadline == '7'
-    assert published_event.data.code == saved_code_dto.code
+    # Assert that .create() was called with the correct expected arguments.
+    deps.uow.message_repo.create.assert_called()
+    message = deps.uow.message_repo.create.call_args[0][0]
+    assert message.type == (MessageType.SEND_EMAIL_VERIFICATION_CODE.value)
+    assert message.payload.to == 'email@email.com'
+    assert message.payload.link == 'www.test.com/send-code'
+    assert message.payload.expiration == '15'
+    assert message.payload.deadline == '7'
+    assert message.payload.code == saved_code_dto.code
 
 
 async def test_verification_process_not_initialize_when_user_not_found(
@@ -113,7 +110,7 @@ async def test_verification_process_not_initialize_when_user_not_found(
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
     deps.uow.code_repo.create.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_user_already_verified(
@@ -152,7 +149,7 @@ async def test_verification_process_not_initialize_when_user_already_verified(
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
     deps.uow.code_repo.create.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_user_is_inactive(
@@ -191,7 +188,7 @@ async def test_verification_process_not_initialize_when_user_is_inactive(
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
     deps.uow.code_repo.create.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_persists_code_fails(
@@ -235,10 +232,10 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
     deps.uow.__aenter__.assert_called()
     deps.uow.__aexit__.assert_called()
     deps.uow.code_repo.create.assert_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
-async def test_verification_process_not_initialize_when_event_publish_fails(
+async def test_verification_process_not_initialize_when_message_persits_fails(
     send_email_verification_code_dependencies,
 ):
     # arrange
@@ -257,7 +254,7 @@ async def test_verification_process_not_initialize_when_event_publish_fails(
         send_email_verification_code_dependencies(user_persistence)
     )
 
-    deps.uow.publisher.publish.side_effect = InfrastructureError(
+    deps.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
@@ -279,4 +276,4 @@ async def test_verification_process_not_initialize_when_event_publish_fails(
     deps.uow.__aenter__.assert_called()
     deps.uow.__aexit__.assert_called()
     deps.uow.code_repo.create.assert_called()
-    deps.uow.publisher.publish.assert_called()
+    deps.uow.message_repo.create.assert_called()

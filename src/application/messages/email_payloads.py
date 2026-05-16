@@ -1,22 +1,4 @@
 from dataclasses import asdict, dataclass, field
-from typing import Protocol
-
-
-class EmailPayload(Protocol):
-    """Defines the contract for email payload objects.
-
-    Used as payload data for integration events related to
-    email sending.
-    """
-
-    def to_dict(self) -> dict:
-        """Converts payload into serializable dictionary.
-
-        Returns:
-            dict: Serialized payload data.
-        """
-        ...
-
 
 # --- ACCOUNT VERIFICATION ---
 
@@ -46,7 +28,7 @@ class EmailVerificationPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes the payload to a dictionary for integration events.
+        Serializes the payload to a dictionary.
 
         This method applies formatting to time-based fields:
         - 'deadline': Appends ' days' to the numeric string for
@@ -111,7 +93,7 @@ class ChangeEmailPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes the payload to a dictionary for integration events.
+        Serializes the payload to a dictionary.
 
         The 'expiration' field is transformed from a numeric string
         to a user-friendly format by appending ' minutes'.
@@ -195,7 +177,7 @@ class PasswordChangedPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes the payload into a dictionary for the email event.
+        Serializes the payload into a dictionary.
         """
         return asdict(self)
 
@@ -249,7 +231,7 @@ class PasswordResetPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes the payload into a dictionary for the email event.
+        Serializes the payload into a dictionary.
         """
         return asdict(self)
 
@@ -298,6 +280,6 @@ class AccountDeletedPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes the payload into a dictionary for the email event.
+        Serializes the payload into a dictionary.
         """
         return asdict(self)

@@ -7,16 +7,14 @@ from application.dto.user_dto import UserPersistenceDTO
 from application.dto.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
-from application.events.integration_events import (
-    IntegrationEvent,
-    IntegrationEventType,
-)
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
+from application.messages.message import Message
+from application.messages.message_types import MessageType
 from application.use_cases.user.email_verification import (
     EmailVerificationUseCase,
 )
@@ -119,11 +117,11 @@ async def test_email_verified_successfully(email_verification_dependencies):
     assert code_persistence.sent_at == code_not_sent
     assert code_persistence.type == CodeType.EMAIL_VERIFICATION.value
 
-    deps.uow.publisher.publish.assert_called_once()
-    event: IntegrationEvent = deps.uow.publisher.publish.call_args[0][0]
-    assert event.id is not None
-    assert event.type == IntegrationEventType.SEND_NOTIFICATION_EMAIL_VERIFIED
-    payload = event.data.to_dict()
+    deps.uow.message_repo.create.assert_called_once()
+    message: Message = deps.uow.message_repo.create.call_args[0][0]
+    assert message.id is not None
+    assert message.type == MessageType.SEND_NOTIFICATION_EMAIL_VERIFIED
+    payload = message.payload.to_dict()
     assert payload['to'] == user_persistence.email
     assert payload['link'] == login_link
     assert payload['subject'] == 'Email verified successfully'
@@ -160,7 +158,7 @@ async def test_verification_fails_when_user_does_not_exist(
     deps.code_repo.get_by_user_id_and_code.assert_not_called()
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -207,7 +205,7 @@ async def test_verification_fails_when_user_already_verified(
     deps.code_repo.get_by_user_id_and_code.assert_not_called()
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -254,7 +252,7 @@ async def test_verification_fails_when_user_inactive(
     deps.code_repo.get_by_user_id_and_code.assert_not_called()
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -285,7 +283,7 @@ async def test_verification_fails_when_get_user_fails(
     deps.code_repo.get_by_user_id_and_code.assert_not_called()
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -320,7 +318,7 @@ async def test_verification_fails_when_code_does_not_exist(
 
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -366,7 +364,7 @@ async def test_verification_fails_when_code_already_used(
 
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -412,7 +410,7 @@ async def test_verification_fails_when_code_expired(
 
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -460,7 +458,7 @@ async def test_verification_fails_when_code_type_is_invalid(
     deps.uow.__aexit__.assert_not_called()
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_fails_when_get_code_fails(
@@ -500,7 +498,7 @@ async def test_verification_fails_when_get_code_fails(
 
     deps.uow.user_repo.update.assert_not_called()
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
     deps.uow.__aenter__.assert_not_called()
     deps.uow.__aexit__.assert_not_called()
 
@@ -554,7 +552,7 @@ async def test_verification_fails_when_persist_user_update_fails(
     deps.uow.__aenter__.assert_called_once()
 
     deps.uow.code_repo.update.assert_not_called()
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_fails_when_persist_code_update_fails(
@@ -606,10 +604,10 @@ async def test_verification_fails_when_persist_code_update_fails(
     deps.uow.__aexit__.assert_called_once()
     deps.uow.__aenter__.assert_called_once()
 
-    deps.uow.publisher.publish.assert_not_called()
+    deps.uow.message_repo.create.assert_not_called()
 
 
-async def test_verification_fails_when_event_publish_fails(
+async def test_verification_fails_when_message_persists_fails(
     email_verification_dependencies,
 ):
     user_persistence = UserPersistenceDTO(
@@ -642,8 +640,8 @@ async def test_verification_fails_when_event_publish_fails(
         deps.user_repo, deps.code_repo, deps.uow
     )
 
-    deps.uow.publisher.publish.side_effect = InfrastructureError(
-        'Error attempting to publish event',
+    deps.uow.message_repo.create.side_effect = InfrastructureError(
+        'Error attempting to persist message',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
@@ -655,6 +653,6 @@ async def test_verification_fails_when_event_publish_fails(
     deps.code_repo.get_by_user_id_and_code.assert_called_once()
     deps.uow.user_repo.update.assert_called_once()
     deps.uow.code_repo.update.assert_called_once()
-    deps.uow.publisher.publish.assert_called_once()
+    deps.uow.message_repo.create.assert_called_once()
     deps.uow.__aexit__.assert_called_once()
     deps.uow.__aenter__.assert_called_once()

@@ -10,13 +10,13 @@ from application.dto.user_dto import UserPersistenceDTO
 from application.dto.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
-from application.events.integration_events import IntegrationEvent
+from application.messages.message import Message
 
 
 class UserRepositoryPort(Protocol):
     """Defines persistence operations for User entities."""
 
-    async def create(self, user_record: UserPersistenceDTO):
+    async def create(self, user_record: UserPersistenceDTO) -> None:
         """Persists a new user record.
 
         Raises:
@@ -25,7 +25,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def update(self, user_record: UserPersistenceDTO):
+    async def update(self, user_record: UserPersistenceDTO) -> None:
         """Updates an existing user record.
 
         Raises:
@@ -34,7 +34,7 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def delete(self, public_id: uuid.UUID):
+    async def delete(self, public_id: uuid.UUID) -> None:
         """Deletes a user by public identifier.
 
         Raises:
@@ -94,7 +94,9 @@ class UserRepositoryPort(Protocol):
 class VerificationCodeRepositoryPort(Protocol):
     """Defines persistence operations for verification codes."""
 
-    async def create(self, code_record: VerificationCodePersistenceDTO):
+    async def create(
+        self, code_record: VerificationCodePersistenceDTO
+    ) -> None:
         """Persists a verification code.
 
         Raises:
@@ -103,7 +105,9 @@ class VerificationCodeRepositoryPort(Protocol):
         """
         ...
 
-    async def update(self, code_record: VerificationCodePersistenceDTO):
+    async def update(
+        self, code_record: VerificationCodePersistenceDTO
+    ) -> None:
         """Updates a verification code record.
 
         Raises:
@@ -138,7 +142,7 @@ class TokenRepositoryPort(Protocol):
 
     async def save_refresh(
         self, sub: uuid.UUID, jti: str, expires_at: datetime
-    ):
+    ) -> None:
         """Stores a refresh token.
 
         Raises:
@@ -148,7 +152,7 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
-    async def revoke_all_refreshes(self, sub: uuid.UUID):
+    async def revoke_all_refreshes(self, sub: uuid.UUID) -> None:
         """Revokes all refresh tokens for a subject.
 
         Raises:
@@ -172,6 +176,30 @@ class TokenRepositoryPort(Protocol):
         Raises:
             InfrastructureError:
                 If query fails.
+        """
+        ...
+
+
+class MessageRepositoryPort(Protocol):
+    """
+    Defines persistence operations for messages.
+
+    A persisted message represents an intention to execute
+    a specific operation later.
+
+    Messages store all data required for future processing,
+    allowing dedicated components or workers to execute
+    the intended operation afterwards.
+    """
+
+    async def create(self, message: Message) -> None:
+        """
+        Persists a message containing the data required
+        for later processing.
+
+        Raises:
+            InfrastructureError:
+                Raised when message persistence fails.
         """
         ...
 
@@ -201,28 +229,12 @@ class HasherPort(Protocol):
         ...
 
 
-class MessagePublisherPort(Protocol):
-    """Defines integration event publishing operations."""
-
-    async def publish(self, integration_event: IntegrationEvent) -> None:
-        """Registers an integration event for asynchronous delivery.
-
-        The event will be processed and delivered to external systems
-        outside the current transaction boundary.
-
-        Raises:
-            InfrastructureError:
-                If event persistence or dispatch scheduling fails.
-        """
-        ...
-
-
 class UnitOfWorkPort(Protocol):
     """Defines transactional boundaries for application operations."""
 
     user_repo: UserRepositoryPort
     code_repo: VerificationCodeRepositoryPort
-    publisher: MessagePublisherPort
+    message_repo: MessageRepositoryPort
     token_repo: TokenRepositoryPort
 
     async def __aenter__(self) -> 'UnitOfWorkPort':
@@ -234,7 +246,7 @@ class UnitOfWorkPort(Protocol):
         """
         ...
 
-    async def __aexit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self, exc_type, exc_value, traceback) -> bool | None:
         """Ends a transaction, committing or rolling back.
 
         Raises:

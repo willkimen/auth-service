@@ -4,12 +4,10 @@ from application.dto.user_dto import UserPersistenceDTO
 from application.dto.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
-from application.events.email_payload import EmailVerificationPayload
-from application.events.integration_events import (
-    IntegrationEvent,
-    IntegrationEventType,
-)
 from application.exceptions import UserNotFoundError
+from application.messages.email_payloads import EmailVerificationPayload
+from application.messages.message import Message
+from application.messages.message_types import MessageType
 from application.ports.output import UnitOfWorkPort, UserRepositoryPort
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -21,17 +19,12 @@ from domain.value_objects.code import Code
 
 
 class SendEmailVerificationCodeUseCase:
-    """Starts the email verification process for a user account.
+    """
+    Starts the email verification process for a user account.
 
     Retrieves the target user, validates account eligibility for
     email verification, generates a verification code, persists it,
-    and registers an integration event for email delivery.
-
-    The generated verification email contains:
-        - a verification code
-        - a link to the verification screen
-        - an expiration time for the code
-        - a deadline for email verification
+    and registers an asynchronous message for email delivery.
     """
 
     def __init__(self, user_repo: UserRepositoryPort, uow: UnitOfWorkPort):
@@ -45,7 +38,7 @@ class SendEmailVerificationCodeUseCase:
         link: str,
         deadline: int,
     ):
-        """Generates and sends an email verification code.
+        """Generates and registers an email verification message.
 
         Args:
             email (str):
@@ -68,7 +61,7 @@ class SendEmailVerificationCodeUseCase:
             InactiveUserError:
                 - If user account is inactive.
             InfrastructureError:
-                - If persistence or event registration fails.
+                - If persistence or registration fails.
         """
         user_persistence: (
             UserPersistenceDTO | None
@@ -109,13 +102,13 @@ class SendEmailVerificationCodeUseCase:
             deadline=str(deadline),
         )
 
-        event = IntegrationEvent(
-            type=IntegrationEventType.SEND_EMAIL_VERIFICATION_CODE,
-            data=payload,
+        message = Message(
+            type=MessageType.SEND_EMAIL_VERIFICATION_CODE,
+            payload=payload,
         )
 
-        # The verification code is persisted, and the event that
-        # this code was sent is published in an atomic transaction.
+        # The verification code and message are persisted,
+        # in an atomic transaction.
         async with self.uow:
             await self.uow.code_repo.create(code_persistence)
-            await self.uow.publisher.publish(event)
+            await self.uow.message_repo.create(message)
