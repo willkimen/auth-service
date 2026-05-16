@@ -137,10 +137,7 @@ class TokenRepositoryPort(Protocol):
     """Defines persistence operations for tokens."""
 
     async def save_refresh(
-            self,
-            sub: uuid.UUID,
-            jti: str,
-            expires_at: datetime
+        self, sub: uuid.UUID, jti: str, expires_at: datetime
     ):
         """Stores a refresh token.
 
