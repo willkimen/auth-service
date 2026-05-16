@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dto.user_dto import UserPersistenceDTO
-from application.dto.verification_code_dto import (
+from application.dtos.user_dto import UserPersistenceDTO
+from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
 from application.ports.output import (

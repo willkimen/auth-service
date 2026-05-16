@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Protocol
 
-from application.dto.token_dto import (
+from application.dtos.token_dto import (
     PairTokensDTO,
     PayloadTokenDTO,
 )
-from application.dto.user_dto import UserPersistenceDTO
-from application.dto.verification_code_dto import (
+from application.dtos.user_dto import UserPersistenceDTO
+from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
 from application.messages.message import Message

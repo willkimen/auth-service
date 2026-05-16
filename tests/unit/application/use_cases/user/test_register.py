@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from application.dto.user_dto import UserPublicDTO
+from application.dtos.user_dto import UserPublicDTO
 from application.exceptions import (
     EmailAlreadyUsedError,
     InfrastructureError,

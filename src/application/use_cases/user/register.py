@@ -1,4 +1,4 @@
-from application.dto.user_dto import UserPersistenceDTO, UserPublicDTO
+from application.dtos.user_dto import UserPersistenceDTO, UserPublicDTO
 from application.exceptions import EmailAlreadyUsedError
 from application.ports.output import HasherPort, UserRepositoryPort
 from domain.entities.user import User

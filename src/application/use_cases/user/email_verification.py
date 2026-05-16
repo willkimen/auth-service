@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from application.dto.user_dto import UserPersistenceDTO
-from application.dto.verification_code_dto import (
+from application.dtos.user_dto import UserPersistenceDTO
+from application.dtos.verification_code_dto import (
     VerificationCodePersistenceDTO,
 )
 from application.exceptions import (

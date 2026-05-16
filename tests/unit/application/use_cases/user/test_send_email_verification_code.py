@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from application.dto.user_dto import UserPersistenceDTO
+from application.dtos.user_dto import UserPersistenceDTO
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
