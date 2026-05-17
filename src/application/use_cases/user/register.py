@@ -21,6 +21,7 @@ class RegisterUserUseCase:
         user_repo (UserRepositoryPort):
             - Port/Interface responsible for user data persistence operations.
     """
+
     def __init__(self, hasher: HasherPort, user_repo: UserRepositoryPort):
         self.hasher = hasher
         self.user_repo = user_repo

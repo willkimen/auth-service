@@ -43,9 +43,11 @@ async def test_email_verified_successfully(
     unverified_user: User,
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, unused_code)
-
+    """
+    Test if the email verification flow is correctly executed.
+    The code must be unused, and the user must not be verified yet.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -103,9 +105,7 @@ async def test_email_verified_successfully(
 async def test_verification_fails_when_user_does_not_exist(
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(None, unused_code)
-
+    mocks: DependeciesMocked = mocks_factory(None, unused_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -130,9 +130,7 @@ async def test_verification_fails_when_user_already_verified(
     verified_user: User,
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(verified_user, unused_code)
-
+    mocks: DependeciesMocked = mocks_factory(verified_user, unused_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -157,9 +155,7 @@ async def test_verification_fails_when_user_inactive(
     inactive_user: User,
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(inactive_user, unused_code)
-
+    mocks: DependeciesMocked = mocks_factory(inactive_user, unused_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -183,15 +179,16 @@ async def test_verification_fails_when_user_inactive(
 async def test_verification_fails_when_get_user_fails(
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(None, unused_code)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to return a user from the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(None, unused_code)
     mocks.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -215,13 +212,15 @@ async def test_verification_fails_when_get_user_fails(
 async def test_verification_fails_when_user_state_is_corrupted(
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(None, unused_code)
-
+    """
+    The returned user instance may raise a domain error when built in
+    the repository layer. Test if this error propagates to the use
+    case, aborting the verification flow.
+    """
+    mocks: DependeciesMocked = mocks_factory(None, unused_code)
     mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
         DomainError('some domain error')
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -245,9 +244,7 @@ async def test_verification_fails_when_user_state_is_corrupted(
 async def test_verification_fails_when_code_does_not_exist(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, None)
-
+    mocks: DependeciesMocked = mocks_factory(unverified_user, None)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -272,9 +269,7 @@ async def test_verification_fails_when_code_already_used(
     unverified_user: User,
     used_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, used_code)
-
+    mocks: DependeciesMocked = mocks_factory(unverified_user, used_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -299,9 +294,7 @@ async def test_verification_fails_when_code_expired(
     unverified_user: User,
     expired_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, expired_code)
-
+    mocks: DependeciesMocked = mocks_factory(unverified_user, expired_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -325,10 +318,11 @@ async def test_verification_fails_when_code_expired(
 async def test_verification_fails_when_code_type_is_invalid(
     unverified_user: User, create_verification_code
 ):
-    # arrange
     code_incorrect_type = create_verification_code(CodeType.CHANGE_PASSWORD)
-    mocks = mocks_factory(unverified_user, code_incorrect_type)
-
+    mocks: DependeciesMocked = mocks_factory(
+        unverified_user,
+        code_incorrect_type,
+    )
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -350,15 +344,16 @@ async def test_verification_fails_when_code_type_is_invalid(
 
 
 async def test_verification_fails_when_get_code_fails(unverified_user: User):
-    # arrange
-    mocks = mocks_factory(unverified_user, None)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to return a verification code from the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, None)
     mocks.code_repo.get_by_user_id_and_code.side_effect = InfrastructureError(
         'Error attempting to get code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -382,13 +377,15 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
 async def test_verification_fails_when_veritication_code_state_is_corrupted(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, None)
-
+    """
+    The returned verification code instance may raise a domain error
+    when built in the repository layer. Test if this error propagates
+    to the use case, aborting the verification flow.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, None)
     mocks.code_repo.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -413,13 +410,14 @@ async def test_verification_fails_when_persist_user_update_fails(
     unverified_user: User,
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, unused_code)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to persist an user in the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
-
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user',
         InfrastructureErrorCode.DATABASE,
@@ -446,15 +444,16 @@ async def test_verification_fails_when_persist_code_update_fails(
     unverified_user: User,
     unused_code: VerificationCode,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user, unused_code)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to persist a verification code in the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     mocks.uow.code_repo.update.side_effect = InfrastructureError(
         'Error attempting to update code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -479,14 +478,16 @@ async def test_verification_fails_when_message_persists_fails(
     unverified_user: User,
     unused_code: VerificationCode,
 ):
-    mocks = mocks_factory(unverified_user, unused_code)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to persist a message in the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = EmailVerificationUseCase(
         mocks.user_repo, mocks.code_repo, mocks.uow
     )
@@ -507,6 +508,11 @@ async def test_verification_fails_when_message_persists_fails(
 
 @dataclass(frozen=True)
 class DependeciesMocked:
+    """
+    Data structure containing the mocked dependencies for the email
+    verification confirmation flow.
+    """
+
     user_repo: AsyncMock
     code_repo: AsyncMock
     uow: AsyncMock
@@ -516,6 +522,12 @@ def mocks_factory(
     user: User | None,
     verification_code: VerificationCode | None,
 ) -> DependeciesMocked:
+    """
+    Return the mocked dependencies of the use case.
+
+    Creates and configures mock instances for repositories and the
+    unit of work, allowing simulation of user and code states.
+    """
     user_repo = AsyncMock(spec=UserRepositoryPort)
     user_repo.get_by_email.return_value = user
 

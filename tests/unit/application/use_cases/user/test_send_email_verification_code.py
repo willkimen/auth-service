@@ -37,9 +37,20 @@ deadline = 7
 async def test_initialize_email_verification_process_successfully(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user)
+    """
+    Test if the complete flow initializing email verification runs
+    successfully.
 
+    Success is verified by checking if key methods are called with
+    the correct arguments.
+
+    args:
+        unverified_user (User): A user with an unverified state.
+                        It must be unverified because it will be
+                        used in mocks.
+
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user)
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act
@@ -58,6 +69,8 @@ async def test_initialize_email_verification_process_successfully(
 
     # Assert that code_repo.create()
     # was called with the correct expected arguments.
+    # The expected argument is a VerificationCode instance, which must
+    # contain the following state:
     code_arg: VerificationCode = mocks.uow.code_repo.create.call_args[0][0]
     assert code_arg.user_public_id == unverified_user.public_id
     assert code_arg.used_at is None
@@ -75,6 +88,8 @@ async def test_initialize_email_verification_process_successfully(
 
     # Assert that message_repo.create()
     # was called with the correct expected arguments.
+    # The expected argument is a Message instance, which must
+    # contain the following state:
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.type == MessageType.SEND_EMAIL_VERIFICATION_CODE
     payload: dict = message_arg.payload.to_dict()
@@ -86,10 +101,12 @@ async def test_initialize_email_verification_process_successfully(
     assert payload['subject'] == 'Verify your email'
 
 
-async def test_verification_process_not_initialize_when_user_not_found():
-    # arrange
-    mocks = mocks_factory(None)
-
+async def test_user_must_exist():
+    """
+    The initial verification process is aborted if the user does
+    not exist.
+    """
+    mocks: DependeciesMocked = mocks_factory(None)
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -106,12 +123,14 @@ async def test_verification_process_not_initialize_when_user_not_found():
     mocks.uow.message_repo.create.assert_not_called()
 
 
-async def test_verification_process_not_initialize_when_user_already_verified(
+async def test_already_verified_user_cannot_perform_verification_again(
     verified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(verified_user)
-
+    """
+    The initial verification process is aborted if the user is
+    already verified.
+    """
+    mocks: DependeciesMocked = mocks_factory(verified_user)
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -128,12 +147,14 @@ async def test_verification_process_not_initialize_when_user_already_verified(
     mocks.uow.message_repo.create.assert_not_called()
 
 
-async def test_verification_process_not_initialize_when_user_is_inactive(
+async def test_inactive_users_cannot_initiate_verification_process(
     inactive_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(inactive_user)
-
+    """
+    The initial verification process is aborted if the user is
+    inactive. Only active users can verify their email.
+    """
+    mocks: DependeciesMocked = mocks_factory(inactive_user)
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -153,15 +174,16 @@ async def test_verification_process_not_initialize_when_user_is_inactive(
 async def test_verification_process_not_initialize_when_get_user_fails(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to fetch a user from the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -181,13 +203,15 @@ async def test_verification_process_not_initialize_when_get_user_fails(
 async def test_verification_process_not_initialize_when_user_state_corrupted(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user)
-
+    """
+    The returned user instance may raise a domain error when built in
+    the repository layer. Test if this error propagates to the use
+    case, aborting the verification flow.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
         DomainError('some domain error')
     )
-
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -207,15 +231,16 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
 async def test_verification_process_not_initialize_when_persists_code_fails(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to persist a verification code in the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
@@ -235,15 +260,16 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
 async def test_verification_process_not_initialize_when_message_persits_fails(
     unverified_user: User,
 ):
-    # arrange
-    mocks = mocks_factory(unverified_user)
-
+    """
+    Test if an exception is raised when an unexpected error occurs
+    while trying to persist a message in the repository.
+    """
+    mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-
     use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and arrange
@@ -260,12 +286,25 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
 
 @dataclass(frozen=True)
 class DependeciesMocked:
+    """
+    Data structure containing the mocked dependencies for the email
+    verification use case.
+    """
+
     user_repo: AsyncMock
     uow: AsyncMock
 
 
 def mocks_factory(user: User | None) -> DependeciesMocked:
+    """
+    Return the mocked dependencies of the use case.
+
+    Creates and configures mock instances for the user repository
+    and unit of work, including nested repositories.
+    """
     user_repo = AsyncMock(spec=UserRepositoryPort)
+    # Simulate the return of a user instance used internally by the
+    # use case, which plays a major role since its state changes the flow.
     user_repo.get_by_email.return_value = user
 
     uow = AsyncMock(spec=UnitOfWorkPort)
