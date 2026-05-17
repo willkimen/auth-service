@@ -14,8 +14,13 @@ class RegisterUserUseCase:
 
     This use case validates user credentials, ensures email uniqueness,
     hashes the password, persists the user, and returns a public-safe DTO.
-    """
 
+    Attributes:
+        hasher (HasherPort):
+            - Port/Interface responsible for hashing raw passwords securely.
+        user_repo (UserRepositoryPort):
+            - Port/Interface responsible for user data persistence operations.
+    """
     def __init__(self, hasher: HasherPort, user_repo: UserRepositoryPort):
         self.hasher = hasher
         self.user_repo = user_repo

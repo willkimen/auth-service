@@ -32,6 +32,15 @@ class EmailVerificationUseCase:
     eligibility, marks the email as verified, marks the verification
     code as used, and persists a message to notify
     the user about successful email verification.
+
+    Attributes:
+        user_repo (UserRepositoryPort):
+            - Port/Interface responsible for user data operations.
+        code_repo (VerificationCodeRepositoryPort):
+            - Port/Interface responsible for verification code operations.
+        uow (UnitOfWorkPort):
+            - Port/Interface responsible for managing atomic database
+              transactions across repositories.
     """
 
     def __init__(

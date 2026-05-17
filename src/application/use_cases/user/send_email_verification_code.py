@@ -21,6 +21,13 @@ class SendEmailVerificationCodeUseCase:
     Retrieves the target user, validates account eligibility for
     email verification, generates a verification code, persists it,
     and persists a message.
+
+    Attributes:
+        user_repo (UserRepositoryPort):
+            - Port/Interface responsible for user data retrieval operations.
+        uow (UnitOfWorkPort):
+            - Port/Interface responsible for managing atomic database
+              transactions across repositories.
     """
 
     def __init__(self, user_repo: UserRepositoryPort, uow: UnitOfWorkPort):
