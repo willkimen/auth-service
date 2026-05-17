@@ -117,6 +117,10 @@ class VerificationCode:
         return self._used_at
 
     @property
+    def sent_at(self) -> datetime | None:
+        return self._sent_at
+
+    @property
     def payload(self) -> dict | None:
         return copy.copy(self._payload)
 
