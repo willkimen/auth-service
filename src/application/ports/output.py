@@ -6,11 +6,9 @@ from application.dtos.token_dto import (
     PairTokensDTO,
     PayloadTokenDTO,
 )
-from application.dtos.verification_code_dto import (
-    VerificationCodePersistenceDTO,
-)
 from application.messages.message import Message
 from domain.entities.user import User
+from domain.entities.verification_code import VerificationCode
 
 
 class UserRepositoryPort(Protocol):
@@ -92,9 +90,7 @@ class UserRepositoryPort(Protocol):
 class VerificationCodeRepositoryPort(Protocol):
     """Defines persistence operations for verification codes."""
 
-    async def create(
-        self, code_record: VerificationCodePersistenceDTO
-    ) -> None:
+    async def create(self, verification_code: VerificationCode) -> None:
         """Persists a verification code.
 
         Raises:
@@ -103,9 +99,7 @@ class VerificationCodeRepositoryPort(Protocol):
         """
         ...
 
-    async def update(
-        self, code_record: VerificationCodePersistenceDTO
-    ) -> None:
+    async def update(self, verification_code: VerificationCode) -> None:
         """Updates a verification code record.
 
         Raises:
@@ -115,8 +109,10 @@ class VerificationCodeRepositoryPort(Protocol):
         ...
 
     async def get_by_user_id_and_code(
-        self, user_public_id: uuid.UUID, code: str
-    ) -> VerificationCodePersistenceDTO | None:
+        self,
+        user_public_id: uuid.UUID,
+        code: str,
+    ) -> VerificationCode | None:
         """Retrieves a verification code by user and code value.
 
         Raises:
@@ -139,7 +135,10 @@ class TokenRepositoryPort(Protocol):
     """Defines persistence operations for tokens."""
 
     async def save_refresh(
-        self, sub: uuid.UUID, jti: str, expires_at: datetime
+        self,
+        sub: uuid.UUID,
+        jti: str,
+        expires_at: datetime,
     ) -> None:
         """Stores a refresh token.
 
@@ -215,7 +214,9 @@ class HasherPort(Protocol):
         ...
 
     def verify_password(
-        self, plain_password: str, hashed_password: str
+        self,
+        plain_password: str,
+        hashed_password: str,
     ) -> bool:
         """Verifies if a plain password matches a hashed password.
 

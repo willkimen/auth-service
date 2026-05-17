@@ -1,8 +1,5 @@
 from datetime import datetime, timezone
 
-from application.dtos.verification_code_dto import (
-    VerificationCodePersistenceDTO,
-)
 from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
@@ -90,17 +87,15 @@ class EmailVerificationUseCase:
         if user.is_active is False:
             raise InactiveUserError()
 
-        code_persistence: (
-            VerificationCodePersistenceDTO | None
+        verification_code: (
+            VerificationCode | None
         ) = await self.code_repo.get_by_user_id_and_code(
             user.public_id,
             code,
         )
 
-        if code_persistence is None:
+        if verification_code is None:
             raise VerificationCodeNotFoundError()
-
-        verification_code: VerificationCode = code_persistence.to_entity()
 
         if verification_code.is_used():
             raise VerificationCodeAlreadyUsedError()
@@ -123,7 +118,5 @@ class EmailVerificationUseCase:
 
         async with self.uow:
             await self.uow.user_repo.update(user)
-            await self.uow.code_repo.update(
-                VerificationCodePersistenceDTO.from_entity(verification_code)
-            )
+            await self.uow.code_repo.update(verification_code)
             await self.uow.message_repo.create(message)

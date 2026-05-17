@@ -8,6 +8,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     UserNotFoundError,
 )
+from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
@@ -19,6 +20,7 @@ from application.use_cases.user.send_email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
 from domain.entities.user import User
+from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
 from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
 
@@ -44,37 +46,39 @@ async def test_initialize_email_verification_process_successfully(
     mocks.user_repo.get_by_email.assert_called_once_with(
         unverified_user.email.value
     )
+    mocks.uow.code_repo.create.assert_called_once()
+    mocks.uow.message_repo.create.assert_called()
     mocks.uow.__aenter__.assert_called()
     mocks.uow.__aexit__.assert_called()
 
     # Assert that code_repo.create()
     # was called with the correct expected arguments.
-    mocks.uow.code_repo.create.assert_called_once()
-    code_arg = mocks.uow.code_repo.create.call_args[0][0]
+    code_arg: VerificationCode = mocks.uow.code_repo.create.call_args[0][0]
     assert code_arg.user_public_id == unverified_user.public_id
     assert code_arg.used_at is None
     assert code_arg.sent_at is None
 
-    code_value = code_arg.code
-    assert isinstance(code_value, str)
+    code = code_arg.code
+    assert isinstance(code.value, str)
     number_digits = 6
-    assert len(code_value) == number_digits
-    assert code_value.isdigit()
+    assert len(code.value) == number_digits
+    assert code.value.isdigit()
 
     assert code_arg.expires_at > code_arg.created_at
     assert code_arg.payload is None
-    assert code_arg.type is CodeType.EMAIL_VERIFICATION.value
+    assert code_arg.type is CodeType.EMAIL_VERIFICATION
 
     # Assert that message_repo.create()
     # was called with the correct expected arguments.
-    mocks.uow.message_repo.create.assert_called()
-    message_arg = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.SEND_EMAIL_VERIFICATION_CODE.value
-    assert message_arg.payload.to == unverified_user.email.value
-    assert message_arg.payload.link == str(link)
-    assert message_arg.payload.expiration == str(code_expiration_time)
-    assert message_arg.payload.deadline == str(deadline)
-    assert message_arg.payload.code == code_arg.code
+    message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
+    assert message_arg.type == MessageType.SEND_EMAIL_VERIFICATION_CODE
+    payload: dict = message_arg.payload.to_dict()
+    assert payload['to'] == unverified_user.email.value
+    assert payload['link'] == str(link)
+    assert payload['expiration'] == f'{code_expiration_time} minutes'
+    assert payload['deadline'] == f'{deadline} days'
+    assert payload['code'] == code_arg.code.value
+    assert payload['subject'] == 'Verify your email'
 
 
 async def test_verification_process_not_initialize_when_user_not_found():

@@ -1,8 +1,5 @@
 from datetime import datetime, timedelta, timezone
 
-from application.dtos.verification_code_dto import (
-    VerificationCodePersistenceDTO,
-)
 from application.exceptions import UserNotFoundError
 from application.messages.email_payloads import EmailVerificationPayload
 from application.messages.message import Message
@@ -85,10 +82,6 @@ class SendEmailVerificationCodeUseCase:
             sent_at=None,
         )
 
-        code_persistence: VerificationCodePersistenceDTO = (
-            VerificationCodePersistenceDTO.from_entity(verification_code)
-        )
-
         payload = EmailVerificationPayload(
             to=user.email.value,
             code=verification_code.code.value,
@@ -105,5 +98,5 @@ class SendEmailVerificationCodeUseCase:
         # The verification code and message are persisted,
         # in an atomic transaction.
         async with self.uow:
-            await self.uow.code_repo.create(code_persistence)
+            await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)
