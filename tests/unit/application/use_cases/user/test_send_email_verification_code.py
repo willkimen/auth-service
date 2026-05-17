@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from unittest.mock import AsyncMock
+
 import pytest
 
 from application.exceptions import (
@@ -6,213 +9,210 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.messages.message_types import MessageType
+from application.ports.output import (
+    MessageRepositoryPort,
+    UnitOfWorkPort,
+    UserRepositoryPort,
+    VerificationCodeRepositoryPort,
+)
 from application.use_cases.user.send_email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
 from domain.entities.user import User
 from domain.enums import CodeType
 from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
-from unit.application.use_cases.user.types import (
-    SendEmailVerificationCodeDependencies,
-)
+
+code_expiration_time = 15
+link = 'www.test.com/send-code'
+deadline = 7
 
 
 async def test_initialize_email_verification_process_successfully(
-    send_email_verification_code_dependencies, unverified_user: User
+    unverified_user: User,
 ):
     # arrange
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(unverified_user)
-    )
+    mocks = mocks_factory(unverified_user)
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act
     await use_case.execute(
-        email=unverified_user.email.value,
-        code_expiration_time=15,
-        link='www.test.com/send-code',
-        deadline=7,
+        unverified_user.email.value, code_expiration_time, link, deadline
     )
 
-    # Assert that .get_by_email() was called with the
-    # correct expected arguments.
-    deps.user_repo.get_by_email.assert_called_once_with(
+    # Assert was called
+    mocks.user_repo.get_by_email.assert_called_once_with(
         unverified_user.email.value
     )
-    deps.uow.__aenter__.assert_called()
-    deps.uow.__aexit__.assert_called()
+    mocks.uow.__aenter__.assert_called()
+    mocks.uow.__aexit__.assert_called()
 
-    # Assert that .create() was called with the correct expected arguments.
-    deps.uow.code_repo.create.assert_called_once()
-    saved_code_dto = deps.uow.code_repo.create.call_args[0][0]
-    assert saved_code_dto.user_public_id == unverified_user.public_id
-    assert saved_code_dto.used_at is None
-    assert saved_code_dto.sent_at is None
+    # Assert that code_repo.create()
+    # was called with the correct expected arguments.
+    mocks.uow.code_repo.create.assert_called_once()
+    code_arg = mocks.uow.code_repo.create.call_args[0][0]
+    assert code_arg.user_public_id == unverified_user.public_id
+    assert code_arg.used_at is None
+    assert code_arg.sent_at is None
 
-    code_value = saved_code_dto.code
+    code_value = code_arg.code
     assert isinstance(code_value, str)
     number_digits = 6
     assert len(code_value) == number_digits
     assert code_value.isdigit()
 
-    assert saved_code_dto.expires_at > saved_code_dto.created_at
-    assert saved_code_dto.payload is None
+    assert code_arg.expires_at > code_arg.created_at
+    assert code_arg.payload is None
+    assert code_arg.type is CodeType.EMAIL_VERIFICATION.value
 
-    assert saved_code_dto.type is CodeType.EMAIL_VERIFICATION.value
+    # Assert that message_repo.create()
+    # was called with the correct expected arguments.
+    mocks.uow.message_repo.create.assert_called()
+    message_arg = mocks.uow.message_repo.create.call_args[0][0]
+    assert message_arg.type == MessageType.SEND_EMAIL_VERIFICATION_CODE.value
+    assert message_arg.payload.to == unverified_user.email.value
+    assert message_arg.payload.link == str(link)
+    assert message_arg.payload.expiration == str(code_expiration_time)
+    assert message_arg.payload.deadline == str(deadline)
+    assert message_arg.payload.code == code_arg.code
 
-    # Assert that .create() was called with the correct expected arguments.
-    deps.uow.message_repo.create.assert_called()
-    message = deps.uow.message_repo.create.call_args[0][0]
-    assert message.type == (MessageType.SEND_EMAIL_VERIFICATION_CODE.value)
-    assert message.payload.to == unverified_user.email.value
-    assert message.payload.link == 'www.test.com/send-code'
-    assert message.payload.expiration == '15'
-    assert message.payload.deadline == '7'
-    assert message.payload.code == saved_code_dto.code
 
-
-async def test_verification_process_not_initialize_when_user_not_found(
-    send_email_verification_code_dependencies,
-):
+async def test_verification_process_not_initialize_when_user_not_found():
     # arrange
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(None)
-    )
+    mocks = mocks_factory(None)
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(UserNotFoundError):
-        await use_case.execute(
-            email='email@email.com',
-            code_expiration_time=15,
-            link='www.test.com/send-code',
-            deadline=7,
-        )
+        await use_case.execute('', 0, '', 0)
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
-    deps.uow.__aenter__.assert_not_called()
-    deps.uow.__aexit__.assert_not_called()
-    deps.uow.code_repo.create.assert_not_called()
-    deps.uow.message_repo.create.assert_not_called()
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+
+    # assert was not called
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_user_already_verified(
-    send_email_verification_code_dependencies, verified_user: User
+    verified_user: User,
 ):
     # arrange
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(verified_user)
-    )
+    mocks = mocks_factory(verified_user)
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
-        await use_case.execute(
-            email=verified_user.email.value,
-            code_expiration_time=15,
-            link='www.test.com/send-code',
-            deadline=7,
-        )
+        await use_case.execute('', 0, '', 0)
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
-    deps.uow.__aenter__.assert_not_called()
-    deps.uow.__aexit__.assert_not_called()
-    deps.uow.code_repo.create.assert_not_called()
-    deps.uow.message_repo.create.assert_not_called()
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+
+    # assert was not called
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_user_is_inactive(
-    send_email_verification_code_dependencies, inactive_user: User
+    inactive_user: User,
 ):
     # arrange
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(inactive_user)
-    )
+    mocks = mocks_factory(inactive_user)
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(InactiveUserError):
-        await use_case.execute(
-            email=inactive_user.email.value,
-            code_expiration_time=15,
-            link='www.test.com/send-code',
-            deadline=7,
-        )
+        await use_case.execute('', 0, '', 0)
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
-    deps.uow.__aenter__.assert_not_called()
-    deps.uow.__aexit__.assert_not_called()
-    deps.uow.code_repo.create.assert_not_called()
-    deps.uow.message_repo.create.assert_not_called()
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+
+    # assert was not called
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_persists_code_fails(
-    send_email_verification_code_dependencies, unverified_user: User
+    unverified_user: User,
 ):
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(unverified_user)
-    )
+    # arrange
+    mocks = mocks_factory(unverified_user)
 
-    deps.uow.code_repo.create.side_effect = InfrastructureError(
+    mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(
-            email=unverified_user.email.value,
-            code_expiration_time=15,
-            link='www.test.com/send-code',
-            deadline=7,
-        )
+        await use_case.execute('', 0, '', 0)
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
-    deps.uow.__aenter__.assert_called()
-    deps.uow.__aexit__.assert_called()
-    deps.uow.code_repo.create.assert_called()
-    deps.uow.message_repo.create.assert_not_called()
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.__aenter__.assert_called()
+    mocks.uow.__aexit__.assert_called()
+    mocks.uow.code_repo.create.assert_called()
+
+    # assert was not called
+    mocks.uow.message_repo.create.assert_not_called()
 
 
 async def test_verification_process_not_initialize_when_message_persits_fails(
-    send_email_verification_code_dependencies, unverified_user: User
+    unverified_user: User,
 ):
     # arrange
-    deps: SendEmailVerificationCodeDependencies = (
-        send_email_verification_code_dependencies(unverified_user)
-    )
+    mocks = mocks_factory(unverified_user)
 
-    deps.uow.message_repo.create.side_effect = InfrastructureError(
+    mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
-    use_case = SendEmailVerificationCodeUseCase(deps.user_repo, deps.uow)
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and arrange
     with pytest.raises(InfrastructureError):
-        await use_case.execute(
-            email=unverified_user.email.value,
-            code_expiration_time=15,
-            link='www.test.com/send-code',
-            deadline=7,
-        )
+        await use_case.execute('', 0, '', 0)
 
-    # assert
-    deps.user_repo.get_by_email.assert_called()
-    deps.uow.__aenter__.assert_called()
-    deps.uow.__aexit__.assert_called()
-    deps.uow.code_repo.create.assert_called()
-    deps.uow.message_repo.create.assert_called()
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.__aenter__.assert_called()
+    mocks.uow.__aexit__.assert_called()
+    mocks.uow.code_repo.create.assert_called()
+    mocks.uow.message_repo.create.assert_called()
+
+
+@dataclass(frozen=True)
+class DependeciesMocked:
+    user_repo: AsyncMock
+    uow: AsyncMock
+
+
+def mocks_factory(user: User | None) -> DependeciesMocked:
+    user_repo = AsyncMock(spec=UserRepositoryPort)
+    user_repo.get_by_email.return_value = user
+
+    uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = False
+
+    uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
+    uow.code_repo.create.return_value = None
+
+    uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
+    uow.message_repo.create.return_value = None
+
+    return DependeciesMocked(user_repo, uow)
