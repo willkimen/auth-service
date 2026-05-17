@@ -37,6 +37,7 @@ def test_create_verification_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
+    assert code.sent_at is None
     assert not code.has_been_sent()
 
 
@@ -61,6 +62,7 @@ def test_create_change_email_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
+    assert code.sent_at is None
     assert not code.has_been_sent()
 
 
@@ -78,6 +80,7 @@ def test_create_change_password_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
+    assert code.sent_at is None
     assert not code.has_been_sent()
 
 
@@ -95,6 +98,7 @@ def test_create_reset_password_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
+    assert code.sent_at is None
     assert not code.has_been_sent()
 
 
@@ -112,6 +116,7 @@ def test_create_delete_account_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
+    assert code.sent_at is None
     assert not code.has_been_sent()
 
 
