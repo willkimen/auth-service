@@ -45,6 +45,9 @@ class UserRepositoryPort(Protocol):
         """Retrieves a user by email.
 
         Raises:
+            CorruptedPersistenceStateError:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain objects.
             InfrastructureError:
                 If query execution fails.
         """
@@ -54,6 +57,9 @@ class UserRepositoryPort(Protocol):
         """Retrieves a user by public identifier.
 
         Raises:
+            CorruptedPersistenceStateError:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain objects.
             InfrastructureError:
                 If query execution fails.
         """
@@ -116,6 +122,9 @@ class VerificationCodeRepositoryPort(Protocol):
         """Retrieves a verification code by user and code value.
 
         Raises:
+            CorruptedPersistenceStateError:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain objects.
             InfrastructureError:
                 If query execution fails.
         """

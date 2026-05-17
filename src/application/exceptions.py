@@ -46,6 +46,11 @@ class CorruptedPersistenceStateError(InfrastructureError):
 
     This usually indicates that the persistence layer
     contains invalid, inconsistent, or corrupted data.
+
+    Args:
+        message (str): Human-readable error description.
+        code (InfrastructureErrorCode): Infrastructure error code.
+        cause (Exception | None): Original raised exception.
     """
 
     def __init__(self, cause: Exception | None = None):

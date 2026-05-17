@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from application.exceptions import (
+    CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
@@ -25,6 +26,7 @@ from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
 from domain.exceptions import (
+    DomainError,
     EmailAlreadyVerifiedError,
     InactiveUserError,
     VerificationCodeAlreadyUsedError,
@@ -210,6 +212,36 @@ async def test_verification_fails_when_get_user_fails(
     mocks.uow.__aexit__.assert_not_called()
 
 
+async def test_verification_fails_when_user_state_is_corrupted(
+    unused_code: VerificationCode,
+):
+    # arrange
+    mocks = mocks_factory(None, unused_code)
+
+    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
+    )
+
+    use_case = EmailVerificationUseCase(
+        mocks.user_repo, mocks.code_repo, mocks.uow
+    )
+
+    # act and assert
+    with pytest.raises(InfrastructureError):
+        await use_case.execute('', '', '')
+
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called_once()
+
+    # assert was not called
+    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.code_repo.update.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+
+
 async def test_verification_fails_when_code_does_not_exist(
     unverified_user: User,
 ):
@@ -325,6 +357,36 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
         'Error attempting to get code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
+    )
+
+    use_case = EmailVerificationUseCase(
+        mocks.user_repo, mocks.code_repo, mocks.uow
+    )
+
+    # act anda assert
+    with pytest.raises(InfrastructureError):
+        await use_case.execute('', '', '')
+
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+
+    # assert was not called
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.code_repo.update.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+
+
+async def test_verification_fails_when_veritication_code_state_is_corrupted(
+    unverified_user: User,
+):
+    # arrange
+    mocks = mocks_factory(unverified_user, None)
+
+    mocks.code_repo.get_by_user_id_and_code.side_effect = (
+        CorruptedPersistenceStateError(DomainError('some domain error'))
     )
 
     use_case = EmailVerificationUseCase(

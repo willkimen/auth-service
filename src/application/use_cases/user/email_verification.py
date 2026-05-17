@@ -73,8 +73,12 @@ class EmailVerificationUseCase:
                 If verification code has expired.
             VerificationCodeTypeError:
                 If verification code type is incorrect.
+            CorruptedPersistenceStateError:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain objects.
             InfrastructureError:
-                If persistence or registration fails.
+                - If an unexpected failure occurs within an output adapter
+                  (infrastructure layer)
         """
         user: User | None = await self.user_repo.get_by_email(email)
 

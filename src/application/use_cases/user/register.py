@@ -38,7 +38,8 @@ class RegisterUserUseCase:
             EmailAlreadyUsedError:
                 - Raised when the email is already being used by another user.
             InfrastructureError:
-                - Raised when an infrastructure dependency fails.
+                - If an unexpected failure occurs within an output adapter
+                  (infrastructure layer)
 
         """
         email_vo: Email = Email(email)

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from application.exceptions import (
+    CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
@@ -22,7 +23,11 @@ from application.use_cases.user.send_email_verification_code import (
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
-from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
+from domain.exceptions import (
+    DomainError,
+    EmailAlreadyVerifiedError,
+    InactiveUserError,
+)
 
 code_expiration_time = 15
 link = 'www.test.com/send-code'
@@ -133,6 +138,60 @@ async def test_verification_process_not_initialize_when_user_is_inactive(
 
     # act and assert
     with pytest.raises(InactiveUserError):
+        await use_case.execute('', 0, '', 0)
+
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+
+    # assert was not called
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+
+
+async def test_verification_process_not_initialize_when_get_user_fails(
+    unverified_user: User,
+):
+    # arrange
+    mocks = mocks_factory(unverified_user)
+
+    mocks.user_repo.get_by_email.side_effect = InfrastructureError(
+        'Error attempting to get user',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
+    )
+
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+
+    # act and assert
+    with pytest.raises(InfrastructureError):
+        await use_case.execute('', 0, '', 0)
+
+    # assert was called
+    mocks.user_repo.get_by_email.assert_called()
+
+    # assert was not called
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+
+
+async def test_verification_process_not_initialize_when_user_state_corrupted(
+    unverified_user: User,
+):
+    # arrange
+    mocks = mocks_factory(unverified_user)
+
+    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
+    )
+
+    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+
+    # act and assert
+    with pytest.raises(CorruptedPersistenceStateError):
         await use_case.execute('', 0, '', 0)
 
     # assert was called
