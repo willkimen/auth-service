@@ -95,7 +95,7 @@ async def test_email_verified_successfully(
     # assert that message.create() was called with correct arguments
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.id is not None
-    assert message_arg.type == MessageType.SEND_NOTIFICATION_EMAIL_VERIFIED
+    assert message_arg.type == MessageType.NOTIFICATION_EMAIL_VERIFIED
     payload = message_arg.payload.to_dict()
     assert payload['to'] == user_arg.email.value
     assert payload['link'] == login_link

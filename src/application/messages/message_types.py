@@ -13,17 +13,17 @@ class MessageType(StrEnum):
     or processing flow should handle a persisted message.
     """
 
-    SEND_EMAIL_VERIFICATION_CODE = auto()
-    SEND_NOTIFICATION_EMAIL_VERIFIED = auto()
+    EMAIL_VERIFICATION_CODE = auto()
+    NOTIFICATION_EMAIL_VERIFIED = auto()
 
-    SEND_PASSWORD_RESET_CODE = auto()
-    SEND_NOTIFICATION_PASSWORD_RESET = auto()
+    PASSWORD_RESET_CODE = auto()
+    NOTIFICATION_PASSWORD_RESET = auto()
 
-    SEND_PASSWORD_CHANGE_CODE = auto()
-    SEND_NOTIFICATION_PASSWORD_CHANGED = auto()
+    PASSWORD_CHANGE_CODE = auto()
+    NOTIFICATION_PASSWORD_CHANGED = auto()
 
-    SEND_EMAIL_CHANGE_CODE = auto()
-    SEND_NOTIFICATION_EMAIL_CHANGED = auto()
+    EMAIL_CHANGE_CODE = auto()
+    NOTIFICATION_EMAIL_CHANGED = auto()
 
-    SEND_DELETE_CODE = auto()
-    SEND_NOTIFICATION_DELETED = auto()
+    DELETE_CODE = auto()
+    NOTIFICATION_DELETED = auto()

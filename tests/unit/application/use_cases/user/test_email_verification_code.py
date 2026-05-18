@@ -18,7 +18,7 @@ from application.ports.output import (
     VerificationCodeRepositoryPort,
 )
 from application.use_cases.user.email_verification_code import (
-    SendEmailVerificationCodeUseCase,
+    EmailVerificationCodeUseCase,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -51,7 +51,7 @@ async def test_initialize_email_verification_process_successfully(
 
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act
     await use_case.execute(
@@ -91,7 +91,7 @@ async def test_initialize_email_verification_process_successfully(
     # The expected argument is a Message instance, which must
     # contain the following state:
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.SEND_EMAIL_VERIFICATION_CODE
+    assert message_arg.type == MessageType.EMAIL_VERIFICATION_CODE
     payload: dict = message_arg.payload.to_dict()
     assert payload['to'] == unverified_user.email.value
     assert payload['link'] == str(link)
@@ -107,7 +107,7 @@ async def test_user_must_exist():
     not exist.
     """
     mocks: DependeciesMocked = mocks_factory(None)
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(UserNotFoundError):
@@ -131,7 +131,7 @@ async def test_already_verified_user_cannot_perform_verification_again(
     already verified.
     """
     mocks: DependeciesMocked = mocks_factory(verified_user)
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
@@ -155,7 +155,7 @@ async def test_inactive_users_cannot_initiate_verification_process(
     inactive. Only active users can verify their email.
     """
     mocks: DependeciesMocked = mocks_factory(inactive_user)
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(InactiveUserError):
@@ -184,7 +184,7 @@ async def test_verification_process_not_initialize_when_get_user_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
@@ -212,7 +212,7 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
     mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
         DomainError('some domain error')
     )
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
@@ -241,7 +241,7 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
@@ -270,7 +270,7 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = SendEmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
 
     # act and arrange
     with pytest.raises(InfrastructureError):

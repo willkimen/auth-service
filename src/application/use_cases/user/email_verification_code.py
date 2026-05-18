@@ -14,13 +14,14 @@ from domain.exceptions import EmailAlreadyVerifiedError, InactiveUserError
 from domain.value_objects.code import Code
 
 
-class SendEmailVerificationCodeUseCase:
+class EmailVerificationCodeUseCase:
     """
     Starts the email verification process for a user account.
 
-    Retrieves the target user, validates account eligibility for
-    email verification, generates a verification code, persists it,
-    and persists a message.
+    The process is initiated by creating the verification code,
+    persisting it in the database, and persisting the data required
+    to send the code to the user's email address, represented by
+    the Message object.
 
     Attributes:
         user_repo (UserRepositoryPort):
@@ -102,7 +103,7 @@ class SendEmailVerificationCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.SEND_EMAIL_VERIFICATION_CODE,
+            type=MessageType.EMAIL_VERIFICATION_CODE,
             payload=payload,
         )
 
