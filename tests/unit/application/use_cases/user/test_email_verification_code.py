@@ -17,7 +17,7 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.send_email_verification_code import (
+from application.use_cases.user.email_verification_code import (
     SendEmailVerificationCodeUseCase,
 )
 from domain.entities.user import User
