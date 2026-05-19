@@ -11,6 +11,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
+from application.messages.email_payloads import EmailVerifiedPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -78,7 +79,7 @@ async def test_email_verified_successfully(
     assert user_arg.created_at == unverified_user.created_at
     assert user_arg.email_verified is True
     assert user_arg.is_active is True
-    assert user_arg.last_login_at == unverified_user.last_login_at
+    assert user_arg.last_login_at is None
     assert user_arg.updated_at == unverified_user.updated_at
 
     # assert that code_repo.update() was called with correct arguments
@@ -88,18 +89,19 @@ async def test_email_verified_successfully(
     assert code_arg.payload is None
     assert code_arg.created_at == unused_code.created_at
     assert code_arg.expires_at == unused_code.expires_at
+    assert code_arg.used_at == unused_code.used_at
     assert isinstance(code_arg.used_at, datetime)
-    assert code_arg.used_at is not None
     assert code_arg.type == unused_code.type
 
     # assert that message.create() was called with correct arguments
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.id is not None
     assert message_arg.type == MessageType.NOTIFICATION_EMAIL_VERIFIED
-    payload = message_arg.payload.to_dict()
-    assert payload['to'] == user_arg.email.value
-    assert payload['link'] == login_link
-    assert payload['subject'] == subject
+
+    payload: EmailVerifiedPayload = message_arg.payload
+    assert payload.to == user_arg.email.value
+    assert payload.link == login_link
+    assert payload.subject == subject
 
 
 async def test_verification_fails_when_user_does_not_exist(
@@ -523,10 +525,12 @@ def mocks_factory(
     verification_code: VerificationCode | None,
 ) -> DependeciesMocked:
     """
-    Return the mocked dependencies of the use case.
+    Create and configure mocked repositories and unit of work
+    dependencies for the email verification use case.
 
-    Creates and configures mock instances for repositories and the
-    unit of work, allowing simulation of user and code states.
+    The provided user and verification code instances simulate
+    persisted entities returned by repository queries during the
+    execution flow.
     """
     user_repo = AsyncMock(spec=UserRepositoryPort)
     user_repo.get_by_email.return_value = user

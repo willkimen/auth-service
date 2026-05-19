@@ -18,10 +18,10 @@ from application.ports.output import (
 from application.use_cases.user.register import RegisterUserUseCase
 from domain.entities.user import User
 from domain.exceptions import InvalidEmailError, InvalidPasswordError
-from domain.value_objects.password import PasswordHash
 
 email_input = 'test@email.com'
 password_input = 'PasswordTest12345!'
+password_hashed = 'ds51d5f61dxcgsdf'
 
 
 async def test_register_user_flow_successfully():
@@ -36,23 +36,29 @@ async def test_register_user_flow_successfully():
     use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
 
     # act
-    result: UserPublicDTO = await use_case.execute(email_input, password_input)
+    actual_user_public: UserPublicDTO = await use_case.execute(
+        email_input, password_input
+    )
 
     # assert that the returned fields contain the correct state.
-    assert isinstance(result.public_id, uuid.UUID)
-    assert result.email == email_input
-    assert isinstance(result.created_at, datetime)
-    assert result.email_verified is False
-    assert result.last_login_at is None
+    assert isinstance(actual_user_public.public_id, uuid.UUID)
+    assert actual_user_public.email == email_input
+    assert isinstance(actual_user_public.created_at, datetime)
+    assert actual_user_public.email_verified is False
+    assert actual_user_public.last_login_at is None
 
     # Assert that the returned fields are the following:
-    assert {field.name for field in fields(result)} == {
+    expected_public_fields = {
         'public_id',
         'email',
         'created_at',
         'email_verified',
         'last_login_at',
     }
+
+    assert {field.name for field in fields(actual_user_public)} == (
+        expected_public_fields
+    )
 
     # assert was called
     mocks.user_repo.exists_by_email.assert_called_once_with(email_input)
@@ -64,7 +70,7 @@ async def test_register_user_flow_successfully():
     # the following state:
     user_arg: User = mocks.user_repo.create.call_args[0][0]
     assert isinstance(user_arg.public_id, uuid.UUID)
-    assert isinstance(user_arg.hash_password, PasswordHash)
+    assert user_arg.hash_password.value == password_hashed
     # the returned email must have the same value as the input email.
     assert user_arg.email.value == email_input
     # as a newly created user, they must be unverified and active.
@@ -212,13 +218,16 @@ class DependeciesMocked:
 
 def mock_dependecies_factory() -> DependeciesMocked:
     """
-    Return the mocked dependencies of the use case.
+    Create mocked dependencies for the user registration use case.
 
-    Creates and configures mock instances for the hasher and user
-    repository ports with default successful return values.
+    The configured mocks simulate the default successful registration
+    flow, where:
+        - the email is not already in use;
+        - the password is successfully hashed;
+        - the user persistence operation succeeds.
     """
     hasher = Mock(spec=HasherPort)
-    hasher.hash.return_value = 'hashed-password'
+    hasher.hash.return_value = password_hashed
 
     user_repo = AsyncMock(spec=UserRepositoryPort)
     # by default, it returns False, meaning no user exists for this email.

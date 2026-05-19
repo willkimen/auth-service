@@ -9,6 +9,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     UserNotFoundError,
 )
+from application.messages.email_payloads import EmailVerificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -28,6 +29,7 @@ from domain.exceptions import (
     EmailAlreadyVerifiedError,
     InactiveUserError,
 )
+from domain.value_objects.code import Code
 
 code_expiration_time = 15
 link = 'www.test.com/send-code'
@@ -75,16 +77,15 @@ async def test_initialize_email_verification_process_successfully(
     assert code_arg.user_public_id == unverified_user.public_id
     assert code_arg.used_at is None
     assert code_arg.sent_at is None
+    assert code_arg.expires_at > code_arg.created_at
+    assert code_arg.payload is None
+    assert code_arg.type is CodeType.EMAIL_VERIFICATION
 
-    code = code_arg.code
+    code: Code = code_arg.code
     assert isinstance(code.value, str)
     number_digits = 6
     assert len(code.value) == number_digits
     assert code.value.isdigit()
-
-    assert code_arg.expires_at > code_arg.created_at
-    assert code_arg.payload is None
-    assert code_arg.type is CodeType.EMAIL_VERIFICATION
 
     # Assert that message_repo.create()
     # was called with the correct expected arguments.
@@ -92,13 +93,14 @@ async def test_initialize_email_verification_process_successfully(
     # contain the following state:
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.type == MessageType.EMAIL_VERIFICATION_CODE
-    payload: dict = message_arg.payload.to_dict()
-    assert payload['to'] == unverified_user.email.value
-    assert payload['link'] == str(link)
-    assert payload['expiration'] == f'{code_expiration_time} minutes'
-    assert payload['deadline'] == f'{deadline} days'
-    assert payload['code'] == code_arg.code.value
-    assert payload['subject'] == 'Verify your email'
+
+    payload: EmailVerificationPayload = message_arg.payload
+    assert payload.to == unverified_user.email.value
+    assert payload.link == link
+    assert payload.expiration == str(code_expiration_time)
+    assert payload.deadline == str(deadline)
+    assert payload.code == code_arg.code.value
+    assert payload.subject == 'Verify your email'
 
 
 async def test_user_must_exist():
@@ -297,14 +299,13 @@ class DependeciesMocked:
 
 def mocks_factory(user: User | None) -> DependeciesMocked:
     """
-    Return the mocked dependencies of the use case.
+    Create mocked dependencies for the email verification code use case.
 
-    Creates and configures mock instances for the user repository
-    and unit of work, including nested repositories.
+    The configured mocks simulate repository lookups and transactional
+    persistence operations used during the verification code generation flow.
     """
     user_repo = AsyncMock(spec=UserRepositoryPort)
-    # Simulate the return of a user instance used internally by the
-    # use case, which plays a major role since its state changes the flow.
+    # Simulate a persisted user returned by repository lookup.
     user_repo.get_by_email.return_value = user
 
     uow = AsyncMock(spec=UnitOfWorkPort)
