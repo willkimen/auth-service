@@ -53,7 +53,7 @@ class EmailVerificationUseCase:
         self.code_repo = code_repo
         self.uow = uow
 
-    async def execute(self, email: str, code: str, login_link: str):
+    async def execute(self, email: str, code: str):
         """
         Verifies a user's email using a verification code and
         registers an asynchronous notification message.
@@ -63,9 +63,6 @@ class EmailVerificationUseCase:
                 User email address associated with the account.
             code (str):
                 Verification code informed by the user.
-            login_link (str):
-                Frontend link that redirects the user to the login
-                screen after successful email verification.
 
         Raises:
             UserNotFoundError:
@@ -122,7 +119,7 @@ class EmailVerificationUseCase:
         user.mark_email_as_verified()
         verification_code.mark_as_used(datetime.now(timezone.utc))
 
-        payload = EmailVerifiedPayload(user.email.value, link=login_link)
+        payload = EmailVerifiedPayload(user.email.value)
 
         message = Message(
             type=MessageType.NOTIFICATION_EMAIL_VERIFIED,

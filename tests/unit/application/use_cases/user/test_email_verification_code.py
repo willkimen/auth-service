@@ -32,7 +32,6 @@ from domain.exceptions import (
 from domain.value_objects.code import Code
 
 code_expiration_time = 15
-link = 'www.test.com/send-code'
 deadline = 7
 
 
@@ -57,7 +56,7 @@ async def test_initialize_email_verification_process_successfully(
 
     # act
     await use_case.execute(
-        unverified_user.email.value, code_expiration_time, link, deadline
+        unverified_user.email.value, code_expiration_time, deadline
     )
 
     # Assert was called
@@ -96,7 +95,6 @@ async def test_initialize_email_verification_process_successfully(
 
     payload: EmailVerificationPayload = message_arg.payload
     assert payload.to == unverified_user.email.value
-    assert payload.link == link
     assert payload.expiration == str(code_expiration_time)
     assert payload.deadline == str(deadline)
     assert payload.code == code_arg.code.value
@@ -113,7 +111,7 @@ async def test_user_must_exist():
 
     # act and assert
     with pytest.raises(UserNotFoundError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -137,7 +135,7 @@ async def test_already_verified_user_cannot_perform_verification_again(
 
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -161,7 +159,7 @@ async def test_inactive_users_cannot_initiate_verification_process(
 
     # act and assert
     with pytest.raises(InactiveUserError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -190,7 +188,7 @@ async def test_verification_process_not_initialize_when_get_user_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -218,7 +216,7 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -247,7 +245,7 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()
@@ -276,7 +274,7 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
 
     # act and arrange
     with pytest.raises(InfrastructureError):
-        await use_case.execute('', 0, '', 0)
+        await use_case.execute('', 0, 0)
 
     # assert was called
     mocks.user_repo.get_by_email.assert_called()

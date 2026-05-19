@@ -13,7 +13,6 @@ class EmailVerificationPayload:
         code (str): The numeric verification code (e.g., "123456").
         expiration (str): Time duration until the code expires.
             Expected: numeric string (e.g., "15").
-        link (str): URL of the web page where the user must enter the code.
         deadline (str): Total days the user has to complete the verification.
             Expected: numeric string (e.g., "7").
         subject (str): Immutable email subject line.
@@ -22,7 +21,6 @@ class EmailVerificationPayload:
     to: str
     code: str
     expiration: str
-    link: str
     deadline: str
     subject: str = field(default='Verify your email', init=False)
 
@@ -49,13 +47,10 @@ class EmailVerifiedPayload:
 
     Attributes:
         to (str): Recipient's email address (e.g., "user@example.com").
-        link (str): URL redirecting the user to the login page now that
-            their account is active.
         subject (str): Immutable email subject line confirming success.
     """
 
     to: str
-    link: str
     subject: str = field(default='Email verified successfully', init=False)
 
     def to_dict(self) -> dict:
@@ -63,7 +58,7 @@ class EmailVerifiedPayload:
         Serializes the payload into a dictionary.
 
         This dictionary is used to populate the email template
-        with the user's information and the direct login link.
+        with the user's information.
         """
         return asdict(self)
 
@@ -111,20 +106,17 @@ class EmailChangedPayload:
     Attributes:
         to (str): The new confirmed email address of the user
             (e.g., "new@example.com").
-        link (str): URL for the login page, allowing the user to access the
-            system with their new credentials.
         subject (str): Immutable email subject line notifying the change.
     """
 
     to: str
-    link: str
     subject: str = field(default='Your email has been changed', init=False)
 
     def to_dict(self) -> dict:
         """
         Serializes the payload into a dictionary.
         The resulting dictionary provides the template with the new email
-        address and the link to the login screen.
+        address.
         """
         return asdict(self)
 
@@ -167,12 +159,10 @@ class PasswordChangedPayload:
 
     Attributes:
         to (str): User's email address (e.g., "user@example.com").
-        link (str): URL to the login page.
         subject (str): Immutable email subject line for security alert.
     """
 
     to: str
-    link: str
     subject: str = field(default='Your password was changed', init=False)
 
     def to_dict(self) -> dict:
@@ -194,14 +184,12 @@ class ResetPasswordPayload:
         to (str): User's email address (e.g., "user@example.com").
         code (str): The recovery code to verify identity (e.g., "789012").
         expiration (str): Minutes until code expires. Expected: "20".
-        link (str): URL of the page where the user sets the new password.
         subject (str): Immutable email subject for password recovery.
     """
 
     to: str
     code: str
     expiration: str
-    link: str
     subject: str = field(default='Reset your password', init=False)
 
     def to_dict(self) -> dict:
@@ -220,13 +208,10 @@ class PasswordResetPayload:
 
     Attributes:
         to (str): User's email address (e.g., "user@example.com").
-        link (str): URL to the login page so the user can access their
-            account with the new password.
         subject (str): Immutable email subject line for recovery success.
     """
 
     to: str
-    link: str
     subject: str = field(default='Your password has been reset', init=False)
 
     def to_dict(self) -> dict:

@@ -39,7 +39,6 @@ class EmailVerificationCodeUseCase:
         self,
         email: str,
         code_expiration_time: int,
-        link: str,
         deadline: int,
     ):
         """Generates a code and persists an email verification message.
@@ -49,10 +48,6 @@ class EmailVerificationCodeUseCase:
                 User email address used to identify the account.
             code_expiration_time (int):
                 Verification code expiration time in minutes.
-            link (str):
-                Frontend link that redirects the user to the email
-                verification screen where the verification code
-                must be entered.
             deadline (int):
                 Maximum number of days allowed for the user to
                 verify the email address before account expiration.
@@ -98,7 +93,6 @@ class EmailVerificationCodeUseCase:
             to=user.email.value,
             code=verification_code.code.value,
             expiration=str(code_expiration_time),
-            link=link,
             deadline=str(deadline),
         )
 
