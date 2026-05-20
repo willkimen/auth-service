@@ -29,6 +29,20 @@ without_payload = None
 
 
 @pytest.fixture
+def active_user() -> User:
+    return User(
+        public_id=public_id,
+        email=email,
+        hash_password=password_hash,
+        email_verified=False,
+        is_active=True,
+        created_at=created_at,
+        updated_at=updated_at,
+        last_login_at=None,
+    )
+
+
+@pytest.fixture
 def unverified_user() -> User:
     return User(
         public_id=public_id,
