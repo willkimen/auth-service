@@ -85,49 +85,7 @@ def inactive_user() -> User:
 
 
 @pytest.fixture
-def unused_code() -> VerificationCode:
-    return VerificationCode(
-        code=code,
-        user_public_id=public_id,
-        type=correct_code_type,
-        created_at=created_at,
-        expires_at=code_not_expired,
-        used_at=code_not_used,
-        sent_at=code_not_sent,
-        payload=without_payload,
-    )
-
-
-@pytest.fixture
-def used_code() -> VerificationCode:
-    return VerificationCode(
-        code=code,
-        user_public_id=public_id,
-        type=correct_code_type,
-        created_at=created_at,
-        expires_at=code_not_expired,
-        used_at=code_used,
-        sent_at=code_not_sent,
-        payload=without_payload,
-    )
-
-
-@pytest.fixture
-def expired_code() -> VerificationCode:
-    return VerificationCode(
-        code=code,
-        user_public_id=public_id,
-        type=correct_code_type,
-        created_at=created_at,
-        expires_at=code_expired,
-        used_at=code_not_used,
-        sent_at=code_not_sent,
-        payload=without_payload,
-    )
-
-
-@pytest.fixture
-def create_verification_code():
+def create_unused_code():
     def _create(code_type: CodeType) -> VerificationCode:
         return VerificationCode(
             code=code,
@@ -135,6 +93,40 @@ def create_verification_code():
             type=code_type,
             created_at=created_at,
             expires_at=code_not_expired,
+            used_at=code_not_used,
+            sent_at=code_not_sent,
+            payload=without_payload,
+        )
+
+    return _create
+
+
+@pytest.fixture
+def create_used_code():
+    def _create(code_type: CodeType) -> VerificationCode:
+        return VerificationCode(
+            code=code,
+            user_public_id=public_id,
+            type=code_type,
+            created_at=created_at,
+            expires_at=code_not_expired,
+            used_at=code_used,
+            sent_at=code_not_sent,
+            payload=without_payload,
+        )
+
+    return _create
+
+
+@pytest.fixture
+def create_expired_code():
+    def _create(code_type: CodeType) -> VerificationCode:
+        return VerificationCode(
+            code=code,
+            user_public_id=public_id,
+            type=code_type,
+            created_at=created_at,
+            expires_at=code_expired,
             used_at=code_not_used,
             sent_at=code_not_sent,
             payload=without_payload,
