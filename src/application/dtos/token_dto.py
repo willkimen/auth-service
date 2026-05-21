@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -7,7 +8,7 @@ class PayloadTokenDTO:
     """Represents decoded token payload data."""
 
     jti: str
-    sub: str
+    sub: uuid.UUID
     expires_at: datetime
 
 
