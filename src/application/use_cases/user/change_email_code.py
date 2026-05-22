@@ -1,0 +1,149 @@
+from datetime import datetime, timedelta, timezone
+
+from application.dtos.token_dto import PayloadTokenDTO
+from application.exceptions import (
+    TokenNotFoundError,
+    TokenRevokedError,
+    UserNotFoundError,
+)
+from application.messages.email_payloads import ChangeEmailPayload
+from application.messages.message import Message
+from application.messages.message_types import MessageType
+from application.ports.output import (
+    TokenManagerPort,
+    TokenRepositoryPort,
+    UnitOfWorkPort,
+    UserRepositoryPort,
+)
+from domain.entities.user import User
+from domain.entities.verification_code import VerificationCode
+from domain.entities.verification_code_factory import new_change_email_code
+from domain.exceptions import InactiveUserError
+from domain.value_objects.code import Code
+from domain.value_objects.email import Email
+
+
+class ChangeEmailCodeUseCase:
+    """
+    Initializes the email change verification process for
+    an authenticated user.
+
+    The use case validates the authentication token, verifies token state,
+    retrieves the authenticated user, generates a verification code for the
+    new email address, persists the verification code, and persists a message
+    containing the data required to send the verification code asynchronously.
+
+    Attributes:
+        user_repo (UserRepositoryPort):
+            - Port/Interface responsible for user retrieval operations.
+        token_repo (TokenRepositoryPort):
+            - Port/Interface responsible for token persistence and
+              revocation state operations.
+        token_manager (TokenManagerPort):
+            - Port/Interface responsible for token validation and payload
+              extraction.
+        uow (UnitOfWorkPort):
+            - Port/Interface responsible for managing atomic database
+              transactions across repositories.
+    """
+
+    def __init__(
+        self,
+        user_repo: UserRepositoryPort,
+        token_repo: TokenRepositoryPort,
+        token_manager: TokenManagerPort,
+        uow: UnitOfWorkPort,
+    ):
+        self.user_repo = user_repo
+        self.token_repo = token_repo
+        self.token_manager = token_manager
+        self.uow = uow
+
+    async def execute(
+        self,
+        token: str,
+        new_email: str,
+        code_expiration_time: int,
+    ):
+        """
+        Generates and persists an email change verification code for
+        the authenticated user.
+
+        The use case validates the provided email address and token,
+        checks token existence and revocation state, retrieves the
+        authenticated user, generates an email change verification code,
+        and persists both the verification code and the asynchronous
+        message responsible for email delivery.
+
+        Args:
+            token (str):
+                Authentication token associated with the user session.
+            new_email (str):
+                New email address requested by the user.
+            code_expiration_time (int):
+                Verification code expiration time in minutes.
+
+        Raises:
+            InvalidEmailError:
+                - Raised when the provided email is invalid.
+            TokenError:
+                - Raised when token validation fails.
+            TokenNotFoundError:
+                - Raised when token does not exist in persistence layer.
+            TokenRevokedError:
+                - Raised when token has already been revoked.
+            UserNotFoundError:
+                - Raised when no user exists for the authenticated token.
+            InactiveUserError:
+                - Raised when the authenticated user is inactive.
+            CorruptedPersistenceStateError:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain objects.
+            InfrastructureError:
+                - Raised when an unexpected infrastructure failure occurs
+                  within an output adapter.
+        """
+        email_vo = Email(new_email)
+
+        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+
+        if not await self.token_repo.exists(token_payload.jti):
+            raise TokenNotFoundError()
+
+        if await self.token_repo.is_revoke(token_payload.jti):
+            raise TokenRevokedError()
+
+        user: User | None = await self.user_repo.get_by_public_id(
+            token_payload.sub
+        )
+
+        if user is None:
+            raise UserNotFoundError()
+
+        if not user.is_active:
+            raise InactiveUserError()
+
+        verification_code: VerificationCode | None = new_change_email_code(
+            user_public_id=user.public_id,
+            code=Code.generate(),
+            created_at=datetime.now(timezone.utc),
+            expires_at=(
+                datetime.now(timezone.utc)
+                + timedelta(minutes=code_expiration_time)
+            ),
+            sent_at=None,
+            new_email=email_vo.value,
+        )
+
+        message = Message(
+            type=MessageType.EMAIL_CHANGE_CODE,
+            payload=ChangeEmailPayload(
+                to=email_vo.value,
+                code=verification_code.code.value,
+                expiration=str(code_expiration_time),
+            ),
+        )
+
+        async with self.uow:
+            await self.uow.code_repo.create(verification_code)
+            await self.uow.message_repo.create(message)
