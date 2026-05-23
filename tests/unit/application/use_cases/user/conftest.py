@@ -25,7 +25,6 @@ code_expired = datetime.now(timezone.utc) + +timedelta(milliseconds=1)
 code_not_used = None
 code_used = datetime.now(timezone.utc)
 code_not_sent = None
-without_payload = None
 
 
 @pytest.fixture
@@ -86,7 +85,10 @@ def inactive_user() -> User:
 
 @pytest.fixture
 def create_unused_code():
-    def _create(code_type: CodeType) -> VerificationCode:
+    def _create(
+        code_type: CodeType,
+        payload: dict | None = None,
+    ) -> VerificationCode:
         return VerificationCode(
             code=code,
             user_public_id=public_id,
@@ -95,7 +97,7 @@ def create_unused_code():
             expires_at=code_not_expired,
             used_at=code_not_used,
             sent_at=code_not_sent,
-            payload=without_payload,
+            payload=payload,
         )
 
     return _create
@@ -103,7 +105,10 @@ def create_unused_code():
 
 @pytest.fixture
 def create_used_code():
-    def _create(code_type: CodeType) -> VerificationCode:
+    def _create(
+        code_type: CodeType,
+        payload: dict | None = None,
+    ) -> VerificationCode:
         return VerificationCode(
             code=code,
             user_public_id=public_id,
@@ -112,7 +117,7 @@ def create_used_code():
             expires_at=code_not_expired,
             used_at=code_used,
             sent_at=code_not_sent,
-            payload=without_payload,
+            payload=payload,
         )
 
     return _create
@@ -120,7 +125,10 @@ def create_used_code():
 
 @pytest.fixture
 def create_expired_code():
-    def _create(code_type: CodeType) -> VerificationCode:
+    def _create(
+        code_type: CodeType,
+        payload: dict | None = None,
+    ) -> VerificationCode:
         return VerificationCode(
             code=code,
             user_public_id=public_id,
@@ -129,7 +137,7 @@ def create_expired_code():
             expires_at=code_expired,
             used_at=code_not_used,
             sent_at=code_not_sent,
-            payload=without_payload,
+            payload=payload,
         )
 
     return _create
