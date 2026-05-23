@@ -110,14 +110,15 @@ class EmailVerificationUseCase:
         if verification_code.is_used():
             raise VerificationCodeAlreadyUsedError()
 
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
         if verification_code.type is not CodeType.EMAIL_VERIFICATION:
             raise VerificationCodeTypeError()
 
-        user.mark_email_as_verified()
+        if verification_code.is_expired(datetime.now(timezone.utc)):
+            raise VerificationCodeExpiredError()
+
         verification_code.mark_as_used(datetime.now(timezone.utc))
+
+        user.mark_email_as_verified()
 
         payload = EmailVerifiedPayload(user.email.value)
 

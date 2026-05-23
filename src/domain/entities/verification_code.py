@@ -5,10 +5,7 @@ import uuid
 from datetime import datetime
 
 from domain.enums import CodeType
-from domain.exceptions import (
-    MissingNewEmailError,
-    VerificationCodeExpiredError,
-)
+from domain.exceptions import MissingNewEmailError
 from domain.utils import (
     ensure_aware,
     ensure_not_none,
@@ -186,7 +183,6 @@ class VerificationCode:
 
         Raises:
             ValueError: If not aware or before created_at.
-            VerificationCodeExpiredError: If the code is expired.
         """
         # If the code has already been used,
         # there is no need to mark it again.
@@ -194,11 +190,6 @@ class VerificationCode:
             return
 
         self._validate_used_at(used_at)
-
-        if self.is_expired(used_at):
-            raise VerificationCodeExpiredError(
-                'code cannot be used because is has expired'
-            )
 
         self._used_at = used_at
 

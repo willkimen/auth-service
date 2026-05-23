@@ -4,10 +4,7 @@ import pytest
 
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
-from domain.exceptions import (
-    MissingNewEmailError,
-    VerificationCodeExpiredError,
-)
+from domain.exceptions import MissingNewEmailError
 
 current_time = datetime.now(timezone.utc)
 
@@ -260,17 +257,6 @@ def test_marking_as_used_should_guarantee_used_condition(initial_state: dict):
 
 
 # ============= mark_as_used =====================
-def test_cannot_mark_as_used_expired_code(initial_state: dict):
-    timestamp_expired = datetime.now(timezone.utc) - timedelta(seconds=1)
-    initial_state['expires_at'] = timestamp_expired
-
-    user = VerificationCode(**initial_state)
-
-    msg_error = 'code cannot be used because is has expired'
-    with pytest.raises(VerificationCodeExpiredError, match=msg_error):
-        user.mark_as_used(datetime.now(timezone.utc))
-
-
 def test_mark_as_used_expect_timezone_date_information(initial_state: dict):
     user = VerificationCode(**initial_state)
 

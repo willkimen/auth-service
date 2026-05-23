@@ -142,13 +142,14 @@ class ResetPasswordUseCase:
         if verification_code.is_used():
             raise VerificationCodeAlreadyUsedError()
 
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
         if not verification_code.type == CodeType.RESET_PASSWORD:
             raise VerificationCodeTypeError()
 
+        if verification_code.is_expired(datetime.now(timezone.utc)):
+            raise VerificationCodeExpiredError()
+
         verification_code.mark_as_used(datetime.now(timezone.utc))
+
         user.change_password(password_hash_vo)
 
         message = Message(
