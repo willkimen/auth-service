@@ -198,16 +198,8 @@ class User:
     def last_login_at(self) -> datetime | None:
         return self._last_login_at
 
-    def record_login(self):
-        """Records a login and updates last_login_at.
-
-        Uses current UTC time. Timestamp must be timezone-aware
-        and not before created_at.
-
-        Raises:
-            ValueError: If timestamp is invalid or before
-            created_at.
-        """
+    def record_login(self) -> None:
+        """Records a login and updates last_login_at."""
         now = datetime.now(timezone.utc)
         self._last_login_at = self._validate_last_login_at(now)
 
