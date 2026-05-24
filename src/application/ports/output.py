@@ -167,6 +167,15 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
+    async def revoke_refresh(self, jti: str) -> None:
+        """Revoke a specifc refresh token.
+
+        Raises:
+            InfrastructureError:
+                If update operation fails.
+        """
+        ...
+
     async def exists(self, jti: str) -> bool:
         """Checks if a token exists.
 
