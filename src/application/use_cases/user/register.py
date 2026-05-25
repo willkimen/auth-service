@@ -16,9 +16,9 @@ class RegisterUserUseCase:
     hashes the password, persists the user, and returns a public-safe DTO.
 
     Attributes:
-        hasher (HasherPort):
+        `hasher` (HasherPort):
             - Port/Interface responsible for hashing raw passwords securely.
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data persistence operations.
     """
 
@@ -34,19 +34,24 @@ class RegisterUserUseCase:
         the email is not already in use, hashes the password, creates
         the user entity, persists it, and returns a public-safe DTO.
 
+        Args:
+            `email` (str):
+                - User email address used to identify the account.
+            `raw_password` (str):
+                - The plain-text password provided by the user,
+                  which will be validated and hashed before storage.
 
         Raises:
-            InvalidEmailError:
+            `InvalidEmailError`:
                 - Raised when the email is invalid.
-            InvalidPasswordError:
+            `InvalidPasswordError`:
                 - Raised when the password does not satisfy the
                   password policy.
-            EmailAlreadyUsedError:
+            `EmailAlreadyUsedError`:
                 - Raised when the email is already being used by another user.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
-
         """
         email_vo: Email = Email(email)
         PasswordPolicy.validate(raw_password)

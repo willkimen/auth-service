@@ -42,18 +42,18 @@ class ChangeEmailUseCase:
     the user about the successful email change.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval.
-        code_repo (VerificationCodeRepositoryPort):
+        `code_repo` (VerificationCodeRepositoryPort):
             - Port/Interface responsible for verification code
               retrieval and persistence.
-        token_repo (TokenRepositoryPort):
+        `token_repo` (TokenRepositoryPort):
             - Port/Interface responsible for token persistence
               and revocation checks.
-        token_manager (TokenManagerPort):
+        `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
               payload extraction.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for coordinating atomic
               transactional operations across repositories.
     """
@@ -85,44 +85,44 @@ class ChangeEmailUseCase:
         user about the completed email change.
 
         Args:
-            token (str):
-                Authenticated access token associated with the user.
-            code (str):
-                Verification code sent to the new email address.
+            `token` (str):
+                - Authenticated access token associated with the user.
+            `code` (str):
+                - Verification code sent to the new email address.
 
         Raises:
-            TokenError:
-                If the provided token is malformed, invalid,
-                expired, or cannot be decoded.
-            TokenNotFoundError:
-                If the token identifier does not exist in the
-                persistence layer.
-            TokenRevokedError:
-                If the token has been revoked.
-            VerificationCodeNotFoundError:
-                If no verification code exists for the user and
-                provided code.
-            VerificationCodeAlreadyUsedError:
-                If the verification code was already used.
-            VerificationCodeTypeError:
-                If the verification code type is invalid for the
-                email change operation.
-            VerificationCodeExpiredError:
-                If the verification code has expired.
-            UserNotFoundError:
-                If no user exists for the authenticated token.
-            InactiveUserError:
-                If the user account is inactive.
-            InvalidEmailError:
-                If the email extracted from the verification code
-                is invalid.
-            CorruptedPersistenceStateError:
-                Raised when persisted data cannot be reconstructed
-                into valid domain entities or value objects.
-            InfrastructureError:
-                If an unexpected failure occurs in the infrastructure
-                layer during repository, token, or persistence
-                operations.
+            `TokenError`:
+                - If the provided token is malformed, invalid,
+                  expired, or cannot be decoded.
+            `TokenNotFoundError`:
+                - If the token identifier does not exist in the
+                  persistence layer.
+            `TokenRevokedError`:
+                - If the token has been revoked.
+            `VerificationCodeNotFoundError`:
+                - If no verification code exists for the user and
+                  provided code.
+            `VerificationCodeAlreadyUsedError`:
+                - If the verification code was already used.
+            `VerificationCodeTypeError`:
+                - If the verification code type is invalid for the
+                  email change operation.
+            `VerificationCodeExpiredError`:
+                - If the verification code has expired.
+            `UserNotFoundError`:
+                - If no user exists for the authenticated token.
+            `InactiveUserError`:
+                - If the user account is inactive.
+            `InvalidEmailError`:
+                - If the email extracted from the verification code
+                  is invalid.
+            `CorruptedPersistenceStateError`:
+                - Raised when persisted data cannot be reconstructed
+                  into valid domain entities or value objects.
+            `InfrastructureError`:
+                - If an unexpected failure occurs in the infrastructure
+                  layer during repository, token, or persistence
+                  operations.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(token)
 

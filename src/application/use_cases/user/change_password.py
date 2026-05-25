@@ -41,20 +41,21 @@ class ChangePasswordUseCase:
     refresh token, verifies the authorization code, updates the user's
     password hash, revokes all active refresh tokens, and persists
     a notification message informing the user about the password change.
-    Args:
-        user_repo:
-            Repository responsible for user persistence operations.
-        token_manager:
-            Service responsible for token validation.
-        code_repo:
-            Repository responsible for verification code persistence.
-        token_repo:
-            Repository responsible for refresh token persistence
-            and revocation operations.
-        uow:
-            Transaction manager used to guarantee atomic persistence.
-        hasher:
-            Service responsible for password hashing operations.
+
+    Attributes:
+        `user_repo` (UserRepositoryPort):
+            - Repository responsible for user persistence operations.
+        `token_manager` (TokenManagerPort):
+            - Service responsible for token validation.
+        `code_repo` (VerificationCodeRepositoryPort):
+            - Repository responsible for verification code persistence.
+        `token_repo` (TokenRepositoryPort):
+            - Repository responsible for refresh token persistence
+              and revocation operations.
+        `uow` (UnitOfWorkPort):
+            - Transaction manager used to guarantee atomic persistence.
+        `hasher` (HasherPort):
+            - Service responsible for password hashing operations.
     """
 
     def __init__(
@@ -83,43 +84,42 @@ class ChangePasswordUseCase:
         """
         Executes the authenticated password change flow.
 
-
         Args:
-            token:
-                Refresh token associated with the authenticated session.
-            code:
-                Verification code authorizing the password change.
-            new_password:
-                New raw password provided by the user.
-            new_password_confirmation:
-                Confirmation password used to validate consistency.
+            `token` (str):
+                - Authenticated access token associated with the user.
+            `code` (str):
+                - Verification code authorizing the password change.
+            `new_password` (str):
+                - New raw password provided by the user.
+            `new_password_confirmation` (str):
+                - Confirmation password used to validate consistency.
 
         Raises:
-            InvalidPasswordError:
-                If password policy validation fails.
-            PasswordMismatchError:
-                If password confirmation does not match.
-            InfrastructureError:
-                If hashing, repositories, transactions,
-                or persistence operations fail.
-            TokenError:
-                If token validation fails.
-            TokenNotFoundError:
-                If token does not exist.
-            TokenRevokedError:
-                If token has been revoked.
-            UserNotFoundError:
-                If authenticated user cannot be found.
-            InactiveUserError:
-                If authenticated user is inactive.
-            VerificationCodeNotFoundError:
-                If verification code does not exist.
-            VerificationCodeAlreadyUsedError:
-                If verification code was already consumed.
-            VerificationCodeTypeError:
-                If verification code type is invalid.
-            VerificationCodeExpiredError:
-                If verification code has expired.
+            `InvalidPasswordError`:
+                - If password policy validation fails.
+            `PasswordMismatchError`:
+                - If password confirmation does not match.
+            `InfrastructureError`:
+                - If hashing, repositories, transactions,
+                  or persistence operations fail.
+            `TokenError`:
+                - If token validation fails.
+            `TokenNotFoundError`:
+                - If token does not exist.
+            `TokenRevokedError`:
+                - If token has been revoked.
+            `UserNotFoundError`:
+                - If authenticated user cannot be found.
+            `InactiveUserError`:
+                - If authenticated user is inactive.
+            `VerificationCodeNotFoundError`:
+                - If verification code does not exist.
+            `VerificationCodeAlreadyUsedError`:
+                - If verification code was already consumed.
+            `VerificationCodeTypeError`:
+                - If verification code type is invalid.
+            `VerificationCodeExpiredError`:
+                - If verification code has expired.
         """
         PasswordPolicy.validate(new_password)
 

@@ -21,10 +21,10 @@ class ResetPasswordCodeUseCase:
     required to notify the user through a message.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval
               operations.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
@@ -47,20 +47,20 @@ class ResetPasswordCodeUseCase:
         the notification message required to deliver it to the user.
 
         Args:
-            email (str):
-                User email address associated with the account.
-            code_expiration_time (int):
-                Verification code expiration time in minutes.
+            `email` (str):
+                - User email address associated with the account.
+            `code_expiration_time` (int):
+                - Verification code expiration time in minutes.
 
         Raises:
-            UserNotFoundError:
+            `UserNotFoundError`:
                 - If no user exists with the provided email.
-            InactiveUserError:
+            `InactiveUserError`:
                 - If user account is inactive.
-            CorruptedPersistenceStateError:
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """

@@ -17,16 +17,14 @@ class Message:
     by dedicated processing components.
 
     Attributes:
-        type (MessageType):
-            The specific message type to be processed.
-
-        payload (Payload):
-            The payload containing the data required
-            for message processing.
-
-        id (uuid.UUID):
-            Unique identifier for the message instance.
-            Automatically generated when omitted.
+        `type` (MessageType):
+            - The specific message type to be processed.
+        `payload` (Payload):
+            - The payload containing the data required
+              for message processing.
+        `id` (uuid.UUID):
+            - Unique identifier for the message instance.
+              Automatically generated when omitted.
     """
 
     type: MessageType

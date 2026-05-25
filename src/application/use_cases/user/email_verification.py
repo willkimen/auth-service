@@ -34,11 +34,11 @@ class EmailVerificationUseCase:
     the user about successful email verification.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data operations.
-        code_repo (VerificationCodeRepositoryPort):
+        `code_repo` (VerificationCodeRepositoryPort):
             - Port/Interface responsible for verification code operations.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
@@ -59,30 +59,30 @@ class EmailVerificationUseCase:
         registers an asynchronous notification message.
 
         Args:
-            email (str):
-                User email address associated with the account.
-            code (str):
-                Verification code informed by the user.
+            `email` (str):
+                - User email address associated with the account.
+            `code` (str):
+                - Verification code informed by the user.
 
         Raises:
-            UserNotFoundError:
-                If no user exists with the provided email.
-            VerificationCodeNotFoundError:
-                If verification code does not exist for the user and code.
-            EmailAlreadyVerifiedError:
-                If user's email is already verified.
-            InactiveUserError:
-                If user account is inactive.
-            VerificationCodeAlreadyUsedError:
-                If verification code was already used.
-            VerificationCodeExpiredError:
-                If verification code has expired.
-            VerificationCodeTypeError:
-                If verification code type is incorrect.
-            CorruptedPersistenceStateError:
+            `UserNotFoundError`:
+                - If no user exists with the provided email.
+            `VerificationCodeNotFoundError`:
+                - If verification code does not exist for the user and code.
+            `EmailAlreadyVerifiedError`:
+                - If user's email is already verified.
+            `InactiveUserError`:
+                - If user account is inactive.
+            `VerificationCodeAlreadyUsedError`:
+                - If verification code was already used.
+            `VerificationCodeExpiredError`:
+                - If verification code has expired.
+            `VerificationCodeTypeError`:
+                - If verification code type is incorrect.
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """

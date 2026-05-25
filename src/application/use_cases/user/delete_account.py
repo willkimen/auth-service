@@ -41,18 +41,18 @@ class DeleteUseCase:
     persists a notification message informing the user about account
     deletion.
 
-    Args:
-        user_repo:
-            Repository responsible for user persistence operations.
-        code_repo:
-            Repository responsible for verification code persistence.
-        token_repo:
-            Repository responsible for refresh token persistence and
-            revocation operations.
-        token_manager:
-            Service responsible for token validation and decoding.
-        uow:
-            Transaction manager used to guarantee atomic operations.
+    Attributes:
+        `user_repo` (UserRepositoryPort):
+            - Repository responsible for user persistence operations.
+        `code_repo` (VerificationCodeRepositoryPort):
+            - Repository responsible for verification code persistence.
+        `token_repo` (TokenRepositoryPort):
+            - Repository responsible for refresh token persistence and
+              revocation operations.
+        `token_manager` (TokenManagerPort):
+            - Service responsible for token validation and decoding.
+        `uow` (UnitOfWorkPort):
+            - Transaction manager used to guarantee atomic operations.
     """
 
     def __init__(
@@ -74,33 +74,33 @@ class DeleteUseCase:
         Executes the authenticated account deletion flow.
 
         Args:
-            token:
-                Refresh token associated with the authenticated session.
-            code:
-                Verification code authorizing account deletion.
+            `token` (str):
+                - Authenticated access token associated with the user.
+            `code` (str):
+                - Verification code authorizing account deletion.
 
         Raises:
-            TokenError:
-                If token validation fails at domain level.
-            InfrastructureError:
-                If token decoding, persistence, or transactional
-                operations fail unexpectedly.
-            TokenNotFoundError:
-                If token does not exist in persistence.
-            TokenRevokedError:
-                If token has been revoked.
-            UserNotFoundError:
-                If authenticated user cannot be found.
-            InactiveUserError:
-                If authenticated user is inactive.
-            VerificationCodeNotFoundError:
-                If verification code does not exist.
-            VerificationCodeAlreadyUsedError:
-                If verification code was already consumed.
-            VerificationCodeTypeError:
-                If verification code is not DELETE_ACCOUNT type.
-            VerificationCodeExpiredError:
-                If verification code has expired.
+            `TokenError`:
+                - If token validation fails at domain level.
+            `InfrastructureError`:
+                - If token decoding, persistence, or transactional
+                  operations fail unexpectedly.
+            `TokenNotFoundError`:
+                - If token does not exist in persistence.
+            `TokenRevokedError`:
+                - If token has been revoked.
+            `UserNotFoundError`:
+                - If authenticated user cannot be found.
+            `InactiveUserError`:
+                - If authenticated user is inactive.
+            `VerificationCodeNotFoundError`:
+                - If verification code does not exist.
+            `VerificationCodeAlreadyUsedError`:
+                - If verification code was already consumed.
+            `VerificationCodeTypeError`:
+                - If verification code is not DELETE_ACCOUNT type.
+            `VerificationCodeExpiredError`:
+                - If verification code has expired.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(token)
 

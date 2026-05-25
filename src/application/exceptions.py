@@ -6,7 +6,25 @@ from enum import StrEnum
 
 
 class InfrastructureErrorCode(StrEnum):
-    """Enumerates infrastructure failure error codes."""
+    """Enumerates infrastructure failure error codes.
+
+    Attributes:
+        `UNKNOWN` (str):
+            - Used when an unclassified or unexpected infrastructure
+              failure occurs.
+        `DATABASE` (str):
+            - Indicates a failure during database persistence or connection
+              operations.
+        `PASSWORD_HASHER` (str):
+            - Represents an error inside the password hashing and
+              verification service.
+        `AUTH_TOKEN` (str):
+            - Indicates a failure during cryptographic token generation,
+              signing, or processing.
+        `CORRUPTED_PERSISTENCE_STATE` (str):
+            - Raised when the retrieved database data cannot be successfully
+              mapped into valid domain objects.
+    """
 
     UNKNOWN = 'INFRA_UNKNOWN_ERROR'
     DATABASE = 'INFRA_DATABASE_ERROR'
@@ -23,9 +41,12 @@ class InfrastructureError(Exception):
     caches, queues, or JWT libraries.
 
     Args:
-        message (str): Human-readable error description.
-        code (InfrastructureErrorCode): Infrastructure error code.
-        cause (Exception | None): Original raised exception.
+        `message` (str):
+            - Human-readable error description.
+        `code` (InfrastructureErrorCode):
+            - Infrastructure error code.
+        `cause` (Exception | None):
+            - Original raised exception.
     """
 
     def __init__(
@@ -48,9 +69,8 @@ class CorruptedPersistenceStateError(InfrastructureError):
     contains invalid, inconsistent, or corrupted data.
 
     Args:
-        message (str): Human-readable error description.
-        code (InfrastructureErrorCode): Infrastructure error code.
-        cause (Exception | None): Original raised exception.
+        `cause` (Exception | None):
+            - Original raised exception.
     """
 
     def __init__(self, cause: Exception | None = None):
@@ -76,8 +96,10 @@ class ApplicationError(Exception):
     exposed by application use cases.
 
     Args:
-        message (str): Human-readable error description.
-        code (str): Stable machine-readable error identifier.
+        `message` (str):
+            - Human-readable error description.
+        `code` (str):
+            - Stable machine-readable error identifier.
     """
 
     def __init__(self, message: str, code: str):
@@ -156,7 +178,22 @@ class InvalidCredentialsError(ApplicationError):
 
 
 class TokenErrorCode(StrEnum):
-    """Enumerates token validation error codes."""
+    """Enumerates token validation error codes.
+
+    Attributes:
+        `EXPIRED` (str):
+            - Indicates that the validation failed because the token
+              has expired.
+        `INVALID_SIGNATURE` (str):
+            - Indicates that the cryptographic signature of the token
+              is invalid.
+        `MALFORMED` (str):
+            - Indicates that the token structure does not follow the
+              expected format.
+        `INVALID` (str):
+            - Used for general token validation failures that do not match
+              other codes.
+    """
 
     EXPIRED = 'TOKEN_EXPIRED'
     INVALID_SIGNATURE = 'TOKEN_INVALID_SIGNATURE'
@@ -171,7 +208,8 @@ class TokenError(ApplicationError):
     malformed payloads, invalid signatures, or invalid tokens.
 
     Args:
-        code (TokenErrorCode): Token validation failure type.
+        `code` (TokenErrorCode):
+            - Token validation failure type.
     """
 
     def __init__(self, code: TokenErrorCode):

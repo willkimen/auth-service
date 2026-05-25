@@ -10,6 +10,18 @@ class UserPublicDTO:
     """
     Represents a public DTO for User entities.
     Exposes only safe and public user data.
+
+    Attributes:
+        `public_id` (uuid.UUID):
+            - Unique public identifier for the user.
+        `email` (str):
+            - Validated email address of the user.
+        `email_verified` (bool):
+            - Flag indicating if the email has been verified.
+        `created_at` (datetime):
+            - Timestamp of when the user account was created.
+        `last_login_at` (datetime | None):
+            - Timestamp of the last successful login, if any.
     """
 
     public_id: uuid.UUID
@@ -24,10 +36,12 @@ class UserPublicDTO:
         Creates a public DTO from a User entity.
 
         Args:
-            user (User): Source entity.
+            `user` (User):
+                - Source entity.
 
         Returns:
-            UserPublicDTO: Created DTO.
+            `UserPublicDTO`:
+                - Created DTO.
         """
         return cls(
             public_id=user.public_id,

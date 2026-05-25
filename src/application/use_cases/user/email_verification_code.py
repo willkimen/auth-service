@@ -24,9 +24,9 @@ class EmailVerificationCodeUseCase:
     the Message object.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval operations.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
@@ -44,25 +44,25 @@ class EmailVerificationCodeUseCase:
         """Generates a code and persists an email verification message.
 
         Args:
-            email (str):
-                User email address used to identify the account.
-            code_expiration_time (int):
-                Verification code expiration time in minutes.
-            deadline (int):
-                Maximum number of days allowed for the user to
-                verify the email address before account expiration.
+            `email` (str):
+                - User email address used to identify the account.
+            `code_expiration_time` (int):
+                - Verification code expiration time in minutes.
+            `deadline` (int):
+                - Maximum number of days allowed for the user to
+                  verify the email address before account expiration.
 
         Raises:
-            UserNotFoundError:
+            `UserNotFoundError`:
                 - If no user exists with the provided email.
-            EmailAlreadyVerifiedError:
+            `EmailAlreadyVerifiedError`:
                 - If user's email is already verified.
-            InactiveUserError:
+            `InactiveUserError`:
                 - If user account is inactive.
-            CorruptedPersistenceStateError:
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """

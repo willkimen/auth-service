@@ -23,13 +23,13 @@ class RefreshUseCase:
     for the authenticated session.
 
     Args:
-        user_repo:
-            Repository responsible for user persistence operations.
-        token_manager:
-            Service responsible for token validation and generation.
-        token_repo:
-            Repository responsible for refresh token persistence
-            and revocation state.
+        `user_repo` (UserRepositoryPort):
+            - Repository responsible for user persistence operations.
+        `token_manager` (TokenManagerPort):
+            - Service responsible for token validation and generation.
+        `token_repo` (TokenRepositoryPort):
+            - Repository responsible for refresh token persistence and
+              revocation state.
     """
 
     def __init__(
@@ -47,26 +47,25 @@ class RefreshUseCase:
         Executes the refresh access token flow.
 
         Args:
-            token:
-                Refresh token associated with the authenticated
-                session.
+            `token` (str):
+                - Refresh token.
 
         Raises:
-            InfrastructureError:
-                If token validation, repositories, or token
-                generation operations fail.
-            TokenError:
-                If token validation fails.
-            TokenNotFoundError:
-                If refresh token does not exist.
-            TokenRevokedError:
-                If refresh token has been revoked.
-            UserNotFoundError:
-                If authenticated user cannot be found.
-            InactiveUserError:
-                If authenticated user is inactive.
-            CorruptedPersistenceStateError:
-                If persisted user state is corrupted.
+            `InfrastructureError`:
+                - If token validation, repositories, or token
+                  generation operations fail.
+            `TokenError`:
+                - If token validation fails.
+            `TokenNotFoundError`:
+                - If refresh token does not exist.
+            `TokenRevokedError`:
+                - If refresh token has been revoked.
+            `UserNotFoundError`:
+                - If authenticated user cannot be found.
+            `InactiveUserError`:
+                - If authenticated user is inactive.
+            `CorruptedPersistenceStateError`:
+                - If persisted user state is corrupted.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(token)
 

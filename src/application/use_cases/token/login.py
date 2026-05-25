@@ -31,6 +31,18 @@ class LoginUseCase:
     - Updates the user entity (e.g., last login or metadata changes)
     - Generates a new pair of tokens (access + refresh)
     - Persists the refresh token for later validation/revocation
+
+    Attributes:
+        `user_repo` (UserRepositoryPort):
+            - Port/Interface responsible for user data retrieval operations.
+        `token_repo` (TokenRepositoryPort):
+            - Port/Interface responsible for refresh token persistence and
+              revocation operations.
+        `token_manager` (TokenManagerPort):
+            - Port/Interface responsible for token generation and
+            session management.
+        `hasher` (HasherPort):
+            - Port/Interface responsible for securely verifying raw passwords.
     """
 
     def __init__(
@@ -50,24 +62,24 @@ class LoginUseCase:
         Executes the authentication flow.
 
         Args:
-            email:
-                User email used for authentication lookup.
-            password:
-                Plain password provided by the user.
+            `email` (str):
+                - User email used for authentication lookup.
+            `password` (str):
+                - Plain password provided by the user.
 
         Returns:
-            PairTokensDTO:
-                Access and refresh tokens for authenticated session.
+            `PairTokensDTO`:
+                - Access and refresh tokens for authenticated session.
 
         Raises:
-            InvalidCredentialsError:
-                If user does not exist or password is invalid.
-            InactiveUserError:
-                If user account is inactive.
-            UnverifiedEmailError:
-                If user email has not been verified.
-            InfrastructureError:
-                If repository, hashing, or token generation fails.
+            `InvalidCredentialsError`:
+                - If user does not exist or password is invalid.
+            `InactiveUserError`:
+                - If user account is inactive.
+            `UnverifiedEmailError`:
+                - If user email has not been verified.
+            `InfrastructureError`:
+                - If repository, hashing, or token generation fails.
         """
         user: User | None = await self.user_repo.get_by_email(email)
 

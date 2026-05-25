@@ -34,15 +34,15 @@ class ChangeEmailCodeUseCase:
     containing the data required to send the verification code asynchronously.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user retrieval operations.
-        token_repo (TokenRepositoryPort):
+        `token_repo` (TokenRepositoryPort):
             - Port/Interface responsible for token persistence and
               revocation state operations.
-        token_manager (TokenManagerPort):
+        `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and payload
               extraction.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
@@ -76,30 +76,30 @@ class ChangeEmailCodeUseCase:
         message responsible for email delivery.
 
         Args:
-            token (str):
-                Authentication token associated with the user session.
-            new_email (str):
-                New email address requested by the user.
-            code_expiration_time (int):
-                Verification code expiration time in minutes.
+            `token` (str):
+                - Authenticated access token associated with the user.
+            `new_email` (str):
+                - New email address requested by the user.
+            `code_expiration_time` (int):
+                - Verification code expiration time in minutes.
 
         Raises:
-            InvalidEmailError:
+            `InvalidEmailError`:
                 - Raised when the provided email is invalid.
-            TokenError:
+            `TokenError`:
                 - Raised when token validation fails.
-            TokenNotFoundError:
+            `TokenNotFoundError`:
                 - Raised when token does not exist in persistence layer.
-            TokenRevokedError:
+            `TokenRevokedError`:
                 - Raised when token has already been revoked.
-            UserNotFoundError:
+            `UserNotFoundError`:
                 - Raised when no user exists for the authenticated token.
-            InactiveUserError:
+            `InactiveUserError`:
                 - Raised when the authenticated user is inactive.
-            CorruptedPersistenceStateError:
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - Raised when an unexpected infrastructure failure occurs
                   within an output adapter.
         """

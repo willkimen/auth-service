@@ -11,11 +11,11 @@ class RevokeAllRefreshesUseCase:
     invalidating every active authenticated session for that user.
 
     Args:
-        token_manager:
-            Service responsible for token validation.
-        token_repo:
-            Repository responsible for refresh token persistence
-            and revocation operations.
+        `token_manager` (TokenManagerPort):
+            - Service responsible for token validation.
+        `token_repo` (TokenRepositoryPort):
+            - Repository responsible for refresh token persistence and
+              revocation operations.
     """
 
     def __init__(
@@ -34,15 +34,14 @@ class RevokeAllRefreshesUseCase:
         the authenticated user identified by the provided token.
 
         Args:
-            token:
-                Refresh token associated with the authenticated
-                session.
+            `token` (str):
+                - Refresh token.
 
         Raises:
-            InfrastructureError:
-                If token validation or persistence operations fail.
-            TokenError:
-                If token validation fails.
+            `InfrastructureError`:
+                - If token validation or persistence operations fail.
+            `TokenError`:
+                - If token validation fails.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(token)
         await self.token_repo.revoke_all_refreshes(token_payload.sub)

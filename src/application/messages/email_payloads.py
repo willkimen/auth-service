@@ -9,13 +9,18 @@ class EmailVerificationPayload:
     Data container for account activation emails.
 
     Attributes:
-        to (str): Recipient's email address (e.g., "user@example.com").
-        code (str): The numeric verification code (e.g., "123456").
-        expiration (str): Time duration until the code expires.
+        `to` (str):
+            - Recipient's email address (e.g., "user@example.com").
+        `code` (str):
+            - The numeric verification code (e.g., "123456").
+        `expiration` (str):
+            - Time duration until the code expires.
             Expected: numeric string (e.g., "15").
-        deadline (str): Total days the user has to complete the verification.
+        `deadline` (str):
+            - Total days the user has to complete the verification.
             Expected: numeric string (e.g., "7").
-        subject (str): Immutable email subject line.
+        `subject` (str):
+            - Immutable email subject line.
     """
 
     to: str
@@ -29,10 +34,10 @@ class EmailVerificationPayload:
         Serializes the payload to a dictionary.
 
         This method applies formatting to time-based fields:
-        - 'deadline': Appends ' days' to the numeric string for
-           template readability.
-        - 'expiration': Appends ' minutes' to the numeric
-           string to clarify duration.
+        - `deadline` - Appends ' days' to the numeric string for
+          template readability.
+        - `expiration` - Appends ' minutes' to the numeric
+          string to clarify duration.
         """
         data = asdict(self)
         data['deadline'] = f'{self.deadline} days'
@@ -46,8 +51,10 @@ class EmailVerifiedPayload:
     Data container for email verification confirmation.
 
     Attributes:
-        to (str): Recipient's email address (e.g., "user@example.com").
-        subject (str): Immutable email subject line confirming success.
+        `to` (str):
+            - Recipient's email address (e.g., "user@example.com").
+        `subject` (str):
+            - Immutable email subject line confirming success.
     """
 
     to: str
@@ -72,13 +79,18 @@ class ChangeEmailPayload:
     Security payload for authorizing an email address change.
 
     Attributes:
-        to (str): The new email address where the security code
-            will be sent (e.g., "user@example.com").
-        code (str): The verification code required to confirm the
-            ownership of the new email (e.g., "987654").
-        expiration (str): Duration until the authorization code expires.
-            Expected: numeric string (e.g., "10").
-        subject (str): Immutable email subject line for security authorization.
+        `to` (str):
+            - The new email address where the security code
+              will be sent (e.g., "user@example.com").
+        `code` (str):
+            - The verification code required to confirm the
+              ownership of the new email (e.g., "987654").
+        `expiration` (str):
+            - Duration until the authorization code expires.
+              Expected: numeric string (e.g., "10").
+        `subject` (str):
+            - Immutable email subject line for security
+              authorization.
     """
 
     to: str
@@ -90,8 +102,8 @@ class ChangeEmailPayload:
         """
         Serializes the payload to a dictionary.
 
-        The 'expiration' field is transformed from a numeric string
-        to a user-friendly format by appending ' minutes'.
+        The `expiration` field is transformed from a numeric string
+        An to a user-friendly format by appending ` minutes`.
         """
         data = asdict(self)
         data['expiration'] = f'{self.expiration} minutes'
@@ -104,9 +116,11 @@ class EmailChangedPayload:
     Final notification sent when an email update is successfully completed.
 
     Attributes:
-        to (str): The new confirmed email address of the user
-            (e.g., "new@example.com").
-        subject (str): Immutable email subject line notifying the change.
+        `to` (str):
+            - The new confirmed email address of the user
+              (e.g., "new@example.com").
+        `subject` (str):
+            - Immutable email subject line notifying the change.
     """
 
     to: str
@@ -130,10 +144,14 @@ class ChangePasswordPayload:
     Security code to authorize a password update for an active session.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        code (str): The numeric authorization code (e.g., "456123").
-        expiration (str): Minutes until code expires. Expected: "15".
-        subject (str): Immutable email subject for security verification.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `code` (str):
+            - The numeric authorization code (e.g., "456123").
+        `expiration` (str):
+            - Minutes until code expires. Expected: "15".
+        `subject` (str):
+            - Immutable email subject for security verification.
     """
 
     to: str
@@ -145,7 +163,7 @@ class ChangePasswordPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes payload to dict and appends ' minutes' to expiration.
+        Serializes payload to dict and appends `minutes` to expiration.
         """
         data = asdict(self)
         data['expiration'] = f'{self.expiration} minutes'
@@ -158,8 +176,10 @@ class PasswordChangedPayload:
     Security alert confirming that the account password was updated.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        subject (str): Immutable email subject line for security alert.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `subject` (str):
+            - Immutable email subject line for security alert.
     """
 
     to: str
@@ -181,10 +201,14 @@ class ResetPasswordPayload:
     Data for the 'Forgot Password' flow to recover account access.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        code (str): The recovery code to verify identity (e.g., "789012").
-        expiration (str): Minutes until code expires. Expected: "20".
-        subject (str): Immutable email subject for password recovery.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `code` (str):
+            - The recovery code to verify identity (e.g., "789012").
+        `expiration` (str):
+            - Minutes until code expires. Expected: "20".
+        `subject` (str):
+            - Immutable email subject for password recovery.
     """
 
     to: str
@@ -194,7 +218,7 @@ class ResetPasswordPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes payload and appends ' minutes' to the expiration field.
+        Serializes payload and appends `minutes` to the expiration field.
         """
         data = asdict(self)
         data['expiration'] = f'{self.expiration} minutes'
@@ -207,8 +231,10 @@ class PasswordResetPayload:
     Final confirmation sent after a successful password recovery reset.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        subject (str): Immutable email subject line for recovery success.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `subject` (str):
+            - Immutable email subject line for recovery success.
     """
 
     to: str
@@ -230,10 +256,14 @@ class DeleteAccountPayload:
     Security challenge to confirm permanent account deletion.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        code (str): The numeric code to authorize deletion (e.g., "321654").
-        expiration (str): Minutes until code expires. Expected: "10".
-        subject (str): Immutable email subject for deletion confirmation.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `code` (str):
+            - The numeric code to authorize deletion (e.g., "321654").
+        `expiration` (str):
+            - Minutes until code expires. Expected: "10".
+        `subject` (str):
+            - Immutable email subject for deletion confirmation.
     """
 
     to: str
@@ -243,7 +273,7 @@ class DeleteAccountPayload:
 
     def to_dict(self) -> dict:
         """
-        Serializes payload and appends ' minutes' to the expiration field.
+        Serializes payload and appends `minutes` to the expiration field.
         """
         data = asdict(self)
         data['expiration'] = f'{self.expiration} minutes'
@@ -256,8 +286,10 @@ class AccountDeletedPayload:
     Final notification sent after account and data are permanently removed.
 
     Attributes:
-        to (str): User's email address (e.g., "user@example.com").
-        subject (str): Immutable email subject for account closure.
+        `to` (str):
+            - User's email address (e.g., "user@example.com").
+        `subject` (str):
+            - Immutable email subject for account closure.
     """
 
     to: str

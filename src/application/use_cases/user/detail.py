@@ -24,13 +24,13 @@ class DetailUseCase:
     the user.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval
               operations.
-        token_repo (TokenRepositoryPort):
+        `token_repo` (TokenRepositoryPort):
             - Port/Interface responsible for token persistence and
               revocation queries.
-        token_manager (TokenManagerPort):
+        `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
               payload extraction.
     """
@@ -54,28 +54,28 @@ class DetailUseCase:
         an active user account.
 
         Args:
-            token (str):
-                Access token used to authenticate the request.
+            `token` (str):
+                - Authenticated access token associated with the user.
 
         Returns:
-            UserPublicDTO:
-                Public-safe representation of the authenticated user.
+            `UserPublicDTO`:
+                - Public-safe representation of the authenticated user.
 
         Raises:
-            TokenError:
+            `TokenError`:
                 - Raised when token validation fails.
-            TokenNotFoundError:
+            `TokenNotFoundError`:
                 - If the validated token does not exist in persistence.
-            TokenRevokedError:
+            `TokenRevokedError`:
                 - If the token has been revoked.
-            UserNotFoundError:
+            `UserNotFoundError`:
                 - If no user exists for the token subject.
-            InactiveUserError:
+            `InactiveUserError`:
                 - If user account is inactive.
-            CorruptedPersistenceStateError:
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output
                   adapter (infrastructure layer).
         """

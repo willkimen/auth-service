@@ -33,16 +33,16 @@ class DeleteCodeUseCase:
     verification code, and persists both the code and the
     notification message inside a transactional boundary.
 
-    Dependencies:
-        user_repo (UserRepositoryPort):
-            Repository responsible for retrieving user entities.
-        token_repo (TokenRepositoryPort):
-            Repository responsible for token persistence and
-            revocation checks.
-        token_manager (TokenManagerPort):
-            Service responsible for token validation and decoding.
-        uow (UnitOfWorkPort):
-            Transaction manager coordinating persistence operations.
+    Attributes:
+        `user_repo` (UserRepositoryPort):
+            - Repository responsible for retrieving user entities.
+        `token_repo` (TokenRepositoryPort):
+            - Repository responsible for token persistence and
+              revocation checks.
+        `token_manager` (TokenManagerPort):
+            - Service responsible for token validation and decoding.
+        `uow` (UnitOfWorkPort):
+            - Transaction manager coordinating persistence operations.
     """
 
     def __init__(
@@ -62,35 +62,30 @@ class DeleteCodeUseCase:
         Initializes the delete account code generation use case.
 
         Args:
-            user_repo (UserRepositoryPort):
-                Repository used to retrieve user entities.
-            token_repo (TokenRepositoryPort):
-                Repository used to validate token persistence state.
-            token_manager (TokenManagerPort):
-                Service responsible for token validation and decoding.
-            uow (UnitOfWorkPort):
-                Transaction manager coordinating persistence
-                operations.
+            `token` (str):
+                - Authenticated access token associated with the user.
+            `code_expiration_time` (int):
+                - Verification code expiration time in minutes.
 
         Raises:
-            TokenError:
-                Raised when the provided token is invalid, expired,
-                malformed, or contains invalid claims.
-            TokenNotFoundError:
-                Raised when the token JTI does not exist in persistence.
-            TokenRevokedError:
-                Raised when the token was revoked.
-            UserNotFoundError:
-                Raised when the authenticated user no longer exists.
-            InactiveUserError:
-                Raised when the authenticated user is inactive.
-            CorruptedPersistenceStateError:
-                Raised when persisted user data cannot be reconstructed
-                into valid domain objects.
-            InfrastructureError:
-                Raised when persistence operations, token operations,
-                transaction handling, or external infrastructure services
-                fail unexpectedly.
+            `TokenError`:
+                - Raised when the provided token is invalid, expired,
+                  malformed, or contains invalid claims.
+            `TokenNotFoundError`:
+                - Raised when the token JTI does not exist in persistence.
+            `TokenRevokedError`:
+                - Raised when the token was revoked.
+            `UserNotFoundError`:
+                - Raised when the authenticated user no longer exists.
+            `InactiveUserError`:
+                - Raised when the authenticated user is inactive.
+            `CorruptedPersistenceStateError`:
+                - Raised when persisted user data cannot be reconstructed
+                  into valid domain objects.
+            `InfrastructureError`:
+                - Raised when persistence operations, token operations,
+                  transaction handling, or external infrastructure services
+                  fail unexpectedly.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(token)
 

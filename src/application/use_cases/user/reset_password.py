@@ -37,16 +37,16 @@ class ResetPasswordUseCase:
     password was successfully changed.
 
     Attributes:
-        user_repo (UserRepositoryPort):
+        `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval
               operations.
-        code_repo (VerificationCodeRepositoryPort):
+        `code_repo` (VerificationCodeRepositoryPort):
             - Port/Interface responsible for verification code
               retrieval operations.
-        hasher (HasherPort):
+        `hasher` (HasherPort):
             - Port/Interface responsible for securely hashing raw
               passwords.
-        uow (UnitOfWorkPort):
+        `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
@@ -79,40 +79,40 @@ class ResetPasswordUseCase:
         tokens, and persists a notification message.
 
         Args:
-            email (str):
-                User email address associated with the account.
-            code (str):
-                Verification code informed by the user.
-            raw_password (str):
-                New raw password informed by the user.
-            raw_password_confirmation (str):
-                Confirmation password used to validate equality with
-                the new password.
+            `email` (str):
+                - User email address associated with the account.
+            `code` (str):
+                - Verification code informed by the user.
+            `raw_password` (str):
+                - New raw password informed by the user.
+            `raw_password_confirmation` (str):
+                - Confirmation password used to validate equality with
+                  the new password.
 
         Raises:
-            InvalidPasswordError:
+            `InvalidPasswordError`:
                 - Raised when the password does not satisfy the
                   password policy.
-            PasswordMismatchError:
+            `PasswordMismatchError`:
                 - Raised when password and confirmation password do
                   not match.
-            UserNotFoundError:
+            `UserNotFoundError`:
                 - If no user exists with the provided email.
-            InactiveUserError:
+            `InactiveUserError`:
                 - If user account is inactive.
-            VerificationCodeNotFoundError:
+            `VerificationCodeNotFoundError`:
                 - If verification code does not exist for the user
                   and code.
-            VerificationCodeAlreadyUsedError:
+            `VerificationCodeAlreadyUsedError`:
                 - If verification code was already used.
-            VerificationCodeExpiredError:
+            `VerificationCodeExpiredError`:
                 - If verification code has expired.
-            VerificationCodeTypeError:
+            `VerificationCodeTypeError`:
                 - If verification code type is incorrect.
-            CorruptedPersistenceStateError:
+            `CorruptedPersistenceStateError`:
                 - Raised when persisted data cannot be reconstructed
                   into valid domain objects.
-            InfrastructureError:
+            `InfrastructureError`:
                 - If an unexpected failure occurs within an output
                   adapter (infrastructure layer)
         """
