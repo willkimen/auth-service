@@ -130,7 +130,6 @@ class ChangePasswordCodeUseCase:
                 datetime.now(timezone.utc)
                 + timedelta(minutes=code_expiraton_time)
             ),
-            sent_at=None,
         )
 
         payload = ChangePasswordPayload(

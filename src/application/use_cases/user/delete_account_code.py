@@ -118,7 +118,6 @@ class DeleteCodeUseCase:
                 datetime.now(timezone.utc)
                 + timedelta(minutes=code_expiration_time)
             ),
-            sent_at=None,
         )
 
         payload = DeleteAccountPayload(

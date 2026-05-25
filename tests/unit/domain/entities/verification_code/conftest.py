@@ -23,5 +23,4 @@ def initial_state() -> dict:
         'type': CodeType.EMAIL_VERIFICATION,
         'created_at': created_at,
         'expires_at': expires_at,
-        'sent_at': None,
     }

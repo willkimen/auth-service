@@ -69,7 +69,6 @@ async def test_initialize_reset_password_process_successfully(
     assert code_arg.user_public_id == active_user.public_id
     assert code_arg.expires_at > code_arg.created_at
     assert code_arg.payload is None
-    assert code_arg.sent_at is None
     assert code_arg.used_at is None
 
     # Assert that message_repo.create()

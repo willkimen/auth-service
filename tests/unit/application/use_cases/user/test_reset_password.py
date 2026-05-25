@@ -116,7 +116,6 @@ async def test_password_reset_successfully(
     assert code_arg.type == unused_code.type
     assert code_arg.created_at == unused_code.created_at
     assert code_arg.expires_at == unused_code.expires_at
-    assert code_arg.sent_at == unused_code.sent_at
     assert code_arg.payload == unused_code.payload
     assert isinstance(code_arg.used_at, datetime)
 

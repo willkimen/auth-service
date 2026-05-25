@@ -86,7 +86,6 @@ async def test_initialize_change_email_process_successfully(
     code_arg: VerificationCode = mocks.uow.code_repo.create.call_args[0][0]
     assert code_arg.user_public_id == active_user.public_id
     assert code_arg.used_at is None
-    assert code_arg.sent_at is None
     assert code_arg.get_new_email() == new_email
     assert code_arg.expires_at > code_arg.created_at
     assert code_arg.type is CodeType.CHANGE_EMAIL

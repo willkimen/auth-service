@@ -24,7 +24,6 @@ class VerificationCode:
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
         `used_at` (datetime | None): Usage timestamp.
-        `sent_at` (datetime | None): Send timestamp.
         `payload` (dict | None): Optional metadata.
 
     Raises:
@@ -41,8 +40,6 @@ class VerificationCode:
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
             - If `code_type` is not CodeType type.
@@ -56,7 +53,6 @@ class VerificationCode:
         created_at: datetime,
         expires_at: datetime,
         used_at: datetime | None = None,
-        sent_at: datetime | None = None,
         payload: dict | None = None,
     ):
         self._code = code or Code.generate()
@@ -72,7 +68,6 @@ class VerificationCode:
         )
         self._expires_at: datetime = self._validate_expires_at(expires_at)
         self._used_at: datetime | None = self._validate_used_at(used_at)
-        self._sent_at: datetime | None = self._validate_sent_at(sent_at)
 
         self._payload: dict | None = payload
 
@@ -112,10 +107,6 @@ class VerificationCode:
     @property
     def used_at(self) -> datetime | None:
         return self._used_at
-
-    @property
-    def sent_at(self) -> datetime | None:
-        return self._sent_at
 
     @property
     def payload(self) -> dict | None:
@@ -167,14 +158,6 @@ class VerificationCode:
 
         return now >= self._expires_at
 
-    def has_been_sent(self) -> bool:
-        """Checks if the code has been sent.
-
-        Returns:
-            bool: True if sent.
-        """
-        return self._sent_at is not None
-
     def mark_as_used(self, used_at: datetime):
         """Marks the code as used.
 
@@ -192,18 +175,6 @@ class VerificationCode:
         self._validate_used_at(used_at)
 
         self._used_at = used_at
-
-    def mark_as_sent(self, sent_at: datetime):
-        """Marks the code as sent.
-
-        Args:
-            sent_at (datetime): Sent timestamp.
-
-        Raises:
-            ValueError: If not aware or before created_at.
-        """
-        self._validate_sent_at(sent_at)
-        self._sent_at = sent_at
 
     def _validate_not_before_created_at(
         self, at: datetime, field: str
@@ -328,23 +299,3 @@ class VerificationCode:
         self._validate_not_before_created_at(used_at, 'used_at')
 
         return used_at
-
-    def _validate_sent_at(self, sent_at: datetime | None) -> datetime | None:
-        """Validates sent_at timestamp.
-
-        Args:
-            sent_at (datetime | None): Sent timestamp.
-
-        Returns:
-            datetime | None: Validated timestamp.
-
-        Raises:
-            ValueError: If not aware or before created_at.
-        """
-        if sent_at is None:
-            return None
-
-        ensure_aware(sent_at, 'sent_at')
-        self._validate_not_before_created_at(sent_at, 'sent_at')
-
-        return sent_at

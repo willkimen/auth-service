@@ -20,7 +20,6 @@ def test_create_code_success(initial_state: dict):
     assert code.payload is None
     assert code.expires_at == initial_state['expires_at']
     assert code.used_at is None
-    assert not code.has_been_sent()
 
 
 def test_create_code_with_payload_success(initial_state: dict):
@@ -299,34 +298,3 @@ def test_is_expired_expect_timezone_date_information(initial_state: dict):
     msg_error = 'now must be timezone-aware'
     with pytest.raises(ValueError, match=msg_error):
         user.is_expired(datetime.now())
-
-
-# ============= mark_as_sent =====================
-def test_code_is_marked_as_sent_successfully(initial_state: dict):
-    user = VerificationCode(**initial_state)
-
-    assert not user.has_been_sent()
-
-    user.mark_as_sent(current_time)
-
-    assert user.has_been_sent()
-
-
-def test_mark_as_sent_must_include_a_timezone_information(initial_state: dict):
-    user = VerificationCode(**initial_state)
-
-    msg_error = 'sent_at must be timezone-aware'
-    with pytest.raises(ValueError, match=msg_error):
-        user.mark_as_sent(datetime.now())
-
-
-def test_mark_as_sent_cannot_be_earlier_than_creation_date(
-    initial_state: dict,
-):
-    user = VerificationCode(**initial_state)
-
-    before_created = initial_state['created_at'] - timedelta(microseconds=1)
-
-    msg_error = 'sent_at must not be before created_at'
-    with pytest.raises(ValueError, match=msg_error):
-        user.mark_as_sent(before_created)

@@ -75,7 +75,6 @@ async def test_initialize_email_verification_process_successfully(
     code_arg: VerificationCode = mocks.uow.code_repo.create.call_args[0][0]
     assert code_arg.user_public_id == unverified_user.public_id
     assert code_arg.used_at is None
-    assert code_arg.sent_at is None
     assert code_arg.expires_at > code_arg.created_at
     assert code_arg.payload is None
     assert code_arg.type is CodeType.EMAIL_VERIFICATION

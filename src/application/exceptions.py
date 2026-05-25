@@ -140,16 +140,6 @@ class PasswordMismatchError(ApplicationError):
         )
 
 
-class IncorrectPasswordError(ApplicationError):
-    """Raised when provided password is incorrect."""
-
-    def __init__(self):
-        super().__init__(
-            message='Incorrect password',
-            code='INCORRECT_PASSWORD',
-        )
-
-
 class InvalidCredentialsError(ApplicationError):
     """Raised when authentication credentials are invalid."""
 

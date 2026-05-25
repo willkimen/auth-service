@@ -96,7 +96,6 @@ def create_unused_code():
             created_at=created_at,
             expires_at=code_not_expired,
             used_at=code_not_used,
-            sent_at=code_not_sent,
             payload=payload,
         )
 
@@ -116,7 +115,6 @@ def create_used_code():
             created_at=created_at,
             expires_at=code_not_expired,
             used_at=code_used,
-            sent_at=code_not_sent,
             payload=payload,
         )
 
@@ -136,7 +134,6 @@ def create_expired_code():
             created_at=created_at,
             expires_at=code_expired,
             used_at=code_not_used,
-            sent_at=code_not_sent,
             payload=payload,
         )
 

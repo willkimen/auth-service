@@ -12,7 +12,6 @@ def new_email_verification_code(
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
-    sent_at: datetime | None,
 ) -> VerificationCode:
     """
     Creates an email verification code.
@@ -22,7 +21,6 @@ def new_email_verification_code(
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
-        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
@@ -37,8 +35,6 @@ def new_email_verification_code(
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
     """
@@ -48,7 +44,6 @@ def new_email_verification_code(
         type=CodeType.EMAIL_VERIFICATION,
         created_at=created_at,
         expires_at=expires_at,
-        sent_at=sent_at,
     )
 
 
@@ -57,7 +52,6 @@ def new_change_email_code(
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
-    sent_at: datetime | None,
     new_email: str,
 ) -> VerificationCode:
     """
@@ -68,7 +62,6 @@ def new_change_email_code(
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
-        `sent_at` (datetime): Send timestamp.
         `new_email` (str): New email value.
 
     Returns:
@@ -84,8 +77,6 @@ def new_change_email_code(
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
         InvalidEmailError:
@@ -99,7 +90,6 @@ def new_change_email_code(
         type=CodeType.CHANGE_EMAIL,
         created_at=created_at,
         expires_at=expires_at,
-        sent_at=sent_at,
         payload={'new_email': new_email},
     )
 
@@ -109,7 +99,6 @@ def new_change_password_code(
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
-    sent_at: datetime | None,
 ) -> VerificationCode:
     """
     Creates a password change verification code.
@@ -119,7 +108,6 @@ def new_change_password_code(
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
-        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
@@ -134,8 +122,6 @@ def new_change_password_code(
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
     """
@@ -145,7 +131,6 @@ def new_change_password_code(
         type=CodeType.CHANGE_PASSWORD,
         created_at=created_at,
         expires_at=expires_at,
-        sent_at=sent_at,
     )
 
 
@@ -154,7 +139,6 @@ def new_reset_password_code(
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
-    sent_at: datetime | None,
 ) -> VerificationCode:
     """
     Creates a password reset verification code.
@@ -164,7 +148,6 @@ def new_reset_password_code(
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
-        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
@@ -179,8 +162,6 @@ def new_reset_password_code(
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
     """
@@ -190,7 +171,6 @@ def new_reset_password_code(
         type=CodeType.RESET_PASSWORD,
         created_at=created_at,
         expires_at=expires_at,
-        sent_at=sent_at,
     )
 
 
@@ -199,7 +179,6 @@ def new_delete_account_code(
     code: Code | None,
     created_at: datetime,
     expires_at: datetime,
-    sent_at: datetime | None,
 ) -> VerificationCode:
     """
     Creates an account deletion verification code.
@@ -209,7 +188,6 @@ def new_delete_account_code(
         `code` (Code | None): Code instance or None to auto-generate.
         `created_at` (datetime): Creation timestamp.
         `expires_at` (datetime): Expiration timestamp.
-        `sent_at` (datetime): Send timestamp.
 
     Returns:
         VerificationCode: Created verification code.
@@ -224,8 +202,6 @@ def new_delete_account_code(
             - If `expires_at` is earlier than `created_at`.
             - If `used_at` has no timezone information.
             - If `used_at` is earlier than `created_at`.
-            - If `sent_at` has no timezone information.
-            - If `sent_at` is earlier than `created_at`.
         TypeError:
             - If `user_public_id` is not UUID type.
     """
@@ -235,5 +211,4 @@ def new_delete_account_code(
         type=CodeType.DELETE_ACCOUNT,
         created_at=created_at,
         expires_at=expires_at,
-        sent_at=sent_at,
     )

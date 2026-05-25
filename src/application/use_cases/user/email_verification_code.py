@@ -77,7 +77,7 @@ class EmailVerificationCodeUseCase:
         if not user.is_active:
             raise InactiveUserError()
 
-        # When creating a new verification code, it should start as not sent.
+        # When creating a new verification code.
         verification_code: VerificationCode = new_email_verification_code(
             user_public_id=user.public_id,
             code=Code.generate(),
@@ -86,7 +86,6 @@ class EmailVerificationCodeUseCase:
                 datetime.now(timezone.utc)
                 + timedelta(minutes=code_expiration_time)
             ),
-            sent_at=None,
         )
 
         payload = EmailVerificationPayload(

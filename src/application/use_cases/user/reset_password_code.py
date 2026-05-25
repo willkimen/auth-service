@@ -72,8 +72,7 @@ class ResetPasswordCodeUseCase:
         if not user.is_active:
             raise InactiveUserError()
 
-        # Newly generated reset password codes must start as unused
-        # and unsent.
+        # Newly generated reset password codes must start as unused.
         verification_code: VerificationCode = new_reset_password_code(
             user_public_id=user.public_id,
             code=Code.generate(),
@@ -82,7 +81,6 @@ class ResetPasswordCodeUseCase:
                 datetime.now(timezone.utc)
                 + timedelta(minutes=code_expiration_time)
             ),
-            sent_at=None,
         )
 
         payload = ResetPasswordPayload(

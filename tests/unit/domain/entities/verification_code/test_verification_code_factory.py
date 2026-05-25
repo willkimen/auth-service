@@ -25,7 +25,10 @@ new_code = Code.generate()
 
 def test_create_verification_code_success():
     code = new_email_verification_code(
-        user_public_id, new_code, created_at, expires_at, None
+        user_public_id,
+        new_code,
+        created_at,
+        expires_at,
     )
 
     assert code.code is not None
@@ -37,8 +40,6 @@ def test_create_verification_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
-    assert code.sent_at is None
-    assert not code.has_been_sent()
 
 
 def test_create_change_email_code_success():
@@ -47,7 +48,6 @@ def test_create_change_email_code_success():
         new_code,
         created_at,
         expires_at,
-        None,
         new_email,
     )
 
@@ -62,13 +62,14 @@ def test_create_change_email_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
-    assert code.sent_at is None
-    assert not code.has_been_sent()
 
 
 def test_create_change_password_code_success():
     code = new_change_password_code(
-        user_public_id, new_code, created_at, expires_at, None
+        user_public_id,
+        new_code,
+        created_at,
+        expires_at,
     )
 
     assert code.code is not None
@@ -80,13 +81,14 @@ def test_create_change_password_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
-    assert code.sent_at is None
-    assert not code.has_been_sent()
 
 
 def test_create_reset_password_code_success():
     code = new_reset_password_code(
-        user_public_id, new_code, created_at, expires_at, None
+        user_public_id,
+        new_code,
+        created_at,
+        expires_at,
     )
 
     assert code.code is not None
@@ -98,13 +100,14 @@ def test_create_reset_password_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
-    assert code.sent_at is None
-    assert not code.has_been_sent()
 
 
 def test_create_delete_account_code_success():
     code = new_delete_account_code(
-        user_public_id, new_code, created_at, expires_at, None
+        user_public_id,
+        new_code,
+        created_at,
+        expires_at,
     )
 
     assert code.code is not None
@@ -116,8 +119,6 @@ def test_create_delete_account_code_success():
     assert code.created_at == created_at
     assert code.expires_at == expires_at
     assert code.used_at is None
-    assert code.sent_at is None
-    assert not code.has_been_sent()
 
 
 def test_email_payload_must_be_in_valid_format():
@@ -127,6 +128,5 @@ def test_email_payload_must_be_in_valid_format():
             new_code,
             created_at,
             expires_at,
-            None,
             incorrect_format_email,
         )
