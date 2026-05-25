@@ -1,0 +1,89 @@
+from application.dtos.token_dto import PayloadTokenDTO
+from application.exceptions import (
+    TokenNotFoundError,
+    TokenRevokedError,
+    UserNotFoundError,
+)
+from application.ports.output import (
+    TokenManagerPort,
+    TokenRepositoryPort,
+    UserRepositoryPort,
+)
+from domain.entities.user import User
+from domain.exceptions import InactiveUserError
+
+
+class RefreshUseCase:
+    """
+    Handles the refresh access token workflow.
+
+    This use case validates the provided refresh token, verifies
+    whether the token exists and is not revoked, validates the
+    authenticated user state, and generates a new access token
+    for the authenticated session.
+
+    Args:
+        user_repo:
+            Repository responsible for user persistence operations.
+        token_manager:
+            Service responsible for token validation and generation.
+        token_repo:
+            Repository responsible for refresh token persistence
+            and revocation state.
+    """
+
+    def __init__(
+        self,
+        user_repo: UserRepositoryPort,
+        token_manager: TokenManagerPort,
+        token_repo: TokenRepositoryPort,
+    ):
+        self.user_repo = user_repo
+        self.token_manager = token_manager
+        self.token_repo = token_repo
+
+    async def execute(self, token: str) -> str:
+        """
+        Executes the refresh access token flow.
+
+        Args:
+            token:
+                Refresh token associated with the authenticated
+                session.
+
+        Raises:
+            InfrastructureError:
+                If token validation, repositories, or token
+                generation operations fail.
+            TokenError:
+                If token validation fails.
+            TokenNotFoundError:
+                If refresh token does not exist.
+            TokenRevokedError:
+                If refresh token has been revoked.
+            UserNotFoundError:
+                If authenticated user cannot be found.
+            InactiveUserError:
+                If authenticated user is inactive.
+            CorruptedPersistenceStateError:
+                If persisted user state is corrupted.
+        """
+        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+
+        if not await self.token_repo.exists(token_payload.jti):
+            raise TokenNotFoundError()
+
+        if await self.token_repo.is_revoke(token_payload.jti):
+            raise TokenRevokedError()
+
+        user: User | None = await self.user_repo.get_by_public_id(
+            token_payload.sub
+        )
+
+        if user is None:
+            raise UserNotFoundError()
+
+        if not await self.user_repo.is_active(user.public_id):
+            raise InactiveUserError()
+
+        return self.token_manager.new_access(user.public_id)
