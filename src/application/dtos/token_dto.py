@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -12,13 +12,16 @@ class PayloadTokenDTO:
             - Unique identifier for the token.
         `sub` (uuid.UUID):
             - Subject identifier associated with the user.
-        `expires_at` (datetime):
+        `exp` (int):
             - Timestamp indicating when the token expires.
+        `typ` (Literal["access", "refresh"]):
+            - Token type, strictly restricted to 'access' or 'refresh'.
     """
 
     jti: str
     sub: uuid.UUID
-    expires_at: datetime
+    exp: int
+    typ: Literal['access', 'refresh']
 
 
 @dataclass(frozen=True)
@@ -28,9 +31,12 @@ class AccessTokenDTO:
     Attributes:
         `token` (str):
             - The raw encrypted access token string.
+        `payload` (PayloadTokenDTO):
+            - The decoded metadata payload of the access token.
     """
 
     token: str
+    payload: PayloadTokenDTO
 
 
 @dataclass(frozen=True)

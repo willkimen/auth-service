@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -101,12 +101,12 @@ async def test_delete_not_performed_when_token_is_invalid(
 ):
     """
     The delete account flow is aborted when token validation fails
-    with a domain-level TokenError.
+    with a domain-level InvalidTokenError.
     """
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
     use_case = DeleteUseCase(
         user_repo=mocks.user_repo,
@@ -117,9 +117,9 @@ async def test_delete_not_performed_when_token_is_invalid(
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -165,7 +165,7 @@ async def test_delete_not_performed_when_token_validation_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -211,7 +211,7 @@ async def test_delete_not_performed_when_token_exists_check_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -247,7 +247,7 @@ async def test_delete_not_performed_when_token_not_found(
     )
 
     with pytest.raises(TokenNotFoundError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -287,7 +287,7 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
 
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -323,7 +323,7 @@ async def test_delete_not_performed_when_token_is_revoked(
     )
 
     with pytest.raises(TokenRevokedError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -361,7 +361,7 @@ async def test_delete_not_performed_when_get_user_fails(
     )
 
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -397,7 +397,7 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
     )
 
     with pytest.raises(CorruptedPersistenceStateError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -429,7 +429,7 @@ async def test_delete_not_performed_when_user_not_found(
     )
 
     with pytest.raises(UserNotFoundError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -462,7 +462,7 @@ async def test_delete_not_performed_when_user_is_inactive(
     )
 
     with pytest.raises(InactiveUserError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -500,7 +500,7 @@ async def test_delete_not_performed_when_get_code_fails(
     )
 
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -536,7 +536,7 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
     )
 
     with pytest.raises(CorruptedPersistenceStateError):
-        await use_case.execute(token=token, code=unused_code.code.value)
+        await use_case.execute(access=token, code=unused_code.code.value)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
@@ -571,7 +571,7 @@ async def test_delete_not_performed_when_code_not_found(
 
     with pytest.raises(VerificationCodeNotFoundError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
         )
 
@@ -610,7 +610,7 @@ async def test_delete_not_performed_when_code_already_used(
 
     with pytest.raises(VerificationCodeAlreadyUsedError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=used_code.code.value,
         )
 
@@ -650,7 +650,7 @@ async def test_delete_not_performed_when_code_type_is_invalid(
 
     with pytest.raises(VerificationCodeTypeError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -689,7 +689,7 @@ async def test_delete_not_performed_when_code_is_expired(
 
     with pytest.raises(VerificationCodeExpiredError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=expired_code.code.value,
         )
 
@@ -734,7 +734,7 @@ async def test_delete_not_performed_when_user_delete_fails(
 
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -780,7 +780,7 @@ async def test_delete_not_performed_when_code_delete_all_fails(
 
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -825,7 +825,7 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
 
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -869,7 +869,7 @@ async def test_delete_not_performed_when_message_create_fails(
 
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code=unused_code.code.value,
         )
 
@@ -909,10 +909,12 @@ def mocks_factory(
     token_repo.is_revoke.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager.validate.return_value = PayloadTokenDTO(
         jti=jti,
         sub=cast(uuid.UUID, user.public_id if user else None),
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     uow = AsyncMock(spec=UnitOfWorkPort)

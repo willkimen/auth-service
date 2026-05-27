@@ -72,7 +72,7 @@ class ChangeEmailUseCase:
         self.token_manager = token_manager
         self.uow = uow
 
-    async def execute(self, token: str, code: str):
+    async def execute(self, access: str, code: str):
         """
         Changes the authenticated user's email address after
         validating a previously generated email change verification
@@ -85,13 +85,13 @@ class ChangeEmailUseCase:
         user about the completed email change.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `code` (str):
                 - Verification code sent to the new email address.
 
         Raises:
-            `TokenError`:
+            `InvalidTokenError`:
                 - If the provided token is malformed, invalid,
                   expired, or cannot be decoded.
             `TokenNotFoundError`:
@@ -124,7 +124,7 @@ class ChangeEmailUseCase:
                   layer during repository, token, or persistence
                   operations.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

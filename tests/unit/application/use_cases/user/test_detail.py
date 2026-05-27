@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -26,17 +26,19 @@ from application.use_cases.user.detail import DetailUseCase
 from domain.entities.user import User
 from domain.exceptions import DomainError, InactiveUserError
 
-token = 'access-token'
+access = 'access-token'
 
 
 async def test_return_user_details_successfully(active_user: User):
     """
     Test if the authenticated user details are returned successfully.
     """
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=active_user.public_id,
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(active_user, payload)
@@ -48,7 +50,7 @@ async def test_return_user_details_successfully(active_user: User):
     )
 
     # act
-    actual_user: UserPublicDTO = await use_case.execute(token)
+    actual_user: UserPublicDTO = await use_case.execute(access)
 
     # assert returned dto
     assert actual_user.public_id == active_user.public_id
@@ -71,7 +73,7 @@ async def test_return_user_details_successfully(active_user: User):
     )
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
     mocks.token_repo.is_revoke.assert_called_once_with(payload.jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(payload.sub)
@@ -97,10 +99,10 @@ async def test_detail_fails_when_token_validation_fails_unexpectedly():
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     # assert was not called
     mocks.token_repo.exists.assert_not_called()
@@ -110,8 +112,8 @@ async def test_detail_fails_when_token_validation_fails_unexpectedly():
 
 async def test_detail_fails_when_token_is_invalid():
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.EXPIRED
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.EXPIRED
     )
     use_case = DetailUseCase(
         mocks.user_repo,
@@ -120,7 +122,7 @@ async def test_detail_fails_when_token_is_invalid():
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute('invalid-token')
 
     # assert was called
@@ -133,16 +135,15 @@ async def test_detail_fails_when_token_is_invalid():
 
 
 async def test_detail_fails_when_token_does_not_exist():
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
-
     mocks: DependeciesMocked = mocks_factory(None, payload)
-
     mocks.token_repo.exists.return_value = False
-
     use_case = DetailUseCase(
         mocks.user_repo,
         mocks.token_repo,
@@ -151,10 +152,10 @@ async def test_detail_fails_when_token_does_not_exist():
 
     # act and assert
     with pytest.raises(TokenNotFoundError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
 
@@ -168,10 +169,12 @@ async def test_detail_fails_when_token_exists_check_fails():
     Test if an exception is raised when an unexpected error occurs
     while checking if the token exists.
     """
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -190,10 +193,10 @@ async def test_detail_fails_when_token_exists_check_fails():
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
 
@@ -203,10 +206,12 @@ async def test_detail_fails_when_token_exists_check_fails():
 
 
 async def test_detail_fails_when_token_is_revoked():
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -221,10 +226,10 @@ async def test_detail_fails_when_token_is_revoked():
 
     # act and assert
     with pytest.raises(TokenRevokedError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
     mocks.token_repo.is_revoke.assert_called_once_with(payload.jti)
 
@@ -237,10 +242,12 @@ async def test_detail_fails_when_token_revocation_check_fails():
     Test if an exception is raised when an unexpected error occurs
     while checking if the token is revoked.
     """
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -259,10 +266,10 @@ async def test_detail_fails_when_token_revocation_check_fails():
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
 
@@ -273,10 +280,12 @@ async def test_detail_fails_when_token_revocation_check_fails():
 
 
 async def test_detail_fails_when_user_does_not_exist():
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -289,10 +298,10 @@ async def test_detail_fails_when_user_does_not_exist():
 
     # act and assert
     with pytest.raises(UserNotFoundError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
     mocks.token_repo.is_revoke.assert_called_once_with(payload.jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(payload.sub)
@@ -303,10 +312,12 @@ async def test_detail_fails_when_get_user_fails():
     Test if an exception is raised when an unexpected error occurs
     while trying to return a user from the repository.
     """
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -325,10 +336,10 @@ async def test_detail_fails_when_get_user_fails():
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
     mocks.token_repo.is_revoke.assert_called_once_with(payload.jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(payload.sub)
@@ -340,10 +351,12 @@ async def test_detail_fails_when_user_state_is_corrupted():
     the repository layer. Test if this error propagates to the use
     case, aborting the detail flow.
     """
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
@@ -360,10 +373,10 @@ async def test_detail_fails_when_user_state_is_corrupted():
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
 
@@ -373,10 +386,12 @@ async def test_detail_fails_when_user_state_is_corrupted():
 
 
 async def test_detail_fails_when_user_is_inactive(inactive_user: User):
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = PayloadTokenDTO(
         sub=uuid.uuid4(),
         jti='token-jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     mocks: DependeciesMocked = mocks_factory(
@@ -392,10 +407,10 @@ async def test_detail_fails_when_user_is_inactive(inactive_user: User):
 
     # act and assert
     with pytest.raises(InactiveUserError):
-        await use_case.execute(token)
+        await use_case.execute(access)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     mocks.token_repo.exists.assert_called_once_with(payload.jti)
     mocks.token_repo.is_revoke.assert_called_once_with(payload.jti)

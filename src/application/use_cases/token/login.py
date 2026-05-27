@@ -107,7 +107,7 @@ class LoginUseCase:
         await self.token_repo.save_refresh(
             pair_tokens.refresh.payload.sub,
             pair_tokens.refresh.payload.jti,
-            pair_tokens.refresh.payload.expires_at,
+            pair_tokens.refresh.payload.exp,
         )
 
         return pair_tokens

@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -99,8 +99,8 @@ async def test_refresh_aborts_when_token_is_invalid(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
     use_case = RefreshUseCase(
         user_repo=mocks.user_repo,
@@ -108,7 +108,7 @@ async def test_refresh_aborts_when_token_is_invalid(
         token_repo=mocks.token_repo,
     )
 
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(refresh_input)
 
     # assert was called
@@ -464,11 +464,13 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     token_repo.exists.return_value = True
     token_repo.is_revoke.return_value = False
 
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = Mock(spec=TokenManagerPort)
     token_manager.validate.return_value = PayloadTokenDTO(
         jti=jti,
         sub=cast(uuid.UUID, user.public_id if user else None),
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='refresh',
     )
 
     token_manager.new_access.return_value = 'access-token'

@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -35,7 +35,7 @@ from domain.enums import CodeType
 from domain.exceptions import DomainError, InactiveUserError
 from domain.value_objects.code import Code
 
-token = 'token'
+access = 'access'
 jti = 'jti'
 code_expiration_time = 15
 
@@ -65,10 +65,10 @@ async def test_initialize_account_deletion_process_successfully(
     )
 
     # act
-    await use_case.execute(token, code_expiration_time)
+    await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -138,10 +138,10 @@ async def test_delete_not_initialize_process_when_token_validation_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     # assert was not called
     mocks.token_repo.exists.assert_not_called()
@@ -158,14 +158,14 @@ async def test_delete_account_not_initialize_when_token_is_invalid(
 ):
     """
     Test if the account deletion flow is aborted when the token
-    validation fails with a TokenError.
+    validation fails with a InvalidTokenError.
 
     No persistence or user lookup operations should be executed.
     """
     mocks: DependenciesMocked = mocks_factory(active_user)
 
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
 
     use_case = DeleteCodeUseCase(
@@ -176,11 +176,11 @@ async def test_delete_account_not_initialize_when_token_is_invalid(
     )
 
     # act and assert
-    with pytest.raises(TokenError):
-        await use_case.execute(token, code_expiration_time)
+    with pytest.raises(InvalidTokenError):
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
 
     # assert was not called
     mocks.token_repo.exists.assert_not_called()
@@ -219,10 +219,10 @@ async def test_delete_account_not_initialize_when_token_check_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
 
     # assert was not called
@@ -255,10 +255,10 @@ async def test_delete_account_not_initialize_when_token_not_found(
 
     # act and assert
     with pytest.raises(TokenNotFoundError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
 
     # assert was not called
@@ -296,10 +296,10 @@ async def test_delete_account_not_initialize_when_token_revoke_check_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
 
@@ -332,10 +332,10 @@ async def test_delete_account_not_initialize_when_token_is_revoked(
 
     # act and assert
     with pytest.raises(TokenRevokedError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
 
@@ -373,10 +373,10 @@ async def test_delete_account_not_initialize_when_get_user_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -414,10 +414,10 @@ async def test_delete_account_not_initialize_when_user_state_is_corrupted(
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -449,10 +449,10 @@ async def test_delete_account_not_initialize_when_user_not_found():
 
     # act and assert
     with pytest.raises(UserNotFoundError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once()
@@ -484,10 +484,10 @@ async def test_delete_account_not_initialize_when_user_is_inactive(
 
     # act and assert
     with pytest.raises(InactiveUserError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -528,10 +528,10 @@ async def test_delete_account_not_initialize_when_persist_code_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -572,10 +572,10 @@ async def test_delete_account_not_initialize_when_persist_message_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
+        await use_case.execute(access, code_expiration_time)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
+    mocks.token_manager.validate.assert_called_once_with(access)
     mocks.token_repo.exists.assert_called_once_with(jti)
     mocks.token_repo.is_revoke.assert_called_once_with(jti)
     mocks.user_repo.get_by_public_id.assert_called_once_with(
@@ -604,10 +604,12 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     token_repo.is_revoke.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager.validate.return_value = PayloadTokenDTO(
         sub=cast(uuid.UUID, user.public_id if user else None),
         jti=jti,
-        expires_at=(datetime.now(timezone.utc) + timedelta(minutes=15)),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     uow = AsyncMock(spec=UnitOfWorkPort)

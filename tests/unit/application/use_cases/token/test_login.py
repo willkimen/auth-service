@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import cast
 from unittest.mock import AsyncMock, Mock
 
@@ -416,13 +416,24 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     token_repo.save_refresh.return_value = None
 
     token_manager = Mock(spec=TokenManagerPort)
-    access = AccessTokenDTO(token='access')
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    access = AccessTokenDTO(
+        token='access',
+        payload=PayloadTokenDTO(
+            jti='jti',
+            sub=cast(uuid.UUID, user.public_id if user else None),
+            exp=int(exp.timestamp()),
+            typ='access',
+        ),
+    )
+    exp = datetime.now(timezone.utc) + timedelta(days=7)
     refresh = RefreshTokenDTO(
         token='refresh',
         payload=PayloadTokenDTO(
             jti='jti',
             sub=cast(uuid.UUID, user.public_id if user else None),
-            expires_at=datetime.now(timezone.utc),
+            exp=int(exp.timestamp()),
+            typ='refresh',
         ),
     )
     token_manager.new_pair_token.return_value = PairTokensDTO(

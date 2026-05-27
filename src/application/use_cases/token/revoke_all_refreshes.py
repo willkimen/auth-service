@@ -26,7 +26,7 @@ class RevokeAllRefreshesUseCase:
         self.token_manager = token_manager
         self.token_repo = token_repo
 
-    async def execute(self, token: str):
+    async def execute(self, refresh: str):
         """
         Executes the mass refresh token revocation flow.
 
@@ -34,14 +34,14 @@ class RevokeAllRefreshesUseCase:
         the authenticated user identified by the provided token.
 
         Args:
-            `token` (str):
+            `refresh` (str):
                 - Refresh token.
 
         Raises:
             `InfrastructureError`:
                 - If token validation or persistence operations fail.
-            `TokenError`:
+            `InvalidTokenError`:
                 - If token validation fails.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
         await self.token_repo.revoke_all_refreshes(token_payload.sub)

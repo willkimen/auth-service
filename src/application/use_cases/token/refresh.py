@@ -42,19 +42,19 @@ class RefreshUseCase:
         self.token_manager = token_manager
         self.token_repo = token_repo
 
-    async def execute(self, token: str) -> str:
+    async def execute(self, refresh: str) -> str:
         """
         Executes the refresh access token flow.
 
         Args:
-            `token` (str):
+            `refresh` (str):
                 - Refresh token.
 
         Raises:
             `InfrastructureError`:
                 - If token validation, repositories, or token
                   generation operations fail.
-            `TokenError`:
+            `InvalidTokenError`:
                 - If token validation fails.
             `TokenNotFoundError`:
                 - If refresh token does not exist.
@@ -67,7 +67,7 @@ class RefreshUseCase:
             `CorruptedPersistenceStateError`:
                 - If persisted user state is corrupted.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

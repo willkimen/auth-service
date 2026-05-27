@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -184,8 +184,8 @@ async def test_change_email_process_not_initialize_when_token_invalid(
     The change email process is aborted when token validation fails.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
 
     use_case = ChangeEmailCodeUseCase(
@@ -196,7 +196,7 @@ async def test_change_email_process_not_initialize_when_token_invalid(
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(token, new_email, code_expiration_time)
 
     # assert was called
@@ -601,12 +601,14 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     token_repo.exists.return_value = True
     token_repo.is_revoke.return_value = False
 
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = AsyncMock(spec=TokenManagerPort)
     token_manager.validate.return_value = PayloadTokenDTO(
         # The value is only relevant when a user instance exists.
         sub=cast(uuid.UUID, user.public_id if user else None),
         jti='jti',
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     uow = AsyncMock(spec=UnitOfWorkPort)

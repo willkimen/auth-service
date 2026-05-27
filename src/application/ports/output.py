@@ -298,7 +298,7 @@ class TokenManagerPort(Protocol):
         """Validates and decodes a JWT token.
 
         Raises:
-            TokenError:
+            InvalidTokenError:
                 If token is invalid at application level:
                 - expired
                 - malformed

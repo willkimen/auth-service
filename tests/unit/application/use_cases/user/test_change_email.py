@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -114,8 +114,8 @@ async def test_email_changed_successfully(
 
 async def test_change_email_fails_when_token_invalid():
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.EXPIRED
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.EXPIRED
     )
 
     use_case = ChangeEmailUseCase(
@@ -127,7 +127,7 @@ async def test_change_email_fails_when_token_invalid():
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute('', '')
 
     # assert was called
@@ -1014,12 +1014,14 @@ def mocks_factory(
     token_repo.exists.return_value = token_exists
     token_repo.is_revoke.return_value = token_revoked
 
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = AsyncMock(spec=TokenManagerPort)
     # Simulate a validated token payload returned by token manager.
     token_manager.validate.return_value = PayloadTokenDTO(
         jti='jti',
         sub=cast(uuid.UUID, user.public_id if user else None),
-        expires_at=(datetime.now(timezone.utc) + timedelta(minutes=15)),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     uow = AsyncMock(spec=UnitOfWorkPort)

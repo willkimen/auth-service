@@ -11,9 +11,9 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     PasswordMismatchError,
-    TokenError,
-    TokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -91,7 +91,7 @@ async def test_change_password_successfully(
     )
     # act
     await use_case.execute(
-        token=token,
+        access=token,
         code=unused_code.code.value,
         new_password=new_password,
         new_password_confirmation=new_password,
@@ -165,7 +165,7 @@ async def test_password_change_not_performed_when_password_is_invalid(
     # act and assert
     with pytest.raises(InvalidPasswordError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=invalid_password,
             new_password_confirmation=invalid_password,
@@ -210,7 +210,7 @@ async def test_change_not_performed_when_password_confirmation_differs(
     # act and assert
     with pytest.raises(PasswordMismatchError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password='Password@123',
             new_password_confirmation='Password@456',
@@ -261,7 +261,7 @@ async def test_password_change_not_performed_when_password_hashing_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -296,8 +296,8 @@ async def test_password_change_not_performed_when_token_is_invalid(
         verification_code=None,
     )
 
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
 
     use_case = ChangePasswordUseCase(
@@ -310,9 +310,9 @@ async def test_password_change_not_performed_when_token_is_invalid(
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -365,7 +365,7 @@ async def test_password_change_not_performed_when_token_validation_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -418,7 +418,7 @@ async def test_password_change_not_performed_when_token_existence_check_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -471,7 +471,7 @@ async def test_password_change_not_performed_when_token_revocation_check_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -520,7 +520,7 @@ async def test_password_change_not_performed_when_token_does_not_exist(
     # act and assert
     with pytest.raises(TokenNotFoundError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -568,7 +568,7 @@ async def test_password_change_not_performed_when_token_is_revoked(
     # act and assert
     with pytest.raises(TokenRevokedError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -621,7 +621,7 @@ async def test_password_change_not_performed_when_get_user_fails(
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -675,7 +675,7 @@ async def test_password_change_not_performed_when_user_state_is_corrupted(
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -721,7 +721,7 @@ async def test_password_change_not_performed_when_user_does_not_exist():
     # act and assert
     with pytest.raises(UserNotFoundError):
         await use_case.execute(
-            token=token,
+            access=token,
             code='123456',
             new_password=new_password,
             new_password_confirmation=new_password,
@@ -1359,11 +1359,13 @@ def mocks_factory(
     token_repo.exists.return_value = True
     token_repo.is_revoke.return_value = False
 
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = AsyncMock(spec=TokenManagerPort)
     token_manager.validate.return_value = PayloadTokenDTO(
         sub=cast(uuid.UUID, user.public_id if user else None),
         jti=jti,
-        expires_at=(datetime.now(timezone.utc) + timedelta(minutes=15)),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     hasher = AsyncMock(spec=HasherPort)

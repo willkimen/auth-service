@@ -57,18 +57,18 @@ class ChangePasswordCodeUseCase:
         self.token_manager = token_manager
         self.uow = uow
 
-    async def execute(self, token: str, code_expiraton_time: int):
+    async def execute(self, access: str, code_expiraton_time: int):
         """
         Initializes the password change code generation use case.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `code_expiration_time` (int):
                 - Verification code expiration time in minutes.
 
         Raises:
-            `TokenError`:
+            `InvalidTokenError`:
                 - Raised when the provided token is invalid, expired,
                   malformed, or contains invalid claims.
             `TokenNotFoundError`:
@@ -87,7 +87,7 @@ class ChangePasswordCodeUseCase:
                   transaction handling, or external infrastructure services
                   fail unexpectedly.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

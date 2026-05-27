@@ -61,7 +61,7 @@ class ChangeEmailCodeUseCase:
 
     async def execute(
         self,
-        token: str,
+        access: str,
         new_email: str,
         code_expiration_time: int,
     ):
@@ -76,7 +76,7 @@ class ChangeEmailCodeUseCase:
         message responsible for email delivery.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `new_email` (str):
                 - New email address requested by the user.
@@ -86,7 +86,7 @@ class ChangeEmailCodeUseCase:
         Raises:
             `InvalidEmailError`:
                 - Raised when the provided email is invalid.
-            `TokenError`:
+            `InvalidTokenError`:
                 - Raised when token validation fails.
             `TokenNotFoundError`:
                 - Raised when token does not exist in persistence layer.
@@ -105,7 +105,7 @@ class ChangeEmailCodeUseCase:
         """
         email_vo = Email(new_email)
 
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

@@ -69,18 +69,18 @@ class DeleteUseCase:
         self.token_manager = token_manager
         self.uow = uow
 
-    async def execute(self, token: str, code: str):
+    async def execute(self, access: str, code: str):
         """
         Executes the authenticated account deletion flow.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `code` (str):
                 - Verification code authorizing account deletion.
 
         Raises:
-            `TokenError`:
+            `InvalidTokenError`:
                 - If token validation fails at domain level.
             `InfrastructureError`:
                 - If token decoding, persistence, or transactional
@@ -102,7 +102,7 @@ class DeleteUseCase:
             `VerificationCodeExpiredError`:
                 - If verification code has expired.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

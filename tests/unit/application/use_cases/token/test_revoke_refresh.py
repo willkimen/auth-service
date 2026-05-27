@@ -9,8 +9,8 @@ from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
 )
 from application.ports.output import TokenManagerPort, TokenRepositoryPort
 from application.use_cases.token.revoke_refresh import RevokeRefreshUseCase
@@ -43,15 +43,15 @@ async def test_revoke_refresh_aborts_when_invalid_token():
     with a domain-level token error.
     """
     mocks = mocks_factory()
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
     use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
         token_repo=mocks.token_repo,
     )
 
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(refresh_token)
 
     # assert was called
@@ -121,12 +121,13 @@ def mocks_factory() -> DependenciesMocked:
     token_repo = AsyncMock(spec=TokenRepositoryPort)
     token_repo.revoke_refresh.return_value = None
 
+    exp = datetime.now(timezone.utc) + timedelta(days=7)
     token_manager = Mock(spec=TokenManagerPort)
-
     token_manager.validate.return_value = PayloadTokenDTO(
         jti=jti,
         sub=uuid.uuid4(),
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        exp=int(exp.timestamp()),
+        typ='refresh',
     )
 
     return DependenciesMocked(

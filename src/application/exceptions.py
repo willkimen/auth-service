@@ -177,7 +177,7 @@ class InvalidCredentialsError(ApplicationError):
 # =========================
 
 
-class TokenErrorCode(StrEnum):
+class InvalidTokenErrorCode(StrEnum):
     """Enumerates token validation error codes.
 
     Attributes:
@@ -201,23 +201,25 @@ class TokenErrorCode(StrEnum):
     INVALID = 'TOKEN_INVALID'
 
 
-class TokenError(ApplicationError):
+class InvalidTokenError(ApplicationError):
     """Raised when JWT token validation fails.
 
     Used for client-related token failures such as expiration,
     malformed payloads, invalid signatures, or invalid tokens.
 
     Args:
-        `code` (TokenErrorCode):
+        `code` (InvalidTokenErrorCode):
             - Token validation failure type.
     """
 
-    def __init__(self, code: TokenErrorCode):
+    def __init__(self, code: InvalidTokenErrorCode):
         message_map = {
-            TokenErrorCode.EXPIRED: 'Token has expired.',
-            TokenErrorCode.INVALID_SIGNATURE: 'Token signature is invalid.',
-            TokenErrorCode.MALFORMED: 'Token is malformed.',
-            TokenErrorCode.INVALID: 'Token is invalid.',
+InvalidTokenErrorCode.EXPIRED: 'Token has expired.',
+InvalidTokenErrorCode.INVALID_SIGNATURE: (
+'Token signature is invalid.'
+            ),
+            InvalidTokenErrorCode.MALFORMED: 'Token is malformed.',
+InvalidTokenErrorCode.INVALID: 'Token is invalid.',
         }
 
         super().__init__(message=message_map[code], code=code.value)

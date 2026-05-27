@@ -45,7 +45,7 @@ class DetailUseCase:
         self.token_repo = token_repo
         self.token_manager = token_manager
 
-    async def execute(self, token: str) -> UserPublicDTO:
+    async def execute(self, access: str) -> UserPublicDTO:
         """
         Validates an access token and returns the associated user's
         public information.
@@ -54,7 +54,7 @@ class DetailUseCase:
         an active user account.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
 
         Returns:
@@ -62,7 +62,7 @@ class DetailUseCase:
                 - Public-safe representation of the authenticated user.
 
         Raises:
-            `TokenError`:
+            `InvalidTokenError`:
                 - Raised when token validation fails.
             `TokenNotFoundError`:
                 - If the validated token does not exist in persistence.
@@ -79,7 +79,7 @@ class DetailUseCase:
                 - If an unexpected failure occurs within an output
                   adapter (infrastructure layer).
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

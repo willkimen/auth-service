@@ -11,8 +11,8 @@ from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
-    TokenError,
-    TokenErrorCode,
+    InvalidTokenError,
+    InvalidTokenErrorCode,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -121,8 +121,8 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     when the provided token is invalid.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_manager.validate.side_effect = TokenError(
-        TokenErrorCode.INVALID
+    mocks.token_manager.validate.side_effect = InvalidTokenError(
+        InvalidTokenErrorCode.INVALID
     )
 
     use_case = ChangePasswordCodeUseCase(
@@ -133,7 +133,7 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     )
 
     # act and assert
-    with pytest.raises(TokenError):
+    with pytest.raises(InvalidTokenError):
         await use_case.execute(token, code_expiration_time)
 
     # assert was called
@@ -585,10 +585,12 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     token_repo.is_revoke.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager.validate.return_value = PayloadTokenDTO(
         jti=jti,
         sub=cast(uuid.UUID, user.public_id if user else None),
-        expires_at=(datetime.now(timezone.utc) + timedelta(minutes=15)),
+        exp=int(exp.timestamp()),
+        typ='access',
     )
 
     uow = AsyncMock(spec=UnitOfWorkPort)

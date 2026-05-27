@@ -57,18 +57,18 @@ class DeleteCodeUseCase:
         self.token_manager = token_manager
         self.uow = uow
 
-    async def execute(self, token: str, code_expiration_time: int):
+    async def execute(self, access: str, code_expiration_time: int):
         """
         Initializes the delete account code generation use case.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `code_expiration_time` (int):
                 - Verification code expiration time in minutes.
 
         Raises:
-            `TokenError`:
+            `InvalidTokenError`:
                 - Raised when the provided token is invalid, expired,
                   malformed, or contains invalid claims.
             `TokenNotFoundError`:
@@ -87,7 +87,7 @@ class DeleteCodeUseCase:
                   transaction handling, or external infrastructure services
                   fail unexpectedly.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

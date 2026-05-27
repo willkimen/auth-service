@@ -76,7 +76,7 @@ class ChangePasswordUseCase:
 
     async def execute(
         self,
-        token: str,
+        access: str,
         code: str,
         new_password: str,
         new_password_confirmation: str,
@@ -85,7 +85,7 @@ class ChangePasswordUseCase:
         Executes the authenticated password change flow.
 
         Args:
-            `token` (str):
+            `access` (str):
                 - Authenticated access token associated with the user.
             `code` (str):
                 - Verification code authorizing the password change.
@@ -102,7 +102,7 @@ class ChangePasswordUseCase:
             `InfrastructureError`:
                 - If hashing, repositories, transactions,
                   or persistence operations fail.
-            `TokenError`:
+            `InvalidTokenError`:
                 - If token validation fails.
             `TokenNotFoundError`:
                 - If token does not exist.
@@ -129,7 +129,7 @@ class ChangePasswordUseCase:
         hashed_password = self.hasher.hash(new_password)
         password_hash_vo = PasswordHash(hashed_password)
 
-        token_payload: PayloadTokenDTO = self.token_manager.validate(token)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
