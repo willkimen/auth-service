@@ -13,6 +13,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     InvalidTokenError,
     InvalidTokenErrorCode,
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -128,6 +129,46 @@ async def test_change_email_fails_when_token_invalid():
 
     # act and assert
     with pytest.raises(InvalidTokenError):
+        await use_case.execute('', '')
+
+    # assert was called
+    mocks.token_manager.validate.assert_called_once()
+
+    # assert was not called
+    mocks.token_repo.exists.assert_not_called()
+    mocks.token_repo.is_revoke.assert_not_called()
+    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.user_repo.get_by_public_id.assert_not_called()
+
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.code_repo.update.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+
+
+async def test_change_email_fails_when_token_type_is_invalid():
+    mocks: DependeciesMocked = mocks_factory(None, None)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    mocks.token_manager.validate.return_value = PayloadTokenDTO(
+        jti='jti',
+        sub=uuid.uuid4(),
+        exp=int(exp.timestamp()),
+        typ='refresh',  # incorrect type
+    )
+
+    use_case = ChangeEmailUseCase(
+        mocks.user_repo,
+        mocks.code_repo,
+        mocks.token_repo,
+        mocks.token_manager,
+        mocks.uow,
+    )
+
+    # act and assert
+    with pytest.raises(InvalidTokenTypeError):
         await use_case.execute('', '')
 
     # assert was called

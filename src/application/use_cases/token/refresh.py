@@ -1,5 +1,6 @@
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -56,6 +57,8 @@ class RefreshUseCase:
                   generation operations fail.
             `InvalidTokenError`:
                 - If token validation fails.
+            `InvalidTokenTypeError`:
+                - If token type is not a refresh token.
             `TokenNotFoundError`:
                 - If refresh token does not exist.
             `TokenRevokedError`:
@@ -68,6 +71,9 @@ class RefreshUseCase:
                 - If persisted user state is corrupted.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
+
+        if token_payload.typ != 'refresh':
+            raise InvalidTokenTypeError()
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

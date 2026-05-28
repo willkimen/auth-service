@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
+    InvalidTokenTypeError,
     PasswordMismatchError,
     TokenNotFoundError,
     TokenRevokedError,
@@ -104,6 +105,8 @@ class ChangePasswordUseCase:
                   or persistence operations fail.
             `InvalidTokenError`:
                 - If token validation fails.
+            `InvalidTokenTypeError`:
+                - If token type is not an access token.
             `TokenNotFoundError`:
                 - If token does not exist.
             `TokenRevokedError`:
@@ -130,6 +133,9 @@ class ChangePasswordUseCase:
         password_hash_vo = PasswordHash(hashed_password)
 
         token_payload: PayloadTokenDTO = self.token_manager.validate(access)
+
+        if token_payload.typ != 'access':
+            raise InvalidTokenTypeError()
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

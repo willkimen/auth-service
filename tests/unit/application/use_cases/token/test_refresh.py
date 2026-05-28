@@ -13,6 +13,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     InvalidTokenError,
     InvalidTokenErrorCode,
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -79,6 +80,36 @@ async def test_refresh_aborts_when_token_validation_fails(
     )
 
     with pytest.raises(InfrastructureError):
+        await use_case.execute(refresh_input)
+
+    # assert was called
+    mocks.token_manager.validate.assert_called_once()
+
+    # assert was not called
+    mocks.token_repo.exists.assert_not_called()
+    mocks.token_repo.is_revoke.assert_not_called()
+    mocks.user_repo.get_by_public_id.assert_not_called()
+
+
+async def test_refresh_aborts_when_token_type_is_invalid(
+    verified_user: User,
+):
+    mocks = mocks_factory(verified_user)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    mocks.token_manager.validate.return_value = PayloadTokenDTO(
+        jti='jti',
+        sub=uuid.uuid4(),
+        exp=int(exp.timestamp()),
+        typ='access',  # incorrect type
+    )
+
+    use_case = RefreshUseCase(
+        user_repo=mocks.user_repo,
+        token_manager=mocks.token_manager,
+        token_repo=mocks.token_repo,
+    )
+
+    with pytest.raises(InvalidTokenTypeError):
         await use_case.execute(refresh_input)
 
     # assert was called

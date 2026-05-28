@@ -11,6 +11,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     InvalidTokenError,
     InvalidTokenErrorCode,
+    InvalidTokenTypeError,
 )
 from application.ports.output import TokenManagerPort, TokenRepositoryPort
 from application.use_cases.token.revoke_refresh import RevokeRefreshUseCase
@@ -78,6 +79,30 @@ async def test_revoke_refresh_aborts_when_token_validation_fails():
     )
 
     with pytest.raises(InfrastructureError):
+        await use_case.execute(refresh_token)
+
+    # assert was called
+    mocks.token_manager.validate.assert_called_once()
+
+    # assert was not called
+    mocks.token_repo.revoke_refresh.assert_not_called()
+
+
+async def test_revoke_refresh_aborts_when_token_type_is_invalid():
+    mocks = mocks_factory()
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    mocks.token_manager.validate.return_value = PayloadTokenDTO(
+        jti='jti',
+        sub=uuid.uuid4(),
+        exp=int(exp.timestamp()),
+        typ='access',  # incorrect type
+    )
+    use_case = RevokeRefreshUseCase(
+        token_manager=mocks.token_manager,
+        token_repo=mocks.token_repo,
+    )
+
+    with pytest.raises(InvalidTokenTypeError):
         await use_case.execute(refresh_token)
 
     # assert was called

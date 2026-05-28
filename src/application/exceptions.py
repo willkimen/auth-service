@@ -7,7 +7,6 @@ from enum import StrEnum
 
 class InfrastructureErrorCode(StrEnum):
     """Enumerates infrastructure failure error codes.
-
     Attributes:
         `UNKNOWN` (str):
             - Used when an unclassified or unexpected infrastructure
@@ -214,12 +213,12 @@ class InvalidTokenError(ApplicationError):
 
     def __init__(self, code: InvalidTokenErrorCode):
         message_map = {
-InvalidTokenErrorCode.EXPIRED: 'Token has expired.',
-InvalidTokenErrorCode.INVALID_SIGNATURE: (
-'Token signature is invalid.'
+            InvalidTokenErrorCode.EXPIRED: 'Token has expired.',
+            InvalidTokenErrorCode.INVALID_SIGNATURE: (
+                'Token signature is invalid.'
             ),
             InvalidTokenErrorCode.MALFORMED: 'Token is malformed.',
-InvalidTokenErrorCode.INVALID: 'Token is invalid.',
+            InvalidTokenErrorCode.INVALID: 'Token is invalid.',
         }
 
         super().__init__(message=message_map[code], code=code.value)
@@ -242,4 +241,14 @@ class TokenRevokedError(ApplicationError):
         super().__init__(
             message='Token is revoked',
             code='TOKEN_REVOKED',
+        )
+
+
+class InvalidTokenTypeError(ApplicationError):
+    """Raised when the token type does not match the expected type."""
+
+    def __init__(self):
+        super().__init__(
+            message='Token type is incorrect for operation.',
+            code='TOKEN_INCORRECT_TYPE',
         )

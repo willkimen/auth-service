@@ -13,6 +13,7 @@ from application.exceptions import (
     InfrastructureErrorCode,
     InvalidTokenError,
     InvalidTokenErrorCode,
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -164,6 +165,50 @@ async def test_delete_not_performed_when_token_validation_fails(
 
     # act and assert
     with pytest.raises(InfrastructureError):
+        await use_case.execute(
+            access=token,
+            code=unused_code.code.value,
+        )
+
+    # assert was called
+    mocks.token_manager.validate.assert_called_once()
+
+    # assert was not called
+    mocks.token_repo.exists.assert_not_called()
+    mocks.token_repo.is_revoke.assert_not_called()
+    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.delete.assert_not_called()
+    mocks.uow.code_repo.delete_all.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_called()
+
+
+async def test_delete_not_performed_when_token_type_is_invalid(
+    active_user: User,
+    create_unused_code,
+):
+    unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
+    mocks = mocks_factory(active_user, unused_code)
+    exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    mocks.token_manager.validate.return_value = PayloadTokenDTO(
+        jti='jti',
+        sub=uuid.uuid4(),
+        exp=int(exp.timestamp()),
+        typ='refresh',  # incorrect type
+    )
+    use_case = DeleteUseCase(
+        user_repo=mocks.user_repo,
+        code_repo=mocks.code_repo,
+        token_repo=mocks.token_repo,
+        token_manager=mocks.token_manager,
+        uow=mocks.uow,
+    )
+
+    # act and assert
+    with pytest.raises(InvalidTokenTypeError):
         await use_case.execute(
             access=token,
             code=unused_code.code.value,

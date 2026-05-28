@@ -1,4 +1,5 @@
 from application.dtos.token_dto import PayloadTokenDTO
+from application.exceptions import InvalidTokenTypeError
 from application.ports.output import TokenManagerPort, TokenRepositoryPort
 
 
@@ -42,6 +43,12 @@ class RevokeAllRefreshesUseCase:
                 - If token validation or persistence operations fail.
             `InvalidTokenError`:
                 - If token validation fails.
+            `InvalidTokenTypeError`:
+                - If token type is not a refresh token.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
+
+        if token_payload.typ != 'refresh':
+            raise InvalidTokenTypeError()
+
         await self.token_repo.revoke_all_refreshes(token_payload.sub)

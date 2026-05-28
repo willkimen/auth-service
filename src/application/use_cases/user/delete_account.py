@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -82,6 +83,8 @@ class DeleteUseCase:
         Raises:
             `InvalidTokenError`:
                 - If token validation fails at domain level.
+            `InvalidTokenTypeError`:
+                - If token type is not an access token.
             `InfrastructureError`:
                 - If token decoding, persistence, or transactional
                   operations fail unexpectedly.
@@ -103,6 +106,9 @@ class DeleteUseCase:
                 - If verification code has expired.
         """
         token_payload: PayloadTokenDTO = self.token_manager.validate(access)
+
+        if token_payload.typ != 'access':
+            raise InvalidTokenTypeError()
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()

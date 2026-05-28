@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
+    InvalidTokenTypeError,
     TokenNotFoundError,
     TokenRevokedError,
     UserNotFoundError,
@@ -88,6 +89,8 @@ class ChangeEmailCodeUseCase:
                 - Raised when the provided email is invalid.
             `InvalidTokenError`:
                 - Raised when token validation fails.
+            `InvalidTokenTypeError`:
+                - If token type is not an access token.
             `TokenNotFoundError`:
                 - Raised when token does not exist in persistence layer.
             `TokenRevokedError`:
@@ -106,6 +109,9 @@ class ChangeEmailCodeUseCase:
         email_vo = Email(new_email)
 
         token_payload: PayloadTokenDTO = self.token_manager.validate(access)
+
+        if token_payload.typ != 'access':
+            raise InvalidTokenTypeError()
 
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
