@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "pyjwt>=2.13.0",
 ]
 
 [dependency-groups]
