@@ -1,3 +1,6 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from application.dtos.token_dto import PairTokensDTO
 from application.exceptions import (
     InvalidCredentialsError,
@@ -5,8 +8,7 @@ from application.exceptions import (
 from application.ports.output import (
     HasherPort,
     TokenManagerPort,
-    TokenRepositoryPort,
-    UserRepositoryPort,
+    UnitOfWorkPort,
 )
 from domain.entities.user import User
 from domain.exceptions import InactiveUserError, UnverifiedEmailError
@@ -33,29 +35,25 @@ class LoginUseCase:
     - Persists the refresh token for later validation/revocation
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval operations.
-        `token_repo` (TokenRepositoryPort):
-            - Port/Interface responsible for refresh token persistence and
-              revocation operations.
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token generation and
             session management.
         `hasher` (HasherPort):
             - Port/Interface responsible for securely verifying raw passwords.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        token_repo: TokenRepositoryPort,
         token_manager: TokenManagerPort,
         hasher: HasherPort,
+        uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.token_repo = token_repo
         self.token_manager = token_manager
         self.hasher = hasher
+        self.uow = uow
 
     async def execute(self, email: str, password: str) -> PairTokensDTO:
         """
@@ -81,7 +79,7 @@ class LoginUseCase:
             `InfrastructureError`:
                 - If repository, hashing, or token generation fails.
         """
-        user: User | None = await self.user_repo.get_by_email(email)
+        user: User | None = await self.uow.user_repo.get_by_email(email)
 
         if user is None:
             raise InvalidCredentialsError()
@@ -97,17 +95,25 @@ class LoginUseCase:
         if not user.email_verified:
             raise UnverifiedEmailError()
 
-        await self.user_repo.update(user)
+        user.record_login()
 
         pair_tokens: PairTokensDTO = self.token_manager.new_pair_token(
             user.public_id
         )
 
-        # InfrastructureError
-        await self.token_repo.save_refresh(
-            pair_tokens.refresh.payload.sub,
-            pair_tokens.refresh.payload.jti,
+        # convert unix timestamp to datatime aware
+        exp = datetime.fromtimestamp(
             pair_tokens.refresh.payload.exp,
+            tz=ZoneInfo('UTC'),
         )
+
+        # Persist related changes atomically as a single unit of work.
+        async with self.uow:
+            await self.uow.user_repo.update(user)
+            await self.uow.token_repo.save_refresh(
+                pair_tokens.refresh.payload.sub,
+                pair_tokens.refresh.payload.jti,
+                exp,
+            )
 
         return pair_tokens

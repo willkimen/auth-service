@@ -44,7 +44,7 @@ async def test_initialize_reset_password_process_successfully(
             Active persisted user used during the password reset flow.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act
     await use_case.execute(
@@ -53,7 +53,7 @@ async def test_initialize_reset_password_process_successfully(
     )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(email)
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
     mocks.uow.code_repo.create.assert_called_once()
     mocks.uow.message_repo.create.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
@@ -90,7 +90,7 @@ async def test_initialize_reset_password_process_successfully(
 
 async def test_user_must_exist():
     mocks: DependeciesMocked = mocks_factory(None)
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act
     with pytest.raises(UserNotFoundError):
@@ -100,7 +100,7 @@ async def test_user_must_exist():
         )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # Assert was not called
     mocks.uow.code_repo.create.assert_not_called()
@@ -118,10 +118,10 @@ async def test_reset_process_not_initialize_when_user_state_corrupted(
     case, aborting the verification flow.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
-        DomainError('some domain error')
+    mocks.uow.user_repo.get_by_email.side_effect = (
+        CorruptedPersistenceStateError(DomainError('some domain error'))
     )
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
@@ -131,7 +131,7 @@ async def test_reset_process_not_initialize_when_user_state_corrupted(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # Assert was not called
     mocks.uow.code_repo.create.assert_not_called()
@@ -148,12 +148,12 @@ async def test_reset_process_not_initialize_when_get_user_fails(
     while trying to fetch a user from the repository.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
@@ -163,7 +163,7 @@ async def test_reset_process_not_initialize_when_get_user_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # Assert was not called
     mocks.uow.code_repo.create.assert_not_called()
@@ -174,7 +174,7 @@ async def test_reset_process_not_initialize_when_get_user_fails(
 
 async def test_inactive_users_cannot_initiate_reset_process(inactive_user):
     mocks: DependeciesMocked = mocks_factory(inactive_user)
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act
     with pytest.raises(InactiveUserError):
@@ -184,7 +184,7 @@ async def test_inactive_users_cannot_initiate_reset_process(inactive_user):
         )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(email)
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
 
     # Assert was not called
     mocks.uow.code_repo.create.assert_not_called()
@@ -206,7 +206,7 @@ async def test_reset_process_not_initialize_when_code_persits_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act
     with pytest.raises(InfrastructureError):
@@ -216,7 +216,7 @@ async def test_reset_process_not_initialize_when_code_persits_fails(
         )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(email)
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
     mocks.uow.code_repo.create.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -238,7 +238,7 @@ async def test_reset_process_not_initialize_when_message_persits_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = ResetPasswordCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = ResetPasswordCodeUseCase(mocks.uow)
 
     # act
     with pytest.raises(InfrastructureError):
@@ -248,7 +248,7 @@ async def test_reset_process_not_initialize_when_message_persits_fails(
         )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(email)
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
     mocks.uow.code_repo.create.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -257,7 +257,6 @@ async def test_reset_process_not_initialize_when_message_persits_fails(
 
 @dataclass(frozen=True)
 class DependeciesMocked:
-    user_repo: AsyncMock
     uow: AsyncMock
 
 
@@ -269,13 +268,14 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     transactional persistence operations used during the password
     reset initialization flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    # Simulate a persisted user returned by repository lookup.
-    user_repo.get_by_email.return_value = user
 
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
+
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    # Simulate a persisted user returned by repository lookup.
+    uow.user_repo.get_by_email.return_value = user
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.create.return_value = None
@@ -283,4 +283,4 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
-    return DependeciesMocked(user_repo, uow)
+    return DependeciesMocked(uow)

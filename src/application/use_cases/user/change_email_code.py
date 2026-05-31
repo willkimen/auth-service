@@ -12,9 +12,7 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -35,11 +33,6 @@ class ChangeEmailCodeUseCase:
     containing the data required to send the verification code asynchronously.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user retrieval operations.
-        `token_repo` (TokenRepositoryPort):
-            - Port/Interface responsible for token persistence and
-              revocation state operations.
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and payload
               extraction.
@@ -50,13 +43,9 @@ class ChangeEmailCodeUseCase:
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        token_repo: TokenRepositoryPort,
         token_manager: TokenManagerPort,
         uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.token_repo = token_repo
         self.token_manager = token_manager
         self.uow = uow
 
@@ -113,13 +102,13 @@ class ChangeEmailCodeUseCase:
         if token_payload.typ != 'access':
             raise InvalidTokenTypeError()
 
-        if not await self.token_repo.exists(token_payload.jti):
+        if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoke(token_payload.jti):
             raise TokenRevokedError()
 
-        user: User | None = await self.user_repo.get_by_public_id(
+        user: User | None = await self.uow.user_repo.get_by_public_id(
             token_payload.sub
         )
 
@@ -149,6 +138,7 @@ class ChangeEmailCodeUseCase:
             ),
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

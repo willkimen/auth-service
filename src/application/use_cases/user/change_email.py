@@ -13,10 +13,7 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
-    VerificationCodeRepositoryPort,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -43,14 +40,6 @@ class ChangeEmailUseCase:
     the user about the successful email change.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval.
-        `code_repo` (VerificationCodeRepositoryPort):
-            - Port/Interface responsible for verification code
-              retrieval and persistence.
-        `token_repo` (TokenRepositoryPort):
-            - Port/Interface responsible for token persistence
-              and revocation checks.
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
               payload extraction.
@@ -61,15 +50,9 @@ class ChangeEmailUseCase:
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        code_repo: VerificationCodeRepositoryPort,
-        token_repo: TokenRepositoryPort,
         token_manager: TokenManagerPort,
         uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.code_repo = code_repo
-        self.token_repo = token_repo
         self.token_manager = token_manager
         self.uow = uow
 
@@ -132,15 +115,15 @@ class ChangeEmailUseCase:
         if token_payload.typ != 'access':
             raise InvalidTokenTypeError()
 
-        if not await self.token_repo.exists(token_payload.jti):
+        if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoke(token_payload.jti):
             raise TokenRevokedError()
 
         verification_code: (
             VerificationCode | None
-        ) = await self.code_repo.get_by_user_id_and_code(
+        ) = await self.uow.code_repo.get_by_user_id_and_code(
             token_payload.sub, code
         )
 
@@ -158,7 +141,7 @@ class ChangeEmailUseCase:
 
         verification_code.mark_as_used(datetime.now(timezone.utc))
 
-        user: User | None = await self.user_repo.get_by_public_id(
+        user: User | None = await self.uow.user_repo.get_by_public_id(
             token_payload.sub
         )
 
@@ -177,6 +160,7 @@ class ChangeEmailUseCase:
             payload=EmailChangedPayload(to=user.email.value),
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.update(verification_code)

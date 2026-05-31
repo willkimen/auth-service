@@ -4,7 +4,7 @@ from application.exceptions import UserNotFoundError
 from application.messages.email_payloads import EmailVerificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
-from application.ports.output import UnitOfWorkPort, UserRepositoryPort
+from application.ports.output import UnitOfWorkPort
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.entities.verification_code_factory import (
@@ -24,15 +24,12 @@ class EmailVerificationCodeUseCase:
     the Message object.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval operations.
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
 
-    def __init__(self, user_repo: UserRepositoryPort, uow: UnitOfWorkPort):
-        self.user_repo = user_repo
+    def __init__(self, uow: UnitOfWorkPort):
         self.uow = uow
 
     async def execute(
@@ -66,7 +63,7 @@ class EmailVerificationCodeUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        user: User | None = await self.user_repo.get_by_email(email)
+        user: User | None = await self.uow.user_repo.get_by_email(email)
 
         if user is None:
             raise UserNotFoundError()
@@ -100,8 +97,7 @@ class EmailVerificationCodeUseCase:
             payload=payload,
         )
 
-        # The verification code and message are persisted,
-        # in an atomic transaction.
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

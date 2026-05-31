@@ -52,7 +52,7 @@ async def test_initialize_email_verification_process_successfully(
 
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act
     await use_case.execute(
@@ -60,7 +60,7 @@ async def test_initialize_email_verification_process_successfully(
     )
 
     # Assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(
         unverified_user.email.value
     )
     mocks.uow.code_repo.create.assert_called_once()
@@ -106,14 +106,14 @@ async def test_user_must_exist():
     not exist.
     """
     mocks: DependeciesMocked = mocks_factory(None)
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(UserNotFoundError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -130,14 +130,14 @@ async def test_already_verified_user_cannot_perform_verification_again(
     already verified.
     """
     mocks: DependeciesMocked = mocks_factory(verified_user)
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -154,14 +154,14 @@ async def test_inactive_users_cannot_initiate_verification_process(
     inactive. Only active users can verify their email.
     """
     mocks: DependeciesMocked = mocks_factory(inactive_user)
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InactiveUserError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -178,19 +178,19 @@ async def test_verification_process_not_initialize_when_get_user_fails(
     while trying to fetch a user from the repository.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -208,17 +208,17 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
     case, aborting the verification flow.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
-        DomainError('some domain error')
+    mocks.uow.user_repo.get_by_email.side_effect = (
+        CorruptedPersistenceStateError(DomainError('some domain error'))
     )
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(CorruptedPersistenceStateError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -240,14 +240,14 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
     mocks.uow.__aenter__.assert_called()
     mocks.uow.__aexit__.assert_called()
     mocks.uow.code_repo.create.assert_called()
@@ -269,14 +269,14 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationCodeUseCase(mocks.user_repo, mocks.uow)
+    use_case = EmailVerificationCodeUseCase(mocks.uow)
 
     # act and arrange
     with pytest.raises(InfrastructureError):
         await use_case.execute('', 0, 0)
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_called()
     mocks.uow.__aenter__.assert_called()
     mocks.uow.__aexit__.assert_called()
     mocks.uow.code_repo.create.assert_called()
@@ -290,7 +290,6 @@ class DependeciesMocked:
     verification use case.
     """
 
-    user_repo: AsyncMock
     uow: AsyncMock
 
 
@@ -301,13 +300,14 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     The configured mocks simulate repository lookups and transactional
     persistence operations used during the verification code generation flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    # Simulate a persisted user returned by repository lookup.
-    user_repo.get_by_email.return_value = user
 
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
+
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    # Simulate a persisted user returned by repository lookup.
+    uow.user_repo.get_by_email.return_value = user
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.create.return_value = None
@@ -315,4 +315,4 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
-    return DependeciesMocked(user_repo, uow)
+    return DependeciesMocked(uow)

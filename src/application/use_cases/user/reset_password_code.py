@@ -4,7 +4,7 @@ from application.exceptions import UserNotFoundError
 from application.messages.email_payloads import ResetPasswordPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
-from application.ports.output import UnitOfWorkPort, UserRepositoryPort
+from application.ports.output import UnitOfWorkPort
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.entities.verification_code_factory import new_reset_password_code
@@ -21,20 +21,12 @@ class ResetPasswordCodeUseCase:
     required to notify the user through a message.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval
-              operations.
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
     """
 
-    def __init__(
-        self,
-        user_repo: UserRepositoryPort,
-        uow: UnitOfWorkPort,
-    ):
-        self.user_repo = user_repo
+    def __init__(self, uow: UnitOfWorkPort):
         self.uow = uow
 
     async def execute(
@@ -64,7 +56,7 @@ class ResetPasswordCodeUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        user: User | None = await self.user_repo.get_by_email(email)
+        user: User | None = await self.uow.user_repo.get_by_email(email)
 
         if user is None:
             raise UserNotFoundError()
@@ -93,8 +85,7 @@ class ResetPasswordCodeUseCase:
             type=MessageType.PASSWORD_RESET_CODE, payload=payload
         )
 
-        # The verification code and notification message are persisted
-        # atomically.
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

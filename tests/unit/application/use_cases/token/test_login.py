@@ -22,6 +22,7 @@ from application.ports.output import (
     HasherPort,
     TokenManagerPort,
     TokenRepositoryPort,
+    UnitOfWorkPort,
     UserRepositoryPort,
 )
 from application.use_cases.token.login import LoginUseCase
@@ -43,10 +44,9 @@ async def test_login_successfully(verified_user: User):
     """
     mocks = mocks_factory(verified_user)
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     result: PairTokensDTO = await use_case.execute(
@@ -54,12 +54,15 @@ async def test_login_successfully(verified_user: User):
         password=password,
     )
 
-    mocks.user_repo.get_by_email.assert_called_once_with(
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(
         verified_user.email.value
     )
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
-    mocks.token_repo.save_refresh.assert_called_once()
+    mocks.uow.token_repo.save_refresh.assert_called_once()
+    mocks.uow.user_repo.update.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
     assert result.access.token == access_token
     assert result.refresh.token == refresh_token
@@ -74,17 +77,16 @@ async def test_login_not_performed_when_user_fetch_fails(
     The login flow is aborted when user repository fails.
     """
     mocks = mocks_factory(verified_user)
-    mocks.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error fetching user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
@@ -94,12 +96,15 @@ async def test_login_not_performed_when_user_fetch_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_user_state_is_corrupted(
@@ -110,15 +115,14 @@ async def test_login_not_performed_when_user_state_is_corrupted(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
-        Exception()
+    mocks.uow.user_repo.get_by_email.side_effect = (
+        CorruptedPersistenceStateError(Exception())
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(CorruptedPersistenceStateError):
@@ -128,12 +132,15 @@ async def test_login_not_performed_when_user_state_is_corrupted(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_user_does_not_exist():
@@ -143,10 +150,9 @@ async def test_login_not_performed_when_user_does_not_exist():
     mocks = mocks_factory(None)
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InvalidCredentialsError):
@@ -156,12 +162,15 @@ async def test_login_not_performed_when_user_does_not_exist():
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_password_verification_fails_due_infra(
@@ -179,10 +188,9 @@ async def test_login_not_performed_when_password_verification_fails_due_infra(
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
@@ -192,12 +200,15 @@ async def test_login_not_performed_when_password_verification_fails_due_infra(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_password_verification_fails(
@@ -211,10 +222,9 @@ async def test_login_not_performed_when_password_verification_fails(
     mocks.hasher.verify_password.return_value = False
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InvalidCredentialsError):
@@ -224,12 +234,15 @@ async def test_login_not_performed_when_password_verification_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_user_is_inactive(
@@ -242,10 +255,9 @@ async def test_login_not_performed_when_user_is_inactive(
     mocks = mocks_factory(inactive_user)
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InactiveUserError):
@@ -255,12 +267,15 @@ async def test_login_not_performed_when_user_is_inactive(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_email_is_not_verified(
@@ -272,10 +287,9 @@ async def test_login_not_performed_when_email_is_not_verified(
     mocks = mocks_factory(unverified_user)
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(UnverifiedEmailError):
@@ -284,12 +298,15 @@ async def test_login_not_performed_when_email_is_not_verified(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_user_update_fails(
@@ -300,17 +317,16 @@ async def test_login_not_performed_when_user_update_fails(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.user_repo.update.side_effect = InfrastructureError(
+    mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error updating user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
@@ -320,13 +336,15 @@ async def test_login_not_performed_when_user_update_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
-    mocks.user_repo.update.assert_called_once()
+    mocks.token_manager.new_pair_token.assert_called_once()
+    mocks.uow.user_repo.update.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
     # assert was not called
-    mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
 
 
 async def test_login_not_performed_when_get_pair_fails(
@@ -344,10 +362,9 @@ async def test_login_not_performed_when_get_pair_fails(
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
@@ -357,13 +374,15 @@ async def test_login_not_performed_when_get_pair_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
-    mocks.user_repo.update.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.save_refresh.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_login_not_performed_when_save_refresh_fails(
@@ -374,17 +393,16 @@ async def test_login_not_performed_when_save_refresh_fails(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.token_repo.save_refresh.side_effect = InfrastructureError(
+    mocks.uow.token_repo.save_refresh.side_effect = InfrastructureError(
         'Error saving refresh token',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = LoginUseCase(
-        user_repo=mocks.user_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         hasher=mocks.hasher,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
@@ -393,27 +411,29 @@ async def test_login_not_performed_when_save_refresh_fails(
         )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
     mocks.hasher.verify_password.assert_called_once()
-    mocks.user_repo.update.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
-    mocks.token_repo.save_refresh.assert_called_once()
+    mocks.uow.user_repo.update.assert_called_once()
+    mocks.uow.token_repo.save_refresh.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
 
 @dataclass(frozen=True)
 class DependenciesMocked:
-    user_repo: AsyncMock
-    token_repo: AsyncMock
     token_manager: Mock
     hasher: Mock
+    uow: AsyncMock
 
 
 def mocks_factory(user: User | None) -> DependenciesMocked:
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    user_repo.get_by_email.return_value = user
+    uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow.user_repo.get_by_email.return_value = user
 
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
-    token_repo.save_refresh.return_value = None
+    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
+    uow.token_repo.save_refresh.return_value = None
 
     token_manager = Mock(spec=TokenManagerPort)
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -445,8 +465,7 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     hasher.verify_password.return_value = True
 
     return DependenciesMocked(
-        user_repo=user_repo,
-        token_repo=token_repo,
         token_manager=token_manager,
         hasher=hasher,
+        uow=uow,
     )

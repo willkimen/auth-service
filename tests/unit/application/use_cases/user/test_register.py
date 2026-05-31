@@ -13,6 +13,7 @@ from application.exceptions import (
 )
 from application.ports.output import (
     HasherPort,
+    UnitOfWorkPort,
     UserRepositoryPort,
 )
 from application.use_cases.user.register import RegisterUserUseCase
@@ -33,7 +34,7 @@ async def test_register_user_flow_successfully():
         - If it correctly returns an object with secure user data.
     """
     mocks: DependeciesMocked = mock_dependecies_factory()
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
 
     # act
     actual_user_public: UserPublicDTO = await use_case.execute(
@@ -61,14 +62,16 @@ async def test_register_user_flow_successfully():
     )
 
     # assert was called
-    mocks.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
-    mocks.user_repo.create.assert_called_once()
+    mocks.uow.user_repo.create.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
     # assert that user_repo.create() was called with correct arguments
     # in this case, the received argument must be a User instance with
     # the following state:
-    user_arg: User = mocks.user_repo.create.call_args[0][0]
+    user_arg: User = mocks.uow.user_repo.create.call_args[0][0]
     assert isinstance(user_arg.public_id, uuid.UUID)
     assert user_arg.hash_password.value == password_hashed
     # the returned email must have the same value as the input email.
@@ -83,7 +86,7 @@ async def test_register_user_flow_successfully():
 
 async def test_not_register_when_email_is_invalid():
     mocks: DependeciesMocked = mock_dependecies_factory()
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
     invalid_email = 'testemail.com'
 
     # act and assert
@@ -91,14 +94,16 @@ async def test_not_register_when_email_is_invalid():
         await use_case.execute(invalid_email, password_input)
 
     # assert was not called
-    mocks.user_repo.exists_by_email.assert_not_called()
+    mocks.uow.user_repo.exists_by_email.assert_not_called()
     mocks.hasher.hash.assert_not_called()
-    mocks.user_repo.create.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_not_register_when_password_is_invalid():
     mocks: DependeciesMocked = mock_dependecies_factory()
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
     invalid_password_input = 'invalidpassword'
 
     # act and assert
@@ -106,9 +111,11 @@ async def test_not_register_when_password_is_invalid():
         await use_case.execute(email_input, invalid_password_input)
 
     # assert was not called
-    mocks.user_repo.exists_by_email.assert_not_called()
+    mocks.uow.user_repo.exists_by_email.assert_not_called()
     mocks.hasher.hash.assert_not_called()
-    mocks.user_repo.create.assert_not_awaited()
+    mocks.uow.user_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_not_register_when_email_already_used():
@@ -117,19 +124,21 @@ async def test_not_register_when_email_already_used():
     Verified users do not need to be verified again.
     """
     mocks: DependeciesMocked = mock_dependecies_factory()
-    mocks.user_repo.exists_by_email.return_value = True
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    mocks.uow.user_repo.exists_by_email.return_value = True
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
 
     # act and assert
     with pytest.raises(EmailAlreadyUsedError):
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.user_repo.exists_by_email.assert_called_once()
+    mocks.uow.user_repo.exists_by_email.assert_called_once()
 
     # assert was not called
     mocks.hasher.hash.assert_not_called()
-    mocks.user_repo.create.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_checking_email_availability_can_raise_infrastructure_error():
@@ -138,23 +147,25 @@ async def test_checking_email_availability_can_raise_infrastructure_error():
     is raised when checking user existence, aborting the flow.
     """
     mocks: DependeciesMocked = mock_dependecies_factory()
-    mocks.user_repo.exists_by_email.side_effect = InfrastructureError(
+    mocks.uow.user_repo.exists_by_email.side_effect = InfrastructureError(
         message='An unexpected error occurred while accessing the database.',
         code=InfrastructureErrorCode.DATABASE,
         cause=Exception(),
     )
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
 
     # assert was not called
     mocks.hasher.hash.assert_not_called()
-    mocks.user_repo.create.assert_not_awaited()
+    mocks.uow.user_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_hashing_password_can_raise_infrastructure_error():
@@ -168,18 +179,20 @@ async def test_hashing_password_can_raise_infrastructure_error():
         code=InfrastructureErrorCode.PASSWORD_HASHER,
         cause=Exception(),
     )
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
 
     # assert was not called
-    mocks.user_repo.create.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_create_user_can_raise_infrastructure_error():
@@ -188,21 +201,23 @@ async def test_create_user_can_raise_infrastructure_error():
     is raised when trying to create the user in the database.
     """
     mocks: DependeciesMocked = mock_dependecies_factory()
-    mocks.user_repo.create.side_effect = InfrastructureError(
+    mocks.uow.user_repo.create.side_effect = InfrastructureError(
         message='An unexpected error occurred while accessing the database.',
         code=InfrastructureErrorCode.DATABASE,
         cause=Exception(),
     )
-    use_case = RegisterUserUseCase(mocks.hasher, mocks.user_repo)
+    use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
 
     # act assert
     with pytest.raises(InfrastructureError):
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
-    mocks.user_repo.create.assert_called_once()
+    mocks.uow.user_repo.create.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
 
 @dataclass(frozen=True)
@@ -213,7 +228,7 @@ class DependeciesMocked:
     """
 
     hasher: Mock
-    user_repo: AsyncMock
+    uow: AsyncMock
 
 
 def mock_dependecies_factory() -> DependeciesMocked:
@@ -229,12 +244,13 @@ def mock_dependecies_factory() -> DependeciesMocked:
     hasher = Mock(spec=HasherPort)
     hasher.hash.return_value = password_hashed
 
-    user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
     # by default, it returns False, meaning no user exists for this email.
-    user_repo.exists_by_email.return_value = False
-    user_repo.create.return_value = None
+    uow.user_repo.exists_by_email.return_value = False
+    uow.user_repo.create.return_value = None
 
     return DependeciesMocked(
         hasher=hasher,
-        user_repo=user_repo,
+        uow=uow,
     )

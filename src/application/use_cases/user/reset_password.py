@@ -11,8 +11,6 @@ from application.messages.message_types import MessageType
 from application.ports.output import (
     HasherPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
-    VerificationCodeRepositoryPort,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -37,12 +35,6 @@ class ResetPasswordUseCase:
     password was successfully changed.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval
-              operations.
-        `code_repo` (VerificationCodeRepositoryPort):
-            - Port/Interface responsible for verification code
-              retrieval operations.
         `hasher` (HasherPort):
             - Port/Interface responsible for securely hashing raw
               passwords.
@@ -53,13 +45,9 @@ class ResetPasswordUseCase:
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        code_repo: VerificationCodeRepositoryPort,
         hasher: HasherPort,
         uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.code_repo = code_repo
         self.hasher = hasher
         self.uow = uow
 
@@ -122,7 +110,7 @@ class ResetPasswordUseCase:
             raise PasswordMismatchError()
 
         # Retorna
-        user: User | None = await self.user_repo.get_by_email(email)
+        user: User | None = await self.uow.user_repo.get_by_email(email)
 
         if user is None:
             raise UserNotFoundError()
@@ -134,7 +122,9 @@ class ResetPasswordUseCase:
 
         verification_code: (
             VerificationCode | None
-        ) = await self.code_repo.get_by_user_id_and_code(user.public_id, code)
+        ) = await self.uow.code_repo.get_by_user_id_and_code(
+            user.public_id, code
+        )
 
         if verification_code is None:
             raise VerificationCodeNotFoundError()
@@ -157,6 +147,7 @@ class ResetPasswordUseCase:
             payload=PasswordResetPayload(user.email.value),
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.update(verification_code)

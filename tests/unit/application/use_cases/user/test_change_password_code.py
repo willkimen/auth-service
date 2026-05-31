@@ -60,8 +60,6 @@ async def test_initialize_change_password_process_successfully(
     mocks: DependeciesMocked = mocks_factory(active_user)
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -71,9 +69,9 @@ async def test_initialize_change_password_process_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
 
@@ -127,8 +125,6 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -141,9 +137,9 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     mocks.token_manager.validate.assert_called_once_with(token)
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -168,8 +164,6 @@ async def test_change_process_not_initialize_when_token_validation_fails(
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -182,9 +176,9 @@ async def test_change_process_not_initialize_when_token_validation_fails(
     mocks.token_manager.validate.assert_called_once_with(token)
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -206,8 +200,6 @@ async def test_change_process_not_initialize_when_token_type_is_invalid(
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -220,9 +212,9 @@ async def test_change_process_not_initialize_when_token_type_is_invalid(
     mocks.token_manager.validate.assert_called_once_with(token)
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -239,14 +231,12 @@ async def test_password_change_process_not_initialize_when_token_check_fails(
     case fails while checking if the token exists in persistence.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_repo.exists.side_effect = InfrastructureError(
+    mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error attempting to check token existence',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -257,11 +247,11 @@ async def test_password_change_process_not_initialize_when_token_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.code_repo.create.assert_not_called()
@@ -276,11 +266,9 @@ async def test_password_change_not_initialize_when_token_not_found(
     does not exist in persistence storage.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_repo.exists.return_value = False
+    mocks.uow.token_repo.exists.return_value = False
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -291,11 +279,11 @@ async def test_password_change_not_initialize_when_token_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.code_repo.create.assert_not_called()
@@ -310,15 +298,13 @@ async def test_password_change_not_initialize_when_token_revoke_check_fails(
     case fails while checking if the token is revoked.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_repo.is_revoke.side_effect = InfrastructureError(
+    mocks.uow.token_repo.is_revoke.side_effect = InfrastructureError(
         'Error attempting to check revoked token',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -329,11 +315,11 @@ async def test_password_change_not_initialize_when_token_revoke_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.code_repo.create.assert_not_called()
@@ -347,11 +333,9 @@ async def test_password_change_not_initialize_when_token_is_revoked(
     The password change flow is aborted if the token was revoked.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.token_repo.is_revoke.return_value = True
+    mocks.uow.token_repo.is_revoke.return_value = True
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -362,11 +346,11 @@ async def test_password_change_not_initialize_when_token_is_revoked(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.code_repo.create.assert_not_called()
@@ -381,15 +365,13 @@ async def test_password_change_not_initialize_when_get_user_fails(
     case fails while retrieving the user from persistence.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -400,9 +382,9 @@ async def test_password_change_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
 
@@ -421,13 +403,11 @@ async def test_password_change_not_initialize_when_user_state_is_corrupted(
     the repository returns invalid persisted user data.
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.user_repo.get_by_public_id.side_effect = (
+    mocks.uow.user_repo.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -438,9 +418,9 @@ async def test_password_change_not_initialize_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
 
@@ -459,8 +439,6 @@ async def test_password_change_not_initialize_when_user_not_found():
     mocks: DependeciesMocked = mocks_factory(None)
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -471,9 +449,9 @@ async def test_password_change_not_initialize_when_user_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -492,8 +470,6 @@ async def test_inactive_users_cannot_initialize_password_change(
     mocks: DependeciesMocked = mocks_factory(inactive_user)
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -504,9 +480,9 @@ async def test_inactive_users_cannot_initialize_password_change(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         inactive_user.public_id
     )
 
@@ -532,8 +508,6 @@ async def test_password_change_not_initialize_when_persist_code_fails(
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -544,9 +518,9 @@ async def test_password_change_not_initialize_when_persist_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
     mocks.uow.__aenter__.assert_called_once()
@@ -572,8 +546,6 @@ async def test_password_change_not_initialize_when_persist_message_fails(
     )
 
     use_case = ChangePasswordCodeUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -584,9 +556,9 @@ async def test_password_change_not_initialize_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
     mocks.uow.__aenter__.assert_called_once()
@@ -602,8 +574,6 @@ class DependeciesMocked:
     change password code use case.
     """
 
-    user_repo: AsyncMock
-    token_repo: AsyncMock
     token_manager: Mock
     uow: AsyncMock
 
@@ -616,12 +586,6 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     checks, user lookup operations, and transactional persistence
     required during the password change authorization flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    user_repo.get_by_public_id.return_value = user
-
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
-    token_repo.exists.return_value = True
-    token_repo.is_revoke.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -636,6 +600,13 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
 
+    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
+    uow.token_repo.exists.return_value = True
+    uow.token_repo.is_revoke.return_value = False
+
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow.user_repo.get_by_public_id.return_value = user
+
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.create.return_value = None
 
@@ -643,8 +614,6 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow.message_repo.create.return_value = None
 
     return DependeciesMocked(
-        user_repo=user_repo,
-        token_repo=token_repo,
         token_manager=token_manager,
         uow=uow,
     )

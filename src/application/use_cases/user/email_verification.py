@@ -7,11 +7,7 @@ from application.exceptions import (
 from application.messages.email_payloads import EmailVerifiedPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
-from application.ports.output import (
-    UnitOfWorkPort,
-    UserRepositoryPort,
-    VerificationCodeRepositoryPort,
-)
+from application.ports.output import UnitOfWorkPort
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
@@ -34,10 +30,6 @@ class EmailVerificationUseCase:
     the user about successful email verification.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data operations.
-        `code_repo` (VerificationCodeRepositoryPort):
-            - Port/Interface responsible for verification code operations.
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
               transactions across repositories.
@@ -45,12 +37,8 @@ class EmailVerificationUseCase:
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        code_repo: VerificationCodeRepositoryPort,
         uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.code_repo = code_repo
         self.uow = uow
 
     async def execute(self, email: str, code: str):
@@ -86,7 +74,7 @@ class EmailVerificationUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        user: User | None = await self.user_repo.get_by_email(email)
+        user: User | None = await self.uow.user_repo.get_by_email(email)
 
         if user is None:
             raise UserNotFoundError()
@@ -99,7 +87,7 @@ class EmailVerificationUseCase:
 
         verification_code: (
             VerificationCode | None
-        ) = await self.code_repo.get_by_user_id_and_code(
+        ) = await self.uow.code_repo.get_by_user_id_and_code(
             user.public_id,
             code,
         )
@@ -127,6 +115,7 @@ class EmailVerificationUseCase:
             payload=payload,
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.update(verification_code)

@@ -1,6 +1,6 @@
 from application.dtos.user_dto import UserPublicDTO
 from application.exceptions import EmailAlreadyUsedError
-from application.ports.output import HasherPort, UserRepositoryPort
+from application.ports.output import HasherPort, UnitOfWorkPort
 from domain.entities.user import User
 from domain.entities.user_factory import create_new_user
 from domain.policies.password import PasswordPolicy
@@ -18,13 +18,14 @@ class RegisterUserUseCase:
     Attributes:
         `hasher` (HasherPort):
             - Port/Interface responsible for hashing raw passwords securely.
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data persistence operations.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
-    def __init__(self, hasher: HasherPort, user_repo: UserRepositoryPort):
+    def __init__(self, hasher: HasherPort, uow: UnitOfWorkPort):
         self.hasher = hasher
-        self.user_repo = user_repo
+        self.uow = uow
 
     async def execute(self, email: str, raw_password: str) -> UserPublicDTO:
         """
@@ -57,7 +58,7 @@ class RegisterUserUseCase:
         PasswordPolicy.validate(raw_password)
 
         # The email must not already be associated with another account.
-        exists: bool = await self.user_repo.exists_by_email(email_vo.value)
+        exists: bool = await self.uow.user_repo.exists_by_email(email_vo.value)
         if exists is True:
             raise EmailAlreadyUsedError()
 
@@ -66,7 +67,9 @@ class RegisterUserUseCase:
 
         user: User = create_new_user(email_vo, password_hash_vo)
 
-        await self.user_repo.create(user)
+        # Persist related changes atomically as a single unit of work.
+        async with self.uow:
+            await self.uow.user_repo.create(user)
 
         # Sensitive data such as password hashes must never be exposed.
         return UserPublicDTO.from_entity(user)

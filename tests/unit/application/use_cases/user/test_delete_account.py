@@ -56,9 +56,6 @@ async def test_delete_account_successfully(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -68,12 +65,12 @@ async def test_delete_account_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once_with(jti)
-    mocks.token_repo.is_revoke.assert_called_once_with(jti)
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once_with(jti)
+    mocks.uow.token_repo.is_revoke.assert_called_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
         active_user.public_id,
         unused_code.code.value,
     )
@@ -110,9 +107,6 @@ async def test_delete_not_performed_when_token_is_invalid(
         InvalidTokenErrorCode.INVALID
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -128,10 +122,10 @@ async def test_delete_not_performed_when_token_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -156,9 +150,6 @@ async def test_delete_not_performed_when_token_validation_fails(
         Exception(),
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -174,10 +165,10 @@ async def test_delete_not_performed_when_token_validation_fails(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -200,9 +191,6 @@ async def test_delete_not_performed_when_token_type_is_invalid(
         typ='refresh',  # incorrect type
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -218,10 +206,10 @@ async def test_delete_not_performed_when_token_type_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -240,15 +228,12 @@ async def test_delete_not_performed_when_token_exists_check_fails(
     """
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.token_repo.exists.side_effect = InfrastructureError(
+    mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -262,12 +247,12 @@ async def test_delete_not_performed_when_token_exists_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -282,11 +267,8 @@ async def test_delete_not_performed_when_token_not_found(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.token_repo.exists.return_value = False
+    mocks.uow.token_repo.exists.return_value = False
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -296,12 +278,12 @@ async def test_delete_not_performed_when_token_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -316,16 +298,13 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.token_repo.is_revoke.side_effect = InfrastructureError(
+    mocks.uow.token_repo.is_revoke.side_effect = InfrastructureError(
         'Error checking token revocation',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -338,12 +317,12 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -358,11 +337,8 @@ async def test_delete_not_performed_when_token_is_revoked(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.token_repo.is_revoke.return_value = True
+    mocks.uow.token_repo.is_revoke.return_value = True
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -372,12 +348,12 @@ async def test_delete_not_performed_when_token_is_revoked(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -392,15 +368,12 @@ async def test_delete_not_performed_when_get_user_fails(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error fetching user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -410,12 +383,12 @@ async def test_delete_not_performed_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -430,13 +403,10 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.user_repo.get_by_public_id.side_effect = (
+    mocks.uow.user_repo.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('corrupted'))
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -446,12 +416,12 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -466,9 +436,6 @@ async def test_delete_not_performed_when_user_not_found(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(None, unused_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -478,12 +445,12 @@ async def test_delete_not_performed_when_user_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -499,9 +466,6 @@ async def test_delete_not_performed_when_user_is_inactive(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(inactive_user, unused_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -511,12 +475,12 @@ async def test_delete_not_performed_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
     mocks.uow.user_repo.delete.assert_not_called()
@@ -531,15 +495,14 @@ async def test_delete_not_performed_when_get_code_fails(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.code_repo.get_by_user_id_and_code.side_effect = InfrastructureError(
-        'Error fetching code',
-        InfrastructureErrorCode.DATABASE,
-        Exception(),
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
+        InfrastructureError(
+            'Error fetching code',
+            InfrastructureErrorCode.DATABASE,
+            Exception(),
+        )
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -549,10 +512,10 @@ async def test_delete_not_performed_when_get_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -569,13 +532,10 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.code_repo.get_by_user_id_and_code.side_effect = (
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('corrupted'))
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -585,10 +545,10 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -607,9 +567,6 @@ async def test_delete_not_performed_when_code_not_found(
     """
     mocks = mocks_factory(active_user, None)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -622,10 +579,10 @@ async def test_delete_not_performed_when_code_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -646,9 +603,6 @@ async def test_delete_not_performed_when_code_already_used(
     used_code = create_used_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, used_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -661,10 +615,10 @@ async def test_delete_not_performed_when_code_already_used(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -686,9 +640,6 @@ async def test_delete_not_performed_when_code_type_is_invalid(
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks = mocks_factory(active_user, unused_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -701,10 +652,10 @@ async def test_delete_not_performed_when_code_type_is_invalid(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -725,9 +676,6 @@ async def test_delete_not_performed_when_code_is_expired(
     expired_code = create_expired_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, expired_code)
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -740,10 +688,10 @@ async def test_delete_not_performed_when_code_is_expired(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -770,9 +718,6 @@ async def test_delete_not_performed_when_user_delete_fails(
     )
 
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -785,10 +730,10 @@ async def test_delete_not_performed_when_user_delete_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
     mocks.uow.user_repo.delete.assert_called_once()
@@ -816,9 +761,6 @@ async def test_delete_not_performed_when_code_delete_all_fails(
     )
 
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -831,10 +773,10 @@ async def test_delete_not_performed_when_code_delete_all_fails(
 
     # asert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.user_repo.delete.assert_called_once()
     mocks.uow.code_repo.delete_all.assert_called_once()
@@ -861,9 +803,6 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
         )
     )
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -876,10 +815,10 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.user_repo.delete.assert_called_once()
     mocks.uow.code_repo.delete_all.assert_called_once()
@@ -905,9 +844,6 @@ async def test_delete_not_performed_when_message_create_fails(
     )
 
     use_case = DeleteUseCase(
-        user_repo=mocks.user_repo,
-        code_repo=mocks.code_repo,
-        token_repo=mocks.token_repo,
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -920,10 +856,10 @@ async def test_delete_not_performed_when_message_create_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.user_repo.delete.assert_called_once()
     mocks.uow.code_repo.delete_all.assert_called_once()
@@ -933,9 +869,6 @@ async def test_delete_not_performed_when_message_create_fails(
 
 @dataclass(frozen=True)
 class DependenciesMocked:
-    user_repo: AsyncMock
-    code_repo: AsyncMock
-    token_repo: AsyncMock
     token_manager: Mock
     uow: AsyncMock
 
@@ -943,15 +876,6 @@ class DependenciesMocked:
 def mocks_factory(
     user: User | None, verification_code: VerificationCode | None
 ) -> DependenciesMocked:
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    user_repo.get_by_public_id.return_value = user
-
-    code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    code_repo.get_by_user_id_and_code.return_value = verification_code
-
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
-    token_repo.exists.return_value = True
-    token_repo.is_revoke.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -967,19 +891,22 @@ def mocks_factory(
     uow.__aexit__.return_value = False
 
     uow.user_repo = AsyncMock(spec=UserRepositoryPort)
-    uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
-    uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
-
     uow.user_repo.delete.return_value = None
+    uow.user_repo.get_by_public_id.return_value = user
+
+    uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.delete_all.return_value = None
+    uow.code_repo.get_by_user_id_and_code.return_value = verification_code
+
+    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
     uow.token_repo.revoke_all_refreshes.return_value = None
+    uow.token_repo.exists.return_value = True
+    uow.token_repo.is_revoke.return_value = False
+
+    uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
     return DependenciesMocked(
-        user_repo=user_repo,
-        code_repo=code_repo,
-        token_repo=token_repo,
         token_manager=token_manager,
         uow=uow,
     )

@@ -15,10 +15,7 @@ from application.messages.message_types import MessageType
 from application.ports.output import (
     HasherPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
-    VerificationCodeRepositoryPort,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -44,34 +41,22 @@ class ChangePasswordUseCase:
     a notification message informing the user about the password change.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Repository responsible for user persistence operations.
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation.
-        `code_repo` (VerificationCodeRepositoryPort):
-            - Repository responsible for verification code persistence.
-        `token_repo` (TokenRepositoryPort):
-            - Repository responsible for refresh token persistence
-              and revocation operations.
         `uow` (UnitOfWorkPort):
-            - Transaction manager used to guarantee atomic persistence.
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
         `hasher` (HasherPort):
             - Service responsible for password hashing operations.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
         token_manager: TokenManagerPort,
-        code_repo: VerificationCodeRepositoryPort,
-        token_repo: TokenRepositoryPort,
         uow: UnitOfWorkPort,
         hasher: HasherPort,
     ):
-        self.user_repo = user_repo
-        self.code_repo = code_repo
         self.token_manager = token_manager
-        self.token_repo = token_repo
         self.uow = uow
         self.hasher = hasher
 
@@ -137,13 +122,13 @@ class ChangePasswordUseCase:
         if token_payload.typ != 'access':
             raise InvalidTokenTypeError()
 
-        if not await self.token_repo.exists(token_payload.jti):
+        if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoke(token_payload.jti):
             raise TokenRevokedError()
 
-        user: User | None = await self.user_repo.get_by_public_id(
+        user: User | None = await self.uow.user_repo.get_by_public_id(
             token_payload.sub
         )
 
@@ -157,7 +142,9 @@ class ChangePasswordUseCase:
 
         verification_code: (
             VerificationCode | None
-        ) = await self.code_repo.get_by_user_id_and_code(user.public_id, code)
+        ) = await self.uow.code_repo.get_by_user_id_and_code(
+            user.public_id, code
+        )
 
         if verification_code is None:
             raise VerificationCodeNotFoundError()
@@ -178,6 +165,7 @@ class ChangePasswordUseCase:
             payload=PasswordChangedPayload(user.email.value),
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.update(verification_code)

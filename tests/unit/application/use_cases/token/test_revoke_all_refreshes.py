@@ -13,7 +13,11 @@ from application.exceptions import (
     InvalidTokenErrorCode,
     InvalidTokenTypeError,
 )
-from application.ports.output import TokenManagerPort, TokenRepositoryPort
+from application.ports.output import (
+    TokenManagerPort,
+    TokenRepositoryPort,
+    UnitOfWorkPort,
+)
 from application.use_cases.token.revoke_all_refreshes import (
     RevokeAllRefreshesUseCase,
 )
@@ -28,8 +32,8 @@ async def test_revoke_all_refreshes_successfully():
     """
     mocks = mocks_factory()
     use_case = RevokeAllRefreshesUseCase(
+        uow=mocks.uow,
         token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
     )
 
     # act
@@ -37,7 +41,9 @@ async def test_revoke_all_refreshes_successfully():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
 
 async def test_revoke_all_refreshes_aborts_when_invalid_token():
@@ -50,8 +56,8 @@ async def test_revoke_all_refreshes_aborts_when_invalid_token():
         InvalidTokenErrorCode.INVALID
     )
     use_case = RevokeAllRefreshesUseCase(
+        uow=mocks.uow,
         token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
     )
 
     with pytest.raises(InvalidTokenError):
@@ -61,7 +67,9 @@ async def test_revoke_all_refreshes_aborts_when_invalid_token():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
@@ -76,8 +84,8 @@ async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
         Exception(),
     )
     use_case = RevokeAllRefreshesUseCase(
+        uow=mocks.uow,
         token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
     )
 
     with pytest.raises(InfrastructureError):
@@ -87,7 +95,9 @@ async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
@@ -100,8 +110,8 @@ async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
         typ='access',  # incorrect type
     )
     use_case = RevokeAllRefreshesUseCase(
+        uow=mocks.uow,
         token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
     )
 
     with pytest.raises(InvalidTokenTypeError):
@@ -111,7 +121,9 @@ async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.__aenter__.assert_not_called()
+    mocks.uow.__aexit__.assert_not_called()
 
 
 async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
@@ -120,14 +132,16 @@ async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
     revocation fails due to an infrastructure error.
     """
     mocks = mocks_factory()
-    mocks.token_repo.revoke_all_refreshes.side_effect = InfrastructureError(
-        'Error revoking refresh tokens',
-        InfrastructureErrorCode.DATABASE,
-        Exception(),
+    mocks.uow.token_repo.revoke_all_refreshes.side_effect = (
+        InfrastructureError(
+            'Error revoking refresh tokens',
+            InfrastructureErrorCode.DATABASE,
+            Exception(),
+        )
     )
     use_case = RevokeAllRefreshesUseCase(
+        uow=mocks.uow,
         token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
     )
 
     with pytest.raises(InfrastructureError):
@@ -135,18 +149,21 @@ async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.__aexit__.assert_called_once()
 
 
 @dataclass(frozen=True)
 class DependenciesMocked:
-    token_repo: AsyncMock
+    uow: AsyncMock
     token_manager: Mock
 
 
 def mocks_factory() -> DependenciesMocked:
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
-    token_repo.revoke_all_refreshes.return_value = None
+    uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
+    uow.token_repo.revoke_all_refreshes.return_value = None
 
     exp = datetime.now(timezone.utc) + timedelta(days=7)
     token_manager = Mock(spec=TokenManagerPort)
@@ -158,6 +175,6 @@ def mocks_factory() -> DependenciesMocked:
     )
 
     return DependenciesMocked(
-        token_repo=token_repo,
+        uow=uow,
         token_manager=token_manager,
     )

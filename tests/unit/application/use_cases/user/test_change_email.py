@@ -59,9 +59,6 @@ async def test_email_changed_successfully(
         unused_code,
     )
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -71,13 +68,13 @@ async def test_email_changed_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
         active_user.public_id,
         unused_code.code.value,
     )
-    mocks.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
         active_user.public_id
     )
 
@@ -120,9 +117,6 @@ async def test_change_email_fails_when_token_invalid():
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -135,10 +129,10 @@ async def test_change_email_fails_when_token_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -160,9 +154,6 @@ async def test_change_email_fails_when_token_type_is_invalid():
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -175,10 +166,10 @@ async def test_change_email_fails_when_token_type_is_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -198,9 +189,6 @@ async def test_change_email_fails_when_token_validate_fails():
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -213,10 +201,10 @@ async def test_change_email_fails_when_token_validate_fails():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -232,12 +220,9 @@ async def test_change_email_fails_when_token_not_found():
     The email change flow is aborted when the token does not exist.
     """
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_repo.exists.return_value = False
+    mocks.uow.token_repo.exists.return_value = False
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -248,12 +233,12 @@ async def test_change_email_fails_when_token_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -270,16 +255,13 @@ async def test_change_email_fails_when_check_token_exists_fails():
     while checking token existence.
     """
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_repo.exists.side_effect = InfrastructureError(
+    mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error attempting to check token existence',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -290,12 +272,12 @@ async def test_change_email_fails_when_check_token_exists_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.is_revoke.assert_not_called()
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoke.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -311,12 +293,9 @@ async def test_change_email_fails_when_token_revoked():
     The email change flow is aborted when the token was revoked.
     """
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_repo.is_revoke.return_value = True
+    mocks.uow.token_repo.is_revoke.return_value = True
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -327,12 +306,12 @@ async def test_change_email_fails_when_token_revoked():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -349,16 +328,13 @@ async def test_change_email_fails_when_check_token_revoke_fails():
     while checking token revoke state.
     """
     mocks: DependeciesMocked = mocks_factory(None, None)
-    mocks.token_repo.is_revoke.side_effect = InfrastructureError(
+    mocks.uow.token_repo.is_revoke.side_effect = InfrastructureError(
         'Error attempting to check token revoke state',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -369,12 +345,12 @@ async def test_change_email_fails_when_check_token_revoke_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -395,9 +371,6 @@ async def test_change_email_fails_when_code_not_found(
     mocks: DependeciesMocked = mocks_factory(active_user, None)
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -407,10 +380,10 @@ async def test_change_email_fails_when_code_not_found(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -432,9 +405,6 @@ async def test_change_email_fails_when_code_already_used(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -445,12 +415,12 @@ async def test_change_email_fails_when_code_already_used(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -474,9 +444,6 @@ async def test_change_email_fails_when_code_expired(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -487,12 +454,12 @@ async def test_change_email_fails_when_code_expired(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -520,9 +487,6 @@ async def test_change_email_fails_when_code_type_invalid(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -533,12 +497,12 @@ async def test_change_email_fails_when_code_type_invalid(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -558,16 +522,15 @@ async def test_change_email_fails_when_get_code_fails(
     """
     mocks: DependeciesMocked = mocks_factory(active_user, None)
 
-    mocks.code_repo.get_by_user_id_and_code.side_effect = InfrastructureError(
-        'Error attempting to get verification code',
-        InfrastructureErrorCode.DATABASE,
-        Exception(),
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
+        InfrastructureError(
+            'Error attempting to get verification code',
+            InfrastructureErrorCode.DATABASE,
+            Exception(),
+        )
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -578,12 +541,12 @@ async def test_change_email_fails_when_get_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -603,14 +566,11 @@ async def test_change_email_fails_when_code_state_corrupted(
     """
     mocks: DependeciesMocked = mocks_factory(active_user, None)
 
-    mocks.code_repo.get_by_user_id_and_code.side_effect = (
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -621,12 +581,12 @@ async def test_change_email_fails_when_code_state_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_called()
 
     mocks.uow.__aenter__.assert_not_called()
     mocks.uow.__aexit__.assert_not_called()
@@ -651,9 +611,6 @@ async def test_change_email_fails_when_user_not_found(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -664,10 +621,10 @@ async def test_change_email_fails_when_user_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -694,9 +651,6 @@ async def test_change_email_fails_when_user_inactive(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -707,10 +661,10 @@ async def test_change_email_fails_when_user_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -735,16 +689,13 @@ async def test_change_email_fails_when_get_user_fails(
         unused_code,
     )
 
-    mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -755,10 +706,10 @@ async def test_change_email_fails_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -783,14 +734,11 @@ async def test_change_email_fails_when_user_state_corrupted(
         unused_code,
     )
 
-    mocks.user_repo.get_by_public_id.side_effect = (
+    mocks.uow.user_repo.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -801,10 +749,10 @@ async def test_change_email_fails_when_user_state_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -837,9 +785,6 @@ async def test_change_email_fails_when_persist_user_update_fails(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -850,10 +795,10 @@ async def test_change_email_fails_when_persist_user_update_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -887,9 +832,6 @@ async def test_change_email_fails_when_persist_code_update_fails(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -900,10 +842,10 @@ async def test_change_email_fails_when_persist_code_update_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -937,9 +879,6 @@ async def test_change_email_fails_when_persist_message_fails(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -950,10 +889,10 @@ async def test_change_email_fails_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -989,9 +928,6 @@ async def test_change_email_fails_when_revoke_refresh_tokens_fails(
     )
 
     use_case = ChangeEmailUseCase(
-        mocks.user_repo,
-        mocks.code_repo,
-        mocks.token_repo,
         mocks.token_manager,
         mocks.uow,
     )
@@ -1002,10 +938,10 @@ async def test_change_email_fails_when_revoke_refresh_tokens_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoke.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.is_revoke.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_public_id.assert_called_once()
 
     mocks.uow.__aenter__.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -1023,9 +959,6 @@ class DependeciesMocked:
     change email use case.
     """
 
-    user_repo: AsyncMock
-    code_repo: AsyncMock
-    token_repo: AsyncMock
     token_manager: AsyncMock
     uow: AsyncMock
 
@@ -1043,17 +976,6 @@ def mocks_factory(
     verification code lookup, user lookup, and transactional
     persistence operations used during the email change flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    # Simulate a persisted user returned by repository lookup.
-    user_repo.get_by_public_id.return_value = user
-
-    code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    # Simulate a persisted verification code returned by repository lookup.
-    code_repo.get_by_user_id_and_code.return_value = verification_code
-
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
-    token_repo.exists.return_value = token_exists
-    token_repo.is_revoke.return_value = token_revoked
 
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = AsyncMock(spec=TokenManagerPort)
@@ -1071,20 +993,23 @@ def mocks_factory(
 
     uow.user_repo = AsyncMock(spec=UserRepositoryPort)
     uow.user_repo.update.return_value = None
+    # Simulate a persisted user returned by repository lookup.
+    uow.user_repo.get_by_public_id.return_value = user
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.update.return_value = None
+    # Simulate a persisted verification code returned by repository lookup.
+    uow.code_repo.get_by_user_id_and_code.return_value = verification_code
 
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
     uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
     uow.token_repo.revoke_all_refreshes.return_value = None
+    uow.token_repo.exists.return_value = token_exists
+    uow.token_repo.is_revoke.return_value = token_revoked
 
     return DependeciesMocked(
-        user_repo,
-        code_repo,
-        token_repo,
         token_manager,
         uow,
     )

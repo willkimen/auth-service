@@ -49,9 +49,7 @@ async def test_email_verified_successfully(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act
     await use_case.execute(
@@ -60,10 +58,10 @@ async def test_email_verified_successfully(
     )
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once_with(
+    mocks.uow.user_repo.get_by_email.assert_called_once_with(
         unverified_user.email.value
     )
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
         unverified_user.public_id, unused_code.code.value
     )
     mocks.uow.__aenter__.assert_called_once()
@@ -109,19 +107,17 @@ async def test_verification_fails_when_user_does_not_exist(
 ):
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(None, unused_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(UserNotFoundError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.user_repo.update.assert_not_called()
     mocks.uow.code_repo.update.assert_not_called()
     mocks.uow.message_repo.create.assert_not_called()
@@ -135,19 +131,17 @@ async def test_verification_fails_when_user_already_verified(
 ):
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(verified_user, unused_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(EmailAlreadyVerifiedError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.user_repo.update.assert_not_called()
     mocks.uow.code_repo.update.assert_not_called()
     mocks.uow.message_repo.create.assert_not_called()
@@ -161,19 +155,17 @@ async def test_verification_fails_when_user_inactive(
 ):
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(inactive_user, unused_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InactiveUserError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.user_repo.update.assert_not_called()
     mocks.uow.code_repo.update.assert_not_called()
     mocks.uow.message_repo.create.assert_not_called()
@@ -190,24 +182,22 @@ async def test_verification_fails_when_get_user_fails(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(None, unused_code)
-    mocks.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.user_repo.update.assert_not_called()
     mocks.uow.code_repo.update.assert_not_called()
     mocks.uow.message_repo.create.assert_not_called()
@@ -225,22 +215,20 @@ async def test_verification_fails_when_user_state_is_corrupted(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(None, unused_code)
-    mocks.user_repo.get_by_email.side_effect = CorruptedPersistenceStateError(
-        DomainError('some domain error')
+    mocks.uow.user_repo.get_by_email.side_effect = (
+        CorruptedPersistenceStateError(DomainError('some domain error'))
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
 
     # assert was not called
-    mocks.code_repo.get_by_user_id_and_code.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
     mocks.uow.user_repo.update.assert_not_called()
     mocks.uow.code_repo.update.assert_not_called()
     mocks.uow.message_repo.create.assert_not_called()
@@ -252,17 +240,15 @@ async def test_verification_fails_when_code_does_not_exist(
     unverified_user: User,
 ):
     mocks: DependeciesMocked = mocks_factory(unverified_user, None)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and arrange
     with pytest.raises(VerificationCodeNotFoundError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_called()
@@ -278,17 +264,15 @@ async def test_verification_fails_when_code_already_used(
 ):
     used_code = create_used_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(unverified_user, used_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(VerificationCodeAlreadyUsedError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_called()
@@ -304,17 +288,15 @@ async def test_verification_fails_when_code_expired(
 ):
     expired_code = create_expired_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(unverified_user, expired_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(VerificationCodeExpiredError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_called()
@@ -333,17 +315,15 @@ async def test_verification_fails_when_code_type_is_invalid(
         unverified_user,
         code_incorrect_type,
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(VerificationCodeTypeError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.__aenter__.assert_not_called()
@@ -359,22 +339,22 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
     while trying to return a verification code from the repository.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user, None)
-    mocks.code_repo.get_by_user_id_and_code.side_effect = InfrastructureError(
-        'Error attempting to get code',
-        InfrastructureErrorCode.DATABASE,
-        Exception(),
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
+        InfrastructureError(
+            'Error attempting to get code',
+            InfrastructureErrorCode.DATABASE,
+            Exception(),
+        )
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act anda assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_called()
@@ -393,20 +373,18 @@ async def test_verification_fails_when_veritication_code_state_is_corrupted(
     to the use case, aborting the verification flow.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user, None)
-    mocks.code_repo.get_by_user_id_and_code.side_effect = (
+    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act anda assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_called()
@@ -426,9 +404,7 @@ async def test_verification_fails_when_persist_user_update_fails(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user',
         InfrastructureErrorCode.DATABASE,
@@ -440,8 +416,8 @@ async def test_verification_fails_when_persist_user_update_fails(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.user_repo.update.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
     mocks.uow.__aenter__.assert_called_once()
@@ -466,17 +442,15 @@ async def test_verification_fails_when_persist_code_update_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.user_repo.update.assert_called_once()
     mocks.uow.code_repo.update.assert_called_once()
     mocks.uow.__aexit__.assert_called_once()
@@ -501,17 +475,15 @@ async def test_verification_fails_when_message_persists_fails(
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = EmailVerificationUseCase(
-        mocks.user_repo, mocks.code_repo, mocks.uow
-    )
+    use_case = EmailVerificationUseCase(mocks.uow)
 
     # act and assert
     with pytest.raises(InfrastructureError):
         await use_case.execute('', '')
 
     # assert was not called
-    mocks.user_repo.get_by_email.assert_called_once()
-    mocks.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
     mocks.uow.user_repo.update.assert_called_once()
     mocks.uow.code_repo.update.assert_called_once()
     mocks.uow.message_repo.create.assert_called_once()
@@ -526,8 +498,6 @@ class DependeciesMocked:
     verification confirmation flow.
     """
 
-    user_repo: AsyncMock
-    code_repo: AsyncMock
     uow: AsyncMock
 
 
@@ -543,23 +513,20 @@ def mocks_factory(
     persisted entities returned by repository queries during the
     execution flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    user_repo.get_by_email.return_value = user
-
-    code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    code_repo.get_by_user_id_and_code.return_value = verification_code
 
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
 
     uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow.user_repo.get_by_email.return_value = user
     uow.user_repo.update.return_value = None
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.code_repo.update.return_value = None
+    uow.code_repo.get_by_user_id_and_code.return_value = verification_code
 
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
-    return DependeciesMocked(user_repo, code_repo, uow)
+    return DependeciesMocked(uow)

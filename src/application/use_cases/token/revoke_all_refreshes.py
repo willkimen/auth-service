@@ -1,6 +1,6 @@
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import InvalidTokenTypeError
-from application.ports.output import TokenManagerPort, TokenRepositoryPort
+from application.ports.output import TokenManagerPort, UnitOfWorkPort
 
 
 class RevokeAllRefreshesUseCase:
@@ -14,18 +14,18 @@ class RevokeAllRefreshesUseCase:
     Args:
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation.
-        `token_repo` (TokenRepositoryPort):
-            - Repository responsible for refresh token persistence and
-              revocation operations.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
     def __init__(
         self,
         token_manager: TokenManagerPort,
-        token_repo: TokenRepositoryPort,
+        uow: UnitOfWorkPort,
     ):
         self.token_manager = token_manager
-        self.token_repo = token_repo
+        self.uow = uow
 
     async def execute(self, refresh: str):
         """
@@ -51,4 +51,6 @@ class RevokeAllRefreshesUseCase:
         if token_payload.typ != 'refresh':
             raise InvalidTokenTypeError()
 
-        await self.token_repo.revoke_all_refreshes(token_payload.sub)
+        # Persist related changes atomically as a single unit of work.
+        async with self.uow:
+            await self.uow.token_repo.revoke_all_refreshes(token_payload.sub)

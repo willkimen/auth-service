@@ -13,10 +13,7 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
-    VerificationCodeRepositoryPort,
 )
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
@@ -43,30 +40,18 @@ class DeleteUseCase:
     deletion.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Repository responsible for user persistence operations.
-        `code_repo` (VerificationCodeRepositoryPort):
-            - Repository responsible for verification code persistence.
-        `token_repo` (TokenRepositoryPort):
-            - Repository responsible for refresh token persistence and
-              revocation operations.
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and decoding.
         `uow` (UnitOfWorkPort):
-            - Transaction manager used to guarantee atomic operations.
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        code_repo: VerificationCodeRepositoryPort,
-        token_repo: TokenRepositoryPort,
         token_manager: TokenManagerPort,
         uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.code_repo = code_repo
-        self.token_repo = token_repo
         self.token_manager = token_manager
         self.uow = uow
 
@@ -110,13 +95,13 @@ class DeleteUseCase:
         if token_payload.typ != 'access':
             raise InvalidTokenTypeError()
 
-        if not await self.token_repo.exists(token_payload.jti):
+        if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoke(token_payload.jti):
             raise TokenRevokedError()
 
-        user: User | None = await self.user_repo.get_by_public_id(
+        user: User | None = await self.uow.user_repo.get_by_public_id(
             token_payload.sub
         )
 
@@ -128,7 +113,9 @@ class DeleteUseCase:
 
         verification_code: (
             VerificationCode | None
-        ) = await self.code_repo.get_by_user_id_and_code(user.public_id, code)
+        ) = await self.uow.code_repo.get_by_user_id_and_code(
+            user.public_id, code
+        )
 
         if verification_code is None:
             raise VerificationCodeNotFoundError()
@@ -149,9 +136,9 @@ class DeleteUseCase:
             payload=AccountDeletedPayload(to=user.email.value),
         )
 
+        # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.delete(user.public_id)
             await self.uow.code_repo.delete_all(user.public_id)
             await self.uow.token_repo.revoke_all_refreshes(user.public_id)
-            # InfrastructureError
             await self.uow.message_repo.create(message)
