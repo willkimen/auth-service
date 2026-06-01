@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "psycopg[binary]>=3.3.4",
     "pyjwt>=2.13.0",
+    "sqlalchemy[asyncio]>=2.0.50",
 ]
 
 [dependency-groups]
@@ -35,7 +37,7 @@ possibly-unresolved-reference = "warn"
 [tool.pytest.ini_options]
 pythonpath = "./src"
 addopts = '-p no:warnings'
-asyncio_default_fixture_loop_scope = 'function'
+asyncio_default_fixture_loop_scope = 'session'
 asyncio_mode = "auto"
 
 [tool.ruff]

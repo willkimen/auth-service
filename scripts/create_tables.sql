@@ -1,0 +1,8 @@
+CREATE TABLE  IF NOT EXISTS refresh_token (
+    jti VARCHAR(255) PRIMARY KEY,
+    sub UUID NOT NULL,
+    exp TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_refresh_token_sub ON refresh_token(sub);
