@@ -10,11 +10,15 @@ from application.exceptions import (
 )
 
 sub = uuid.uuid4()
+# Fixed to resolve PyJWT's InsecureKeyLengthWarning (RFC 7518 compliance).
+# Ensures the HMAC key is at least 32 bytes long to satisfy
+# security linters and standards.
+key = 'a_much_longer_secret_key_with_more_than_32_characters'
 
 
 def test_return_valid_access_and_refresh_tokens():
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     # act
     pair = manager.new_pair_token(sub)
@@ -50,7 +54,7 @@ def test_raise_infrastructure_error_when_payload_creation_fails(
     monkeypatch,
 ):
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     original_error = RuntimeError('payload creation failed')
 
@@ -75,7 +79,7 @@ def test_raise_infrastructure_error_when_token_creation_fails(
     monkeypatch,
 ):
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     original_error = RuntimeError('token creation failed')
 

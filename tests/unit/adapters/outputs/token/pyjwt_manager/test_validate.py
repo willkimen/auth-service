@@ -13,11 +13,15 @@ from application.exceptions import (
 )
 
 sub = uuid.uuid4()
+# Fixed to resolve PyJWT's InsecureKeyLengthWarning (RFC 7518 compliance).
+# Ensures the HMAC key is at least 32 bytes long to satisfy
+# security linters and standards.
+key = 'a_much_longer_secret_key_with_more_than_32_characters'
 
 
 def test_return_payload_dto_when_token_is_valid():
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     token = manager.new_access(sub)
 
@@ -38,7 +42,7 @@ def test_raise_invalid_token_error_when_token_is_expired(
     monkeypatch,
 ):
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     def mock_decode(*args, **kwargs):
         raise jwt.exceptions.ExpiredSignatureError('token expired')
@@ -56,7 +60,7 @@ def test_raise_invalid_token_error_when_signature_is_invalid(
     monkeypatch,
 ):
     # arrnge
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     def mock_decode(*args, **kwargs):
         raise jwt.exceptions.InvalidSignatureError('invalid signature')
@@ -82,7 +86,7 @@ def test_raise_invalid_token_error_when_token_is_malformed(
     exception,
 ):
     # arrrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     def mock_decode(*args, **kwargs):
         raise exception
@@ -100,7 +104,7 @@ def test_raise_invalid_token_error_when_token_is_invalid(
     monkeypatch,
 ):
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     def mock_decode(*args, **kwargs):
         raise jwt.exceptions.InvalidTokenError('invalid token')
@@ -118,7 +122,7 @@ def test_raise_infrastructure_error_when_unexpected_error_occurs(
     monkeypatch,
 ):
     # arrange
-    manager = PyJWTManagerAdapter(key='secret-key')
+    manager = PyJWTManagerAdapter(key)
 
     original_error = Exception('unexpected failure')
 
