@@ -74,24 +74,6 @@ class UserRepositoryPort(Protocol):
         """
         ...
 
-    async def exists_by_public_id(self, public_id: uuid.UUID) -> bool:
-        """Checks if a user exists by public identifier.
-
-        Raises:
-            InfrastructureError:
-                If database check fails.
-        """
-        ...
-
-    async def is_active(self, public_id: uuid.UUID) -> bool:
-        """Checks if a user is active.
-
-        Raises:
-            InfrastructureError:
-                If database query fails.
-        """
-        ...
-
 
 class VerificationCodeRepositoryPort(Protocol):
     """Defines persistence operations for verification codes."""
