@@ -191,89 +191,89 @@ def test_date_of_use_must_not_be_before_that_creation_date(
 
 # ============= is_active =====================
 def test_code_unused_and_not_expired_is_active(initial_state: dict):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert user.is_active(datetime.now(timezone.utc))
+    assert code.is_active(datetime.now(timezone.utc))
 
 
 def test_code_used_but_not_expired_is_not_active(initial_state: dict):
     initial_state['used_at'] = datetime.now(timezone.utc)
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert not user.is_active(datetime.now(timezone.utc))
+    assert not code.is_active(datetime.now(timezone.utc))
 
     # extra assert
-    assert user.is_used()
+    assert code.is_used()
 
 
 def test_code_unused_but_expired_is_not_active(initial_state: dict):
     initial_state['expires_at'] = datetime.now(timezone.utc)
 
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert not user.is_active(datetime.now(timezone.utc))
+    assert not code.is_active(datetime.now(timezone.utc))
 
     # extra assert
-    assert user.is_expired(datetime.now(timezone.utc))
+    assert code.is_expired(datetime.now(timezone.utc))
 
 
 def test_code_used_and_expired_is_not_active(initial_state: dict):
     initial_state['used_at'] = datetime.now(timezone.utc)
     initial_state['expires_at'] = datetime.now(timezone.utc)
 
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert not user.is_active(datetime.now(timezone.utc))
+    assert not code.is_active(datetime.now(timezone.utc))
 
     # extras asserts
-    assert user.is_expired(datetime.now(timezone.utc))
-    assert user.is_used()
+    assert code.is_expired(datetime.now(timezone.utc))
+    assert code.is_used()
 
 
 def test_check_if_is_active_wait_date_with_timezone_information(
     initial_state: dict,
 ):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
     with pytest.raises(ValueError, match=msg_error):
-        user.is_active(datetime.now())
+        code.is_active(datetime.now())
 
 
 # ============= is_used =====================
 def test_marking_as_used_should_guarantee_used_condition(initial_state: dict):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
     # previous state
-    assert not user.is_used()
+    assert not code.is_used()
 
-    user.mark_as_used(datetime.now(timezone.utc))
+    code.mark_as_used(datetime.now(timezone.utc))
 
-    assert user.is_used()
+    assert code.is_used()
 
     # extra assert
-    assert not user.is_active(datetime.now(timezone.utc))
+    assert not code.is_active(datetime.now(timezone.utc))
 
 
 # ============= mark_as_used =====================
 def test_mark_as_used_expect_timezone_date_information(initial_state: dict):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
     msg_error = 'used_at must be timezone-aware'
     with pytest.raises(ValueError, match=msg_error):
-        user.mark_as_used(datetime.now())
+        code.mark_as_used(datetime.now())
 
 
 def test_mark_as_used_cannot_be_earlier_than_creation_date(
     initial_state: dict,
 ):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
     before_created = initial_state['created_at'] - timedelta(microseconds=1)
 
     msg_error = 'used_at must not be before created_at'
     with pytest.raises(ValueError, match=msg_error):
-        user.mark_as_used(before_created)
+        code.mark_as_used(before_created)
 
 
 # ============= is_expired =====================
@@ -281,20 +281,20 @@ def test_code_expired_successfully(initial_state: dict):
     timestamp_expired = datetime.now(timezone.utc) - timedelta(seconds=1)
     initial_state['expires_at'] = timestamp_expired
 
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert user.is_expired(datetime.now(timezone.utc))
+    assert code.is_expired(datetime.now(timezone.utc))
 
 
 def test_expiration_date_not_reached_code_not_expired(initial_state: dict):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
-    assert not user.is_expired(datetime.now(timezone.utc))
+    assert not code.is_expired(datetime.now(timezone.utc))
 
 
 def test_is_expired_expect_timezone_date_information(initial_state: dict):
-    user = VerificationCode(**initial_state)
+    code = VerificationCode(**initial_state)
 
     msg_error = 'now must be timezone-aware'
     with pytest.raises(ValueError, match=msg_error):
-        user.is_expired(datetime.now())
+        code.is_expired(datetime.now())
