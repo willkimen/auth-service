@@ -88,7 +88,7 @@ class DeleteCodeUseCase:
         if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.uow.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoked(token_payload.jti):
             raise TokenRevokedError()
 
         user: User | None = await self.uow.user_repo.get_by_public_id(

@@ -118,7 +118,7 @@ class ChangeEmailUseCase:
         if not await self.uow.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.uow.token_repo.is_revoke(token_payload.jti):
+        if await self.uow.token_repo.is_revoked(token_payload.jti):
             raise TokenRevokedError()
 
         verification_code: (

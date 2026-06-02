@@ -185,7 +185,7 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
-    async def is_revoke(self, jti: str) -> bool:
+    async def is_revoked(self, jti: str) -> bool:
         """Checks if a token is revoked.
 
         Raises:

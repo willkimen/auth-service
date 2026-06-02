@@ -90,7 +90,7 @@ class DetailUseCase:
         if not await self.token_repo.exists(token_payload.jti):
             raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoke(token_payload.jti):
+        if await self.token_repo.is_revoked(token_payload.jti):
             raise TokenRevokedError()
 
         user: User | None = await self.user_repo.get_by_public_id(
