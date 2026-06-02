@@ -35,7 +35,7 @@ async def test_should_successfully_revoke_a_refresh_token(
     query = sqlalchemy.text(
         """
         SELECT revoked_at
-        FROM refresh_token
+        FROM refresh_tokens
         WHERE jti = :jti;
         """
     )
@@ -80,7 +80,7 @@ async def test_revocation_fails_when_a_database_error_occurs(
     query = sqlalchemy.text(
         """
         SELECT revoked_at
-        FROM refresh_token
+        FROM refresh_tokens
         WHERE jti = :jti
         """
     )

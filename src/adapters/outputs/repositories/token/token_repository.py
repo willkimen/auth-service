@@ -21,7 +21,7 @@ class RefreshTokenRepository:
         """Stores a refresh token."""
         try:
             query = text("""
-                INSERT INTO refresh_token (jti, sub, exp)
+                INSERT INTO refresh_tokens (jti, sub, exp)
                 VALUES (:jti, :sub, :expires_at)
             """)
 
@@ -40,7 +40,7 @@ class RefreshTokenRepository:
         """Revokes all refresh tokens for a subject."""
         try:
             query = text("""
-                UPDATE refresh_token
+                UPDATE refresh_tokens
                 SET revoked_at = NOW()
                 WHERE sub = :sub AND revoked_at IS NULL
             """)
@@ -57,7 +57,7 @@ class RefreshTokenRepository:
         """Revoke a specific refresh token."""
         try:
             query = text("""
-                UPDATE refresh_token
+                UPDATE refresh_tokens
                 SET revoked_at = NOW()
                 WHERE jti = :jti AND revoked_at IS NULL
             """)
@@ -75,7 +75,7 @@ class RefreshTokenRepository:
         try:
             query = text("""
                 SELECT EXISTS (
-                    SELECT 1 FROM refresh_token WHERE jti = :jti
+                    SELECT 1 FROM refresh_tokens WHERE jti = :jti
                 )
             """)
 
@@ -96,7 +96,7 @@ class RefreshTokenRepository:
             query = text("""
                 SELECT EXISTS (
                     SELECT 1
-                    FROM refresh_token
+                    FROM refresh_tokens
                     WHERE jti = :jti AND (
                         revoked_at IS NOT NULL
                     )

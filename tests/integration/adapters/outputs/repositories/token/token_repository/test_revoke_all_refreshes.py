@@ -34,7 +34,7 @@ async def test_should_invalidate_all_active_sessions_for_a_specific_user(
     # assert
     # we verify that target tokens are revoked and others are not
     query = sqlalchemy.text(
-        'SELECT jti, revoked_at FROM refresh_token ORDER BY jti;'
+        'SELECT jti, revoked_at FROM refresh_tokens ORDER BY jti;'
     )
     records = (await conn_rollback.execute(query)).fetchall()
 
@@ -82,7 +82,7 @@ async def test_revocation_fails_when_database_error_occurs(
 
     # ensure the rollback kept the state intact
     query = sqlalchemy.text(
-        'SELECT revoked_at FROM refresh_token WHERE jti = :jti'
+        'SELECT revoked_at FROM refresh_tokens WHERE jti = :jti'
     )
     res = await conn_rollback.execute(query, {'jti': token_id})
     row = res.fetchone()

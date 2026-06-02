@@ -33,7 +33,7 @@ async def test_should_successfully_persist_a_refresh_token(
     query = sqlalchemy.text(
         """
         SELECT jti, sub, exp, revoked_at, created_at
-        FROM refresh_token
+        FROM refresh_tokens
         WHERE jti = :jti;
         """
     )
@@ -70,7 +70,7 @@ async def test_persistence_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was persisted in the real database
-    query = sqlalchemy.text('SELECT jti FROM refresh_token WHERE jti = :jti')
+    query = sqlalchemy.text('SELECT jti FROM refresh_tokens WHERE jti = :jti')
     res = await conn_rollback.execute(query, {'jti': token_id})
     row = res.fetchone()
 
