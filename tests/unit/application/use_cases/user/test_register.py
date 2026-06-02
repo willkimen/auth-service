@@ -62,11 +62,11 @@ async def test_register_user_flow_successfully():
     )
 
     # assert was called
-    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_awaited_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
-    mocks.uow.user_repo.create.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.create.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert that user_repo.create() was called with correct arguments
     # in this case, the received argument must be a User instance with
@@ -94,11 +94,11 @@ async def test_not_register_when_email_is_invalid():
         await use_case.execute(invalid_email, password_input)
 
     # assert was not called
-    mocks.uow.user_repo.exists_by_email.assert_not_called()
+    mocks.uow.user_repo.exists_by_email.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_not_register_when_password_is_invalid():
@@ -111,11 +111,11 @@ async def test_not_register_when_password_is_invalid():
         await use_case.execute(email_input, invalid_password_input)
 
     # assert was not called
-    mocks.uow.user_repo.exists_by_email.assert_not_called()
+    mocks.uow.user_repo.exists_by_email.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_not_register_when_email_already_used():
@@ -132,13 +132,13 @@ async def test_not_register_when_email_already_used():
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.uow.user_repo.exists_by_email.assert_called_once()
+    mocks.uow.user_repo.exists_by_email.assert_awaited_once()
 
     # assert was not called
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_checking_email_availability_can_raise_infrastructure_error():
@@ -159,13 +159,13 @@ async def test_checking_email_availability_can_raise_infrastructure_error():
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_awaited_once_with(email_input)
 
     # assert was not called
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_hashing_password_can_raise_infrastructure_error():
@@ -186,13 +186,13 @@ async def test_hashing_password_can_raise_infrastructure_error():
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_awaited_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
 
     # assert was not called
-    mocks.uow.user_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_create_user_can_raise_infrastructure_error():
@@ -213,11 +213,11 @@ async def test_create_user_can_raise_infrastructure_error():
         await use_case.execute(email_input, password_input)
 
     # assert was called
-    mocks.uow.user_repo.exists_by_email.assert_called_once_with(email_input)
+    mocks.uow.user_repo.exists_by_email.assert_awaited_once_with(email_input)
     mocks.hasher.hash.assert_called_once_with(password_input)
-    mocks.uow.user_repo.create.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.create.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 @dataclass(frozen=True)

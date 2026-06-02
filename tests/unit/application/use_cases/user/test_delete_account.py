@@ -65,25 +65,25 @@ async def test_delete_account_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.token_repo.exists.assert_called_once_with(jti)
-    mocks.uow.token_repo.is_revoked.assert_called_once_with(jti)
-    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_awaited_once_with(jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once_with(
         active_user.public_id,
         unused_code.code.value,
     )
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.user_repo.delete.assert_called_once_with(active_user.public_id)
-    mocks.uow.code_repo.delete_all.assert_called_once_with(
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.user_repo.delete.assert_awaited_once_with(active_user.public_id)
+    mocks.uow.code_repo.delete_all.assert_awaited_once_with(
         active_user.public_id
     )
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once_with(
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once_with(
         active_user.public_id
     )
-    mocks.uow.message_repo.create.assert_called_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
 
     # assert message.create() arguments
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
@@ -122,16 +122,16 @@ async def test_delete_not_performed_when_token_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_validation_fails(
@@ -165,16 +165,16 @@ async def test_delete_not_performed_when_token_validation_fails(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_type_is_invalid(
@@ -206,16 +206,16 @@ async def test_delete_not_performed_when_token_type_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_exists_check_fails(
@@ -247,18 +247,18 @@ async def test_delete_not_performed_when_token_exists_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_not_found(
@@ -278,18 +278,18 @@ async def test_delete_not_performed_when_token_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_revoke_check_fails(
@@ -317,18 +317,18 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_token_is_revoked(
@@ -348,18 +348,18 @@ async def test_delete_not_performed_when_token_is_revoked(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_get_user_fails(
@@ -383,18 +383,18 @@ async def test_delete_not_performed_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_user_state_is_corrupted(
@@ -416,18 +416,18 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_user_not_found(
@@ -445,18 +445,18 @@ async def test_delete_not_performed_when_user_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_user_is_inactive(
@@ -475,18 +475,18 @@ async def test_delete_not_performed_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_get_code_fails(
@@ -512,18 +512,18 @@ async def test_delete_not_performed_when_get_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_state_is_corrupted(
@@ -545,18 +545,18 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_not_found(
@@ -579,18 +579,18 @@ async def test_delete_not_performed_when_code_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_already_used(
@@ -615,18 +615,18 @@ async def test_delete_not_performed_when_code_already_used(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_type_is_invalid(
@@ -652,18 +652,18 @@ async def test_delete_not_performed_when_code_type_is_invalid(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_is_expired(
@@ -688,18 +688,18 @@ async def test_delete_not_performed_when_code_is_expired(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.delete.assert_not_called()
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.delete.assert_not_awaited()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_user_delete_fails(
@@ -730,18 +730,18 @@ async def test_delete_not_performed_when_user_delete_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.user_repo.delete.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.user_repo.delete.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.delete_all.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.delete_all.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_code_delete_all_fails(
@@ -773,17 +773,17 @@ async def test_delete_not_performed_when_code_delete_all_fails(
 
     # asert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.user_repo.delete.assert_called_once()
-    mocks.uow.code_repo.delete_all.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.user_repo.delete.assert_awaited_once()
+    mocks.uow.code_repo.delete_all.assert_awaited_once()
 
     # assert was not calledd
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_revoke_tokens_fails(
@@ -815,17 +815,17 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.user_repo.delete.assert_called_once()
-    mocks.uow.code_repo.delete_all.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.user_repo.delete.assert_awaited_once()
+    mocks.uow.code_repo.delete_all.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_delete_not_performed_when_message_create_fails(
@@ -856,15 +856,15 @@ async def test_delete_not_performed_when_message_create_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.user_repo.delete.assert_called_once()
-    mocks.uow.code_repo.delete_all.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.user_repo.delete.assert_awaited_once()
+    mocks.uow.code_repo.delete_all.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
 
 
 @dataclass(frozen=True)

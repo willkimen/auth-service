@@ -58,17 +58,17 @@ async def test_email_verified_successfully(
     )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(
         unverified_user.email.value
     )
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once_with(
         unverified_user.public_id, unused_code.code.value
     )
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
 
     # assert that user_repo.update() was called with correct arguments
     user_arg: User = mocks.uow.user_repo.update.call_args[0][0]
@@ -114,15 +114,15 @@ async def test_verification_fails_when_user_does_not_exist(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_user_already_verified(
@@ -138,15 +138,15 @@ async def test_verification_fails_when_user_already_verified(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_user_inactive(
@@ -162,15 +162,15 @@ async def test_verification_fails_when_user_inactive(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_get_user_fails(
@@ -194,15 +194,15 @@ async def test_verification_fails_when_get_user_fails(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_user_state_is_corrupted(
@@ -225,15 +225,15 @@ async def test_verification_fails_when_user_state_is_corrupted(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_code_does_not_exist(
@@ -247,15 +247,15 @@ async def test_verification_fails_when_code_does_not_exist(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_code_already_used(
@@ -271,15 +271,15 @@ async def test_verification_fails_when_code_already_used(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_code_expired(
@@ -295,15 +295,15 @@ async def test_verification_fails_when_code_expired(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_code_type_is_invalid(
@@ -322,15 +322,15 @@ async def test_verification_fails_when_code_type_is_invalid(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_verification_fails_when_get_code_fails(unverified_user: User):
@@ -353,15 +353,15 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_veritication_code_state_is_corrupted(
@@ -383,15 +383,15 @@ async def test_verification_fails_when_veritication_code_state_is_corrupted(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_verification_fails_when_persist_user_update_fails(
@@ -416,15 +416,15 @@ async def test_verification_fails_when_persist_user_update_fails(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_verification_fails_when_persist_code_update_fails(
@@ -449,15 +449,15 @@ async def test_verification_fails_when_persist_code_update_fails(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_verification_fails_when_message_persists_fails(
@@ -482,13 +482,13 @@ async def test_verification_fails_when_message_persists_fails(
         await use_case.execute('', '')
 
     # assert was not called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
 
 
 @dataclass(frozen=True)

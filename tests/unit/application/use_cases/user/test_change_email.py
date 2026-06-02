@@ -68,23 +68,23 @@ async def test_email_changed_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once_with(
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once_with(
         active_user.public_id,
         unused_code.code.value,
     )
-    mocks.uow.user_repo.get_by_public_id.assert_called_once_with(
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
 
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once_with(
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once_with(
         active_user.public_id
     )
 
@@ -129,18 +129,18 @@ async def test_change_email_fails_when_token_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_token_type_is_invalid():
@@ -166,18 +166,18 @@ async def test_change_email_fails_when_token_type_is_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_token_validate_fails():
@@ -201,18 +201,18 @@ async def test_change_email_fails_when_token_validate_fails():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_called()
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_token_not_found():
@@ -233,20 +233,20 @@ async def test_change_email_fails_when_token_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_check_token_exists_fails():
@@ -272,20 +272,20 @@ async def test_change_email_fails_when_check_token_exists_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_called()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_token_revoked():
@@ -306,20 +306,20 @@ async def test_change_email_fails_when_token_revoked():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_check_token_revoke_fails():
@@ -345,20 +345,20 @@ async def test_change_email_fails_when_check_token_revoke_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_called()
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_code_not_found(
@@ -380,18 +380,18 @@ async def test_change_email_fails_when_code_not_found(
         await use_case.execute('', '')
 
     # assert was called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_code_already_used(
@@ -415,20 +415,20 @@ async def test_change_email_fails_when_code_already_used(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_code_expired(
@@ -454,20 +454,20 @@ async def test_change_email_fails_when_code_expired(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_code_type_invalid(
@@ -497,20 +497,20 @@ async def test_change_email_fails_when_code_type_invalid(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_get_code_fails(
@@ -541,20 +541,20 @@ async def test_change_email_fails_when_get_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_code_state_corrupted(
@@ -581,20 +581,20 @@ async def test_change_email_fails_when_code_state_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_called()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_user_not_found(
@@ -621,19 +621,19 @@ async def test_change_email_fails_when_user_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_user_inactive(
@@ -661,19 +661,19 @@ async def test_change_email_fails_when_user_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_get_user_fails(
@@ -706,19 +706,19 @@ async def test_change_email_fails_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_user_state_corrupted(
@@ -749,19 +749,19 @@ async def test_change_email_fails_when_user_state_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_persist_user_update_fails(
@@ -795,20 +795,20 @@ async def test_change_email_fails_when_persist_user_update_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.uow.user_repo.update.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.update.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_persist_code_update_fails(
@@ -842,20 +842,20 @@ async def test_change_email_fails_when_persist_code_update_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_persist_message_fails(
@@ -889,20 +889,20 @@ async def test_change_email_fails_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
 
 
 async def test_change_email_fails_when_revoke_refresh_tokens_fails(
@@ -938,18 +938,18 @@ async def test_change_email_fails_when_revoke_refresh_tokens_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_called_once()
-    mocks.uow.token_repo.is_revoked.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_called_once()
-    mocks.uow.user_repo.get_by_public_id.assert_called_once()
+    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
 
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.code_repo.update.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
 
 
 @dataclass(frozen=True)

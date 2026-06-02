@@ -48,10 +48,10 @@ async def test_refresh_successfully(verified_user: User):
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(refresh_input)
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.user_repo.is_active.assert_called_once_with(verified_user.public_id)
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.user_repo.is_active.assert_awaited_once_with(verified_user.public_id)
     mocks.token_manager.new_access.assert_called_once_with(
         verified_user.public_id
     )
@@ -86,9 +86,9 @@ async def test_refresh_aborts_when_token_validation_fails(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoked.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.token_repo.exists.assert_not_awaited()
+    mocks.token_repo.is_revoked.assert_not_awaited()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_refresh_aborts_when_token_type_is_invalid(
@@ -116,9 +116,9 @@ async def test_refresh_aborts_when_token_type_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoked.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
+    mocks.token_repo.exists.assert_not_awaited()
+    mocks.token_repo.is_revoked.assert_not_awaited()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_refresh_aborts_when_token_is_invalid(
@@ -146,10 +146,10 @@ async def test_refresh_aborts_when_token_is_invalid(
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_called()
-    mocks.token_repo.is_revoked.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.token_repo.exists.assert_not_awaited()
+    mocks.token_repo.is_revoked.assert_not_awaited()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -179,12 +179,12 @@ async def test_refresh_aborts_when_token_exists_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.token_repo.is_revoked.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.token_repo.is_revoked.assert_not_awaited()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -210,12 +210,12 @@ async def test_refresh_aborts_when_token_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
 
     # assert was not called
-    mocks.token_repo.is_revoked.assert_not_called()
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.token_repo.is_revoked.assert_not_awaited()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -244,12 +244,12 @@ async def test_refresh_aborts_when_token_revocation_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -274,12 +274,12 @@ async def test_refresh_aborts_when_token_is_revoked(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_called()
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -309,12 +309,12 @@ async def test_refresh_aborts_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -342,12 +342,12 @@ async def test_refresh_aborts_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -373,12 +373,12 @@ async def test_refresh_aborts_when_user_is_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_called()
+    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -406,10 +406,10 @@ async def test_refresh_aborts_when_user_active_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.user_repo.is_active.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.user_repo.is_active.assert_awaited_once()
 
     # assert was not called
     mocks.token_manager.new_access.assert_not_called()
@@ -437,10 +437,10 @@ async def test_refresh_aborts_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.user_repo.is_active.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.user_repo.is_active.assert_awaited_once()
 
     # assert was not called
     mocks.token_manager.new_access.assert_not_called()
@@ -472,10 +472,10 @@ async def test_refresh_aborts_when_access_token_generation_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_called_once()
-    mocks.token_repo.is_revoked.assert_called_once()
-    mocks.user_repo.get_by_public_id.assert_called_once()
-    mocks.user_repo.is_active.assert_called_once()
+    mocks.token_repo.exists.assert_awaited_once()
+    mocks.token_repo.is_revoked.assert_awaited_once()
+    mocks.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.user_repo.is_active.assert_awaited_once()
     mocks.token_manager.new_access.assert_called_once()
 
 

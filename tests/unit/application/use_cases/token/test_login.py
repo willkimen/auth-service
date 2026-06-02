@@ -54,15 +54,15 @@ async def test_login_successfully(verified_user: User):
         password=password,
     )
 
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(
         verified_user.email.value
     )
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
-    mocks.uow.token_repo.save_refresh.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.token_repo.save_refresh.assert_awaited_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     assert result.access.token == access_token
     assert result.refresh.token == refresh_token
@@ -96,15 +96,15 @@ async def test_login_not_performed_when_user_fetch_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_user_state_is_corrupted(
@@ -132,15 +132,15 @@ async def test_login_not_performed_when_user_state_is_corrupted(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_user_does_not_exist():
@@ -162,15 +162,15 @@ async def test_login_not_performed_when_user_does_not_exist():
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
 
     # assert was not called
     mocks.hasher.verify_password.assert_not_called()
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_password_verification_fails_due_infra(
@@ -200,15 +200,15 @@ async def test_login_not_performed_when_password_verification_fails_due_infra(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_password_verification_fails(
@@ -234,15 +234,15 @@ async def test_login_not_performed_when_password_verification_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_user_is_inactive(
@@ -267,15 +267,15 @@ async def test_login_not_performed_when_user_is_inactive(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_email_is_not_verified(
@@ -298,15 +298,15 @@ async def test_login_not_performed_when_email_is_not_verified(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
 
     # assert was not called
     mocks.token_manager.new_pair_token.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_user_update_fails(
@@ -336,15 +336,15 @@ async def test_login_not_performed_when_user_update_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.save_refresh.assert_not_called()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
 
 
 async def test_login_not_performed_when_get_pair_fails(
@@ -374,15 +374,15 @@ async def test_login_not_performed_when_get_pair_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_called()
-    mocks.uow.token_repo.save_refresh.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.user_repo.update.assert_not_awaited()
+    mocks.uow.token_repo.save_refresh.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_login_not_performed_when_save_refresh_fails(
@@ -411,13 +411,13 @@ async def test_login_not_performed_when_save_refresh_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
-    mocks.uow.user_repo.update.assert_called_once()
-    mocks.uow.token_repo.save_refresh.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.token_repo.save_refresh.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 @dataclass(frozen=True)

@@ -53,11 +53,11 @@ async def test_initialize_reset_password_process_successfully(
     )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
-    mocks.uow.code_repo.create.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(email)
+    mocks.uow.code_repo.create.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # Assert that code_repo.create()
     # was called with the correct expected arguments.
@@ -100,13 +100,13 @@ async def test_user_must_exist():
         )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_awaited()
 
     # Assert was not called
-    mocks.uow.code_repo.create.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_reset_process_not_initialize_when_user_state_corrupted(
@@ -131,13 +131,13 @@ async def test_reset_process_not_initialize_when_user_state_corrupted(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_awaited()
 
     # Assert was not called
-    mocks.uow.code_repo.create.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_reset_process_not_initialize_when_get_user_fails(
@@ -163,13 +163,13 @@ async def test_reset_process_not_initialize_when_get_user_fails(
         )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_called()
+    mocks.uow.user_repo.get_by_email.assert_awaited()
 
     # Assert was not called
-    mocks.uow.code_repo.create.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_inactive_users_cannot_initiate_reset_process(inactive_user):
@@ -184,13 +184,13 @@ async def test_inactive_users_cannot_initiate_reset_process(inactive_user):
         )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(email)
 
     # Assert was not called
-    mocks.uow.code_repo.create.assert_not_called()
-    mocks.uow.message_repo.create.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.code_repo.create.assert_not_awaited()
+    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_reset_process_not_initialize_when_code_persits_fails(
@@ -216,13 +216,13 @@ async def test_reset_process_not_initialize_when_code_persits_fails(
         )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
-    mocks.uow.code_repo.create.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(email)
+    mocks.uow.code_repo.create.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_called()
+    mocks.uow.message_repo.create.assert_not_awaited()
 
 
 async def test_reset_process_not_initialize_when_message_persits_fails(
@@ -248,11 +248,11 @@ async def test_reset_process_not_initialize_when_message_persits_fails(
         )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_called_once_with(email)
-    mocks.uow.code_repo.create.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
-    mocks.uow.message_repo.create.assert_called_once()
+    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(email)
+    mocks.uow.code_repo.create.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.message_repo.create.assert_awaited_once()
 
 
 @dataclass(frozen=True)

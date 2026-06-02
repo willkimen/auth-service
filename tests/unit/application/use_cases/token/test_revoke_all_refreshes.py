@@ -41,9 +41,9 @@ async def test_revoke_all_refreshes_successfully():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 async def test_revoke_all_refreshes_aborts_when_invalid_token():
@@ -67,9 +67,9 @@ async def test_revoke_all_refreshes_aborts_when_invalid_token():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
@@ -95,9 +95,9 @@ async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
@@ -121,9 +121,9 @@ async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_called()
-    mocks.uow.__aenter__.assert_not_called()
-    mocks.uow.__aexit__.assert_not_called()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.__aenter__.assert_not_awaited()
+    mocks.uow.__aexit__.assert_not_awaited()
 
 
 async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
@@ -149,9 +149,9 @@ async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_called_once()
-    mocks.uow.__aenter__.assert_called_once()
-    mocks.uow.__aexit__.assert_called_once()
+    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 @dataclass(frozen=True)
