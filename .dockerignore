@@ -29,3 +29,5 @@ logs
 stats
 __localcode/
 tests/
+.coverage
+htmlcov/
