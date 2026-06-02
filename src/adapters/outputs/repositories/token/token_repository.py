@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from application.exceptions import InfrastructureError
+from application.exceptions import InfrastructureError, InfrastructureErrorCode
 
 
 class RefreshTokenRepository:
@@ -30,7 +30,11 @@ class RefreshTokenRepository:
                 {'jti': jti, 'sub': sub, 'expires_at': expires_at},
             )
         except SQLAlchemyError as e:
-            raise InfrastructureError('Database operation failed') from e
+            raise InfrastructureError(
+                message='Token creating operation failed',
+                code=InfrastructureErrorCode.DATABASE,
+                cause=e,
+            ) from e
 
     async def revoke_all_refreshes(self, sub: uuid.UUID) -> None:
         """Revokes all refresh tokens for a subject."""
@@ -43,7 +47,11 @@ class RefreshTokenRepository:
 
             await self.conn.execute(query, {'sub': sub})
         except SQLAlchemyError as e:
-            raise InfrastructureError('Update operation failed') from e
+            raise InfrastructureError(
+                message='Operation to revoke all user refreshes failed',
+                code=InfrastructureErrorCode.DATABASE,
+                cause=e,
+            ) from e
 
     async def revoke_refresh(self, jti: str) -> None:
         """Revoke a specific refresh token."""
@@ -56,7 +64,11 @@ class RefreshTokenRepository:
 
             await self.conn.execute(query, {'jti': jti})
         except SQLAlchemyError as e:
-            raise InfrastructureError('Update operation failed') from e
+            raise InfrastructureError(
+                message='Operation to revoke user refresh failed',
+                code=InfrastructureErrorCode.DATABASE,
+                cause=e,
+            ) from e
 
     async def exists(self, jti: str) -> bool:
         """Checks if a token exists."""
@@ -70,7 +82,13 @@ class RefreshTokenRepository:
             result = await self.conn.execute(query, {'jti': jti})
             return bool(result.scalar())
         except SQLAlchemyError as e:
-            raise InfrastructureError('Query failed') from e
+            raise InfrastructureError(
+                message=(
+                    'Operation to verify the existence of the token failed'
+                ),
+                code=InfrastructureErrorCode.DATABASE,
+                cause=e,
+            ) from e
 
     async def is_revoked(self, jti: str) -> bool:
         """Checks if a token is revoked."""
@@ -88,4 +106,8 @@ class RefreshTokenRepository:
             result = await self.conn.execute(query, {'jti': jti})
             return bool(result.scalar())
         except SQLAlchemyError as e:
-            raise InfrastructureError('Query failed') from e
+            raise InfrastructureError(
+                message='Operation to check if the token has expired failed',
+                code=InfrastructureErrorCode.DATABASE,
+                cause=e,
+            ) from e

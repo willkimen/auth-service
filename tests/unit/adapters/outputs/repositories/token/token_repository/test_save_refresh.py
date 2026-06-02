@@ -21,12 +21,12 @@ async def test_persistence_fails_when_database_error_occurs():
     token_id = 'test-jti-123'
     expiration = datetime.now(timezone.utc)
 
+    error_message = 'Token creating operation failed'
+
     # act and assert
-    with pytest.raises(InfrastructureError) as exc_info:
+    with pytest.raises(InfrastructureError, match=error_message):
         await repository.save_refresh(
             sub=user_id,
             jti=token_id,
             expires_at=expiration,
         )
-
-    assert 'Database operation failed' in str(exc_info.value)

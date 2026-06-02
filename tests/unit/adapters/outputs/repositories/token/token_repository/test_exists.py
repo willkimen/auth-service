@@ -16,8 +16,8 @@ async def test_query_fails_when_database_error_occurs():
 
     repository = RefreshTokenRepository(mock_conn)
 
-    # act and assert
-    with pytest.raises(InfrastructureError) as exc_info:
-        await repository.exists('test-jti-123')
+    error_message = 'Operation to verify the existence of the token failed'
 
-    assert 'Query failed' in str(exc_info.value)
+    # act and assert
+    with pytest.raises(InfrastructureError, match=error_message):
+        await repository.exists('test-jti-123')

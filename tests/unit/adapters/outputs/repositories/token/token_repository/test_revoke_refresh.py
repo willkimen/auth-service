@@ -15,10 +15,8 @@ async def test_revocation_fails_when_database_error_occurs():
     mock_conn.execute.side_effect = SQLAlchemyError('Database connection lost')
     repository = RefreshTokenRepository(mock_conn)
 
-    token_id = 'test-jti-123'
+    error_message = 'Operation to revoke user refresh failed'
 
     # act and assert
-    with pytest.raises(InfrastructureError) as exc_info:
-        await repository.revoke_refresh(token_id)
-
-    assert 'Update operation failed' in str(exc_info.value)
+    with pytest.raises(InfrastructureError, match=error_message):
+        await repository.revoke_refresh('test-jti-123')
