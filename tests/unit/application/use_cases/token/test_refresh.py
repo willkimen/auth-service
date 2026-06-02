@@ -51,7 +51,6 @@ async def test_refresh_successfully(verified_user: User):
     mocks.token_repo.exists.assert_awaited_once()
     mocks.token_repo.is_revoked.assert_awaited_once()
     mocks.user_repo.get_by_public_id.assert_awaited_once()
-    mocks.user_repo.is_active.assert_awaited_once_with(verified_user.public_id)
     mocks.token_manager.new_access.assert_called_once_with(
         verified_user.public_id
     )
@@ -149,7 +148,6 @@ async def test_refresh_aborts_when_token_is_invalid(
     mocks.token_repo.exists.assert_not_awaited()
     mocks.token_repo.is_revoked.assert_not_awaited()
     mocks.user_repo.get_by_public_id.assert_not_awaited()
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -184,7 +182,6 @@ async def test_refresh_aborts_when_token_exists_check_fails(
     # assert was not called
     mocks.token_repo.is_revoked.assert_not_awaited()
     mocks.user_repo.get_by_public_id.assert_not_awaited()
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -215,7 +212,6 @@ async def test_refresh_aborts_when_token_not_found(
     # assert was not called
     mocks.token_repo.is_revoked.assert_not_awaited()
     mocks.user_repo.get_by_public_id.assert_not_awaited()
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -249,7 +245,6 @@ async def test_refresh_aborts_when_token_revocation_check_fails(
 
     # assert was not called
     mocks.user_repo.get_by_public_id.assert_not_awaited()
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -279,7 +274,6 @@ async def test_refresh_aborts_when_token_is_revoked(
 
     # assert was not called
     mocks.user_repo.get_by_public_id.assert_not_awaited()
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -314,7 +308,6 @@ async def test_refresh_aborts_when_get_user_fails(
     mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -347,7 +340,6 @@ async def test_refresh_aborts_when_user_state_is_corrupted(
     mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -378,53 +370,17 @@ async def test_refresh_aborts_when_user_is_not_found(
     mocks.user_repo.get_by_public_id.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.is_active.assert_not_awaited()
-    mocks.token_manager.new_access.assert_not_called()
-
-
-async def test_refresh_aborts_when_user_active_check_fails(
-    verified_user: User,
-):
-    """
-    The refresh flow is aborted when user active status check fails
-    due to an infrastructure error.
-    """
-    mocks = mocks_factory(verified_user)
-    mocks.user_repo.is_active.side_effect = InfrastructureError(
-        'Error checking user active status',
-        InfrastructureErrorCode.DATABASE,
-        Exception(),
-    )
-    use_case = RefreshUseCase(
-        user_repo=mocks.user_repo,
-        token_manager=mocks.token_manager,
-        token_repo=mocks.token_repo,
-    )
-
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(refresh_input)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once()
-    mocks.token_repo.exists.assert_awaited_once()
-    mocks.token_repo.is_revoked.assert_awaited_once()
-    mocks.user_repo.get_by_public_id.assert_awaited_once()
-    mocks.user_repo.is_active.assert_awaited_once()
-
-    # assert was not called
     mocks.token_manager.new_access.assert_not_called()
 
 
 async def test_refresh_aborts_when_user_is_inactive(
-    verified_user: User,
+    inactive_user: User,
 ):
     """
     The refresh flow is aborted when the authenticated user
     is inactive.
     """
-    mocks = mocks_factory(verified_user)
-
-    mocks.user_repo.is_active.return_value = False
+    mocks = mocks_factory(inactive_user)
 
     use_case = RefreshUseCase(
         user_repo=mocks.user_repo,
@@ -440,7 +396,6 @@ async def test_refresh_aborts_when_user_is_inactive(
     mocks.token_repo.exists.assert_awaited_once()
     mocks.token_repo.is_revoked.assert_awaited_once()
     mocks.user_repo.get_by_public_id.assert_awaited_once()
-    mocks.user_repo.is_active.assert_awaited_once()
 
     # assert was not called
     mocks.token_manager.new_access.assert_not_called()
@@ -475,7 +430,6 @@ async def test_refresh_aborts_when_access_token_generation_fails(
     mocks.token_repo.exists.assert_awaited_once()
     mocks.token_repo.is_revoked.assert_awaited_once()
     mocks.user_repo.get_by_public_id.assert_awaited_once()
-    mocks.user_repo.is_active.assert_awaited_once()
     mocks.token_manager.new_access.assert_called_once()
 
 
@@ -489,7 +443,6 @@ class DependenciesMocked:
 def mocks_factory(user: User | None) -> DependenciesMocked:
     user_repo = AsyncMock(spec=UserRepositoryPort)
     user_repo.get_by_public_id.return_value = user
-    user_repo.is_active.return_value = True
 
     token_repo = AsyncMock(spec=TokenRepositoryPort)
     token_repo.exists.return_value = True

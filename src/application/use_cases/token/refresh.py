@@ -88,7 +88,7 @@ class RefreshUseCase:
         if user is None:
             raise UserNotFoundError()
 
-        if not await self.user_repo.is_active(user.public_id):
+        if not user.is_active:
             raise InactiveUserError()
 
         return self.token_manager.new_access(user.public_id)
