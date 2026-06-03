@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.token.refresh_token import (
+from adapters.outputs.repositories.refresh_token import (
     PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError

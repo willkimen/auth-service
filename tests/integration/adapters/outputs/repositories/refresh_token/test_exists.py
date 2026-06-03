@@ -3,12 +3,12 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.token.refresh_token import (
+from adapters.outputs.repositories.refresh_token import (
     PostgresRefreshTokenRepository,
 )
 
 
-async def test_should_return_true_when_token_is_revoked(
+async def test_should_return_true_when_token_exists(
     conn_rollback: AsyncConnection,
 ):
     # arrange
@@ -16,41 +16,31 @@ async def test_should_return_true_when_token_is_revoked(
 
     token_id = 'test-jti-123'
     user_id = uuid.uuid4()
-    expiration = datetime.now(timezone.utc) + timedelta(days=1)
+    expiration = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     await repository.create(
         sub=user_id,
         jti=token_id,
         expires_at=expiration,
     )
-    await repository.revoke(token_id)
 
     # act
-    result = await repository.is_revoked(token_id)
+    result = await repository.exists(token_id)
 
     # assert
     assert result is True
 
 
-async def test_should_return_false_when_token_is_active(
+async def test_should_return_false_when_token_does_not_exist(
     conn_rollback: AsyncConnection,
 ):
     # arrange
     repository = PostgresRefreshTokenRepository(conn_rollback)
 
-    token_id = 'test-jti-789'
-    user_id = uuid.uuid4()
-
-    expiration = datetime.now(timezone.utc) + timedelta(days=1)
-
-    await repository.create(
-        sub=user_id,
-        jti=token_id,
-        expires_at=expiration,
-    )
+    token_id = 'non-existent-jti'
 
     # act
-    result = await repository.is_revoked(token_id)
+    result = await repository.exists(token_id)
 
     # assert
     assert result is False

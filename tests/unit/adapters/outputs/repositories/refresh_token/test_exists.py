@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.token.refresh_token import (
+from adapters.outputs.repositories.refresh_token import (
     PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError
@@ -16,8 +16,8 @@ async def test_query_fails_when_database_error_occurs():
 
     repository = PostgresRefreshTokenRepository(mock_conn)
 
-    error_message = 'Operation to check if the token has expired failed'
+    error_message = 'Operation to verify the existence of the token failed'
 
     # act and assert
     with pytest.raises(InfrastructureError, match=error_message):
-        await repository.is_revoked('test-jti-123')
+        await repository.exists('test-jti-123')

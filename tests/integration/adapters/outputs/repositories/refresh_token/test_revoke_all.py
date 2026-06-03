@@ -6,7 +6,7 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.token.refresh_token import (
+from adapters.outputs.repositories.refresh_token import (
     PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError
