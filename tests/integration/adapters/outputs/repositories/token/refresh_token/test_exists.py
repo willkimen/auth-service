@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.token.token_repository import (
-    RefreshTokenRepository,
+from adapters.outputs.repositories.token.refresh_token import (
+    PostgresRefreshTokenRepository,
 )
 
 
@@ -12,13 +12,13 @@ async def test_should_return_true_when_token_exists(
     conn_rollback: AsyncConnection,
 ):
     # arrange
-    repository = RefreshTokenRepository(conn_rollback)
+    repository = PostgresRefreshTokenRepository(conn_rollback)
 
     token_id = 'test-jti-123'
     user_id = uuid.uuid4()
     expiration = datetime.now(timezone.utc) + timedelta(minutes=15)
 
-    await repository.save_refresh(
+    await repository.create(
         sub=user_id,
         jti=token_id,
         expires_at=expiration,
@@ -35,7 +35,7 @@ async def test_should_return_false_when_token_does_not_exist(
     conn_rollback: AsyncConnection,
 ):
     # arrange
-    repository = RefreshTokenRepository(conn_rollback)
+    repository = PostgresRefreshTokenRepository(conn_rollback)
 
     token_id = 'non-existent-jti'
 

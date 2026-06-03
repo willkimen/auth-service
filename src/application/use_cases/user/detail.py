@@ -7,8 +7,8 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.ports.output import (
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UserRepositoryPort,
 )
 from domain.entities.user import User
@@ -28,7 +28,7 @@ class DetailUseCase:
         `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval
               operations.
-        `token_repo` (TokenRepositoryPort):
+        `token_repo` (RefreshTokenRepositoryPort):
             - Port/Interface responsible for token persistence and
               revocation queries.
         `token_manager` (TokenManagerPort):
@@ -39,7 +39,7 @@ class DetailUseCase:
     def __init__(
         self,
         user_repo: UserRepositoryPort,
-        token_repo: TokenRepositoryPort,
+        token_repo: RefreshTokenRepositoryPort,
         token_manager: TokenManagerPort,
     ):
         self.user_repo = user_repo

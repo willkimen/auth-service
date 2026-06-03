@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.token.token_repository import (
-    RefreshTokenRepository,
+from adapters.outputs.repositories.token.refresh_token import (
+    PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError
 
@@ -14,7 +14,7 @@ async def test_query_fails_when_database_error_occurs():
     mock_conn = AsyncMock()
     mock_conn.execute.side_effect = SQLAlchemyError('Database connection lost')
 
-    repository = RefreshTokenRepository(mock_conn)
+    repository = PostgresRefreshTokenRepository(mock_conn)
 
     error_message = 'Operation to check if the token has expired failed'
 

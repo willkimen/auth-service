@@ -14,68 +14,64 @@ from application.exceptions import (
     InvalidTokenTypeError,
 )
 from application.ports.output import (
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
 )
-from application.use_cases.token.revoke_all_refreshes import (
-    RevokeAllRefreshesUseCase,
+from application.use_cases.authentication.revoke_refresh import (
+    RevokeRefreshUseCase,
 )
 
-jti = 'jti'
-token = 'refresh'
+jti = 'jit'
+refresh_token = 'refresh'
 
 
-async def test_revoke_all_refreshes_successfully():
+async def test_revoke_refresh_successfully():
     """
-    Test if the revoke all refreshes use case executes successfully.
+    Test if the revoke refresh use case executes successfully.
     """
     mocks = mocks_factory()
-    use_case = RevokeAllRefreshesUseCase(
-        uow=mocks.uow,
+    use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
+        uow=mocks.uow,
     )
 
     # act
-    await use_case.execute(token)
+    await use_case.execute(refresh_token)
 
     # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.token_manager.validate.assert_called_once_with(refresh_token)
+    mocks.uow.token_repo.revoke.assert_awaited_once_with(jti)
 
 
-async def test_revoke_all_refreshes_aborts_when_invalid_token():
+async def test_revoke_refresh_aborts_when_invalid_token():
     """
-    The revoke all refreshes flow is aborted when token validation
-    fails with a domain-level token error.
+    The revoke refresh flow is aborted when token validation fails
+    with a domain-level token error.
     """
     mocks = mocks_factory()
     mocks.token_manager.validate.side_effect = InvalidTokenError(
         InvalidTokenErrorCode.INVALID
     )
-    use_case = RevokeAllRefreshesUseCase(
-        uow=mocks.uow,
+    use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InvalidTokenError):
-        await use_case.execute(token)
+        await use_case.execute(refresh_token)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.token_repo.revoke.assert_not_awaited()
 
 
-async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
+async def test_revoke_refresh_aborts_when_token_validation_fails():
     """
-    The revoke all refreshes flow is aborted when token validation
-    fails due to an infrastructure error.
+    The revoke refresh flow is aborted when token validation fails
+    due to an infrastructure error.
     """
     mocks = mocks_factory()
     mocks.token_manager.validate.side_effect = InfrastructureError(
@@ -83,24 +79,22 @@ async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
         InfrastructureErrorCode.DATABASE,
         Exception(),
     )
-    use_case = RevokeAllRefreshesUseCase(
-        uow=mocks.uow,
+    use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(refresh_token)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.token_repo.revoke.assert_not_awaited()
 
 
-async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
+async def test_revoke_refresh_aborts_when_token_type_is_invalid():
     mocks = mocks_factory()
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     mocks.token_manager.validate.return_value = PayloadTokenDTO(
@@ -109,49 +103,43 @@ async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
         exp=int(exp.timestamp()),
         typ='access',  # incorrect type
     )
-    use_case = RevokeAllRefreshesUseCase(
-        uow=mocks.uow,
+    use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InvalidTokenTypeError):
-        await use_case.execute(token)
+        await use_case.execute(refresh_token)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
+    mocks.uow.token_repo.revoke.assert_not_awaited()
 
 
-async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
+async def test_revoke_refresh_aborts_when_refresh_revocation_fails():
     """
-    The revoke all refreshes flow is aborted when refresh token
-    revocation fails due to an infrastructure error.
+    The revoke refresh flow is aborted when refresh token revocation
+    fails due to an infrastructure error.
     """
     mocks = mocks_factory()
-    mocks.uow.token_repo.revoke_all_refreshes.side_effect = (
-        InfrastructureError(
-            'Error revoking refresh tokens',
-            InfrastructureErrorCode.DATABASE,
-            Exception(),
-        )
+    mocks.uow.token_repo.revoke.side_effect = InfrastructureError(
+        'Error revoking refresh token',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
     )
-    use_case = RevokeAllRefreshesUseCase(
-        uow=mocks.uow,
+    use_case = RevokeRefreshUseCase(
         token_manager=mocks.token_manager,
+        uow=mocks.uow,
     )
 
     with pytest.raises(InfrastructureError):
-        await use_case.execute(token)
+        await use_case.execute(refresh_token)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
+    mocks.uow.token_repo.revoke.assert_awaited_once()
 
 
 @dataclass(frozen=True)
@@ -162,8 +150,8 @@ class DependenciesMocked:
 
 def mocks_factory() -> DependenciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
-    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
-    uow.token_repo.revoke_all_refreshes.return_value = None
+    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.token_repo.revoke.return_value = None
 
     exp = datetime.now(timezone.utc) + timedelta(days=7)
     token_manager = Mock(spec=TokenManagerPort)

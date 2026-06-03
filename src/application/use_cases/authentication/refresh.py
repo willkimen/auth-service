@@ -6,8 +6,8 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.ports.output import (
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UserRepositoryPort,
 )
 from domain.entities.user import User
@@ -28,7 +28,7 @@ class RefreshUseCase:
             - Repository responsible for user persistence operations.
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and generation.
-        `token_repo` (TokenRepositoryPort):
+        `token_repo` (RefreshTokenRepositoryPort):
             - Repository responsible for refresh token persistence and
               revocation state.
     """
@@ -37,7 +37,7 @@ class RefreshUseCase:
         self,
         user_repo: UserRepositoryPort,
         token_manager: TokenManagerPort,
-        token_repo: TokenRepositoryPort,
+        token_repo: RefreshTokenRepositoryPort,
     ):
         self.user_repo = user_repo
         self.token_manager = token_manager

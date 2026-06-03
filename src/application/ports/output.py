@@ -122,10 +122,10 @@ class VerificationCodeRepositoryPort(Protocol):
         ...
 
 
-class TokenRepositoryPort(Protocol):
-    """Defines persistence operations for tokens."""
+class RefreshTokenRepositoryPort(Protocol):
+    """Defines persistence operations for refreshes tokens."""
 
-    async def save_refresh(
+    async def create(
         self,
         sub: uuid.UUID,
         jti: str,
@@ -140,7 +140,7 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
-    async def revoke_all_refreshes(self, sub: uuid.UUID) -> None:
+    async def revoke_all(self, sub: uuid.UUID) -> None:
         """Revokes all refresh tokens for a subject.
 
         Raises:
@@ -149,7 +149,7 @@ class TokenRepositoryPort(Protocol):
         """
         ...
 
-    async def revoke_refresh(self, jti: str) -> None:
+    async def revoke(self, jti: str) -> None:
         """Revoke a specifc refresh token.
 
         Raises:
@@ -234,7 +234,7 @@ class UnitOfWorkPort(Protocol):
     user_repo: UserRepositoryPort
     code_repo: VerificationCodeRepositoryPort
     message_repo: MessageRepositoryPort
-    token_repo: TokenRepositoryPort
+    token_repo: RefreshTokenRepositoryPort
 
     async def __aenter__(self) -> 'UnitOfWorkPort':
         """Starts a transaction context.

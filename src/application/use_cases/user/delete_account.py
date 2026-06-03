@@ -140,5 +140,5 @@ class DeleteUseCase:
         async with self.uow:
             await self.uow.user_repo.delete(user.public_id)
             await self.uow.code_repo.delete_all(user.public_id)
-            await self.uow.token_repo.revoke_all_refreshes(user.public_id)
+            await self.uow.token_repo.revoke_all(user.public_id)
             await self.uow.message_repo.create(message)

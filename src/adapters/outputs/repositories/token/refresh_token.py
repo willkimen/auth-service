@@ -8,11 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from application.exceptions import InfrastructureError, InfrastructureErrorCode
 
 
-class RefreshTokenRepository:
+class PostgresRefreshTokenRepository:
     def __init__(self, conn: AsyncConnection):
         self.conn = conn
 
-    async def save_refresh(
+    async def create(
         self,
         sub: uuid.UUID,
         jti: str,
@@ -36,7 +36,7 @@ class RefreshTokenRepository:
                 cause=e,
             ) from e
 
-    async def revoke_all_refreshes(self, sub: uuid.UUID) -> None:
+    async def revoke_all(self, sub: uuid.UUID) -> None:
         """Revokes all refresh tokens for a subject."""
         try:
             query = text("""
@@ -53,7 +53,7 @@ class RefreshTokenRepository:
                 cause=e,
             ) from e
 
-    async def revoke_refresh(self, jti: str) -> None:
+    async def revoke(self, jti: str) -> None:
         """Revoke a specific refresh token."""
         try:
             query = text("""

@@ -24,8 +24,8 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
@@ -80,7 +80,7 @@ async def test_delete_account_successfully(
     mocks.uow.code_repo.delete_all.assert_awaited_once_with(
         active_user.public_id
     )
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once_with(
+    mocks.uow.token_repo.revoke_all.assert_awaited_once_with(
         active_user.public_id
     )
     mocks.uow.message_repo.create.assert_awaited_once()
@@ -130,7 +130,7 @@ async def test_delete_not_performed_when_token_is_invalid(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -173,7 +173,7 @@ async def test_delete_not_performed_when_token_validation_fails(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -214,7 +214,7 @@ async def test_delete_not_performed_when_token_type_is_invalid(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -257,7 +257,7 @@ async def test_delete_not_performed_when_token_exists_check_fails(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -288,7 +288,7 @@ async def test_delete_not_performed_when_token_not_found(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -327,7 +327,7 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -358,7 +358,7 @@ async def test_delete_not_performed_when_token_is_revoked(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -393,7 +393,7 @@ async def test_delete_not_performed_when_get_user_fails(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -426,7 +426,7 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -455,7 +455,7 @@ async def test_delete_not_performed_when_user_not_found(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -485,7 +485,7 @@ async def test_delete_not_performed_when_user_is_inactive(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -522,7 +522,7 @@ async def test_delete_not_performed_when_get_code_fails(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -555,7 +555,7 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -589,7 +589,7 @@ async def test_delete_not_performed_when_code_not_found(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -625,7 +625,7 @@ async def test_delete_not_performed_when_code_already_used(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -662,7 +662,7 @@ async def test_delete_not_performed_when_code_type_is_invalid(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -698,7 +698,7 @@ async def test_delete_not_performed_when_code_is_expired(
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.delete.assert_not_awaited()
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -740,7 +740,7 @@ async def test_delete_not_performed_when_user_delete_fails(
 
     # assert was not called
     mocks.uow.code_repo.delete_all.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -782,7 +782,7 @@ async def test_delete_not_performed_when_code_delete_all_fails(
     mocks.uow.code_repo.delete_all.assert_awaited_once()
 
     # assert was not calledd
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -795,12 +795,10 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
     """
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    mocks.uow.token_repo.revoke_all_refreshes.side_effect = (
-        InfrastructureError(
-            'Error revoking refresh tokens',
-            InfrastructureErrorCode.DATABASE,
-            Exception(),
-        )
+    mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
+        'Error revoking refresh tokens',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
     )
     use_case = DeleteUseCase(
         token_manager=mocks.token_manager,
@@ -822,7 +820,7 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.user_repo.delete.assert_awaited_once()
     mocks.uow.code_repo.delete_all.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all.assert_awaited_once()
 
     # assert was not called
     mocks.uow.message_repo.create.assert_not_awaited()
@@ -863,7 +861,7 @@ async def test_delete_not_performed_when_message_create_fails(
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.user_repo.delete.assert_awaited_once()
     mocks.uow.code_repo.delete_all.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
 
 
@@ -898,8 +896,8 @@ def mocks_factory(
     uow.code_repo.delete_all.return_value = None
     uow.code_repo.get_by_user_id_and_code.return_value = verification_code
 
-    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
-    uow.token_repo.revoke_all_refreshes.return_value = None
+    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.token_repo.revoke_all.return_value = None
     uow.token_repo.exists.return_value = True
     uow.token_repo.is_revoked.return_value = False
 

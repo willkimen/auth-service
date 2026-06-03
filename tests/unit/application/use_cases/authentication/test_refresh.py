@@ -19,11 +19,11 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.ports.output import (
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UserRepositoryPort,
 )
-from application.use_cases.token.refresh import RefreshUseCase
+from application.use_cases.authentication.refresh import RefreshUseCase
 from domain.entities.user import User
 from domain.exceptions import DomainError, InactiveUserError
 
@@ -444,7 +444,7 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     user_repo = AsyncMock(spec=UserRepositoryPort)
     user_repo.get_by_public_id.return_value = user
 
-    token_repo = AsyncMock(spec=TokenRepositoryPort)
+    token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
     token_repo.exists.return_value = True
     token_repo.is_revoked.return_value = False
 

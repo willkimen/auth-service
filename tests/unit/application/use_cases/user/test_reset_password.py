@@ -18,7 +18,7 @@ from application.messages.message_types import MessageType
 from application.ports.output import (
     HasherPort,
     MessageRepositoryPort,
-    TokenRepositoryPort,
+    RefreshTokenRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
@@ -85,7 +85,7 @@ async def test_password_reset_successfully(
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
     mocks.uow.code_repo.update.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once_with(
+    mocks.uow.token_repo.revoke_all.assert_awaited_once_with(
         active_user.public_id
     )
     mocks.uow.message_repo.create.assert_awaited_once()
@@ -159,7 +159,7 @@ async def test_reset_password_fails_when_password_invalid(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -197,7 +197,7 @@ async def test_reset_password_fails_when_passwords_do_not_match(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -229,7 +229,7 @@ async def test_reset_password_fails_when_user_does_not_exist(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -270,7 +270,7 @@ async def test_reset_password_fails_when_get_user_fails(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -310,7 +310,7 @@ async def test_reset_password_fails_when_user_state_is_corrupted(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -343,7 +343,7 @@ async def test_reset_password_fails_when_user_inactive(
     mocks.hasher.hash.assert_not_called()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -385,7 +385,7 @@ async def test_reset_password_fails_when_hash_password_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -429,7 +429,7 @@ async def test_reset_password_fails_when_get_code_fails(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -470,7 +470,7 @@ async def test_reset_password_fails_when_verification_code_state_is_corrupted(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -501,7 +501,7 @@ async def test_reset_password_fails_when_code_does_not_exist(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -534,7 +534,7 @@ async def test_reset_password_fails_when_code_already_used(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -567,7 +567,7 @@ async def test_reset_password_fails_when_code_expired(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -600,7 +600,7 @@ async def test_reset_password_fails_when_code_type_is_invalid(
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -644,7 +644,7 @@ async def test_reset_password_fails_when_persist_user_update_fails(
 
     # assert was not called
     mocks.uow.code_repo.update.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -686,7 +686,7 @@ async def test_reset_password_fails_when_persist_code_update_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all_refreshes.assert_not_awaited()
+    mocks.uow.token_repo.revoke_all.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -704,12 +704,10 @@ async def test_reset_password_fails_when_revoke_tokens_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.token_repo.revoke_all_refreshes.side_effect = (
-        InfrastructureError(
-            'Error attempting to revoke refresh tokens',
-            InfrastructureErrorCode.DATABASE,
-            Exception(),
-        )
+    mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
+        'Error attempting to revoke refresh tokens',
+        InfrastructureErrorCode.DATABASE,
+        Exception(),
     )
     use_case = ResetPasswordUseCase(
         mocks.hasher,
@@ -726,7 +724,7 @@ async def test_reset_password_fails_when_revoke_tokens_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
     mocks.uow.code_repo.update.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -768,7 +766,7 @@ async def test_reset_password_fails_when_message_persist_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
     mocks.uow.code_repo.update.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all_refreshes.assert_awaited_once()
+    mocks.uow.token_repo.revoke_all.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -820,7 +818,7 @@ def mocks_factory(
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
     uow.message_repo.create.return_value = None
 
-    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
-    uow.token_repo.revoke_all_refreshes.return_value = None
+    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.token_repo.revoke_all.return_value = None
 
     return DependeciesMocked(hasher, uow)

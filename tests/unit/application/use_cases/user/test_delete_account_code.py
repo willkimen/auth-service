@@ -23,8 +23,8 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
+    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    TokenRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
@@ -618,7 +618,7 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     uow.user_repo = AsyncMock(spec=UserRepositoryPort)
     uow.user_repo.get_by_public_id.return_value = user
 
-    uow.token_repo = AsyncMock(spec=TokenRepositoryPort)
+    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
     uow.token_repo.exists.return_value = True
     uow.token_repo.is_revoked.return_value = False
 

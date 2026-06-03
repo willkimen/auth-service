@@ -110,7 +110,7 @@ class LoginUseCase:
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
-            await self.uow.token_repo.save_refresh(
+            await self.uow.token_repo.create(
                 pair_tokens.refresh.payload.sub,
                 pair_tokens.refresh.payload.jti,
                 exp,

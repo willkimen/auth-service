@@ -6,8 +6,8 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.token.token_repository import (
-    RefreshTokenRepository,
+from adapters.outputs.repositories.token.refresh_token import (
+    PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError
 
@@ -16,14 +16,14 @@ async def test_should_successfully_persist_a_refresh_token(
     conn_rollback: AsyncConnection,
 ):
     # arrange
-    repository = RefreshTokenRepository(conn_rollback)
+    repository = PostgresRefreshTokenRepository(conn_rollback)
 
     token_id = 'test-jti-123'
     user_id = uuid.uuid4()
     expiration = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     # Act
-    await repository.save_refresh(
+    await repository.create(
         sub=user_id,
         jti=token_id,
         expires_at=expiration,
@@ -51,7 +51,7 @@ async def test_persistence_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection, monkeypatch
 ):
     # arrange
-    repo = RefreshTokenRepository(conn_rollback)
+    repo = PostgresRefreshTokenRepository(conn_rollback)
     token_id = 'test-jti-456'
     user_id = uuid.uuid4()
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -64,7 +64,7 @@ async def test_persistence_fails_when_a_database_error_occurs(
     # act and assert
     # ensure the infrastructure exception is raised
     with pytest.raises(InfrastructureError):
-        await repo.save_refresh(sub=user_id, jti=token_id, expires_at=exp)
+        await repo.create(sub=user_id, jti=token_id, expires_at=exp)
 
     # remove the mock to allow querying the real database again
     monkeypatch.undo()

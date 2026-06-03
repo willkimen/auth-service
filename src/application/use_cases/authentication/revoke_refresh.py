@@ -3,13 +3,12 @@ from application.exceptions import InvalidTokenTypeError
 from application.ports.output import TokenManagerPort, UnitOfWorkPort
 
 
-class RevokeAllRefreshesUseCase:
+class RevokeRefreshUseCase:
     """
-    Handles the refresh token mass revocation workflow.
+    Handles the refresh token revocation workflow.
 
-    This use case validates the provided refresh token and revokes
-    all refresh tokens associated with the authenticated user,
-    invalidating every active authenticated session for that user.
+    This use case validates the provided refresh token and marks
+    the associated refresh token as revoked in persistence storage.
 
     Args:
         `token_manager` (TokenManagerPort):
@@ -29,10 +28,7 @@ class RevokeAllRefreshesUseCase:
 
     async def execute(self, refresh: str):
         """
-        Executes the mass refresh token revocation flow.
-
-        This operation revokes every refresh token associated with
-        the authenticated user identified by the provided token.
+        Executes the refresh token revocation flow.
 
         Args:
             `refresh` (str):
@@ -53,4 +49,4 @@ class RevokeAllRefreshesUseCase:
 
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
-            await self.uow.token_repo.revoke_all_refreshes(token_payload.sub)
+            await self.uow.token_repo.revoke(token_payload.jti)

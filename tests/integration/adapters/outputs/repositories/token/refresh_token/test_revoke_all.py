@@ -6,8 +6,8 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.token.token_repository import (
-    RefreshTokenRepository,
+from adapters.outputs.repositories.token.refresh_token import (
+    PostgresRefreshTokenRepository,
 )
 from application.exceptions import InfrastructureError
 
@@ -16,20 +16,20 @@ async def test_should_invalidate_all_active_sessions_for_a_specific_user(
     conn_rollback: AsyncConnection,
 ):
     # arrange
-    repository = RefreshTokenRepository(conn_rollback)
+    repository = PostgresRefreshTokenRepository(conn_rollback)
     target_user_id = uuid.uuid4()
     other_user_id = uuid.uuid4()
     expiration = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     # we store two active tokens for the target user
-    await repository.save_refresh(target_user_id, 'token-1', expiration)
-    await repository.save_refresh(target_user_id, 'token-2', expiration)
+    await repository.create(target_user_id, 'token-1', expiration)
+    await repository.create(target_user_id, 'token-2', expiration)
 
     # we store one active token for a different user (should remain untouched)
-    await repository.save_refresh(other_user_id, 'token-3', expiration)
+    await repository.create(other_user_id, 'token-3', expiration)
 
     # act
-    await repository.revoke_all_refreshes(sub=target_user_id)
+    await repository.revoke_all(sub=target_user_id)
 
     # assert
     # we verify that target tokens are revoked and others are not
@@ -54,13 +54,13 @@ async def test_revocation_fails_when_database_error_occurs(
     conn_rollback: AsyncConnection, monkeypatch
 ):
     # arrange
-    repo = RefreshTokenRepository(conn_rollback)
+    repo = PostgresRefreshTokenRepository(conn_rollback)
     token_id = 'test-jti-999'
     user_id = uuid.uuid4()
     exp = datetime.now(timezone.utc) + timedelta(days=1)
 
     # insert a real active token into the database
-    await repo.save_refresh(
+    await repo.create(
         sub=user_id,
         jti=token_id,
         expires_at=exp,
@@ -75,7 +75,7 @@ async def test_revocation_fails_when_database_error_occurs(
     # act and assert
     # ensure the infrastructure exception is raised
     with pytest.raises(InfrastructureError):
-        await repo.revoke_all_refreshes(sub=user_id)
+        await repo.revoke_all(sub=user_id)
 
     # remove the class mock to restore real database behavior
     monkeypatch.undo()
