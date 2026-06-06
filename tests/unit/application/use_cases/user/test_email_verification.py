@@ -67,7 +67,7 @@ async def test_email_verified_successfully(
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
 
     # assert that user_repo.update() was called with correct arguments
@@ -81,8 +81,10 @@ async def test_email_verified_successfully(
     assert user_arg.last_login_at is None
     assert user_arg.updated_at == unverified_user.updated_at
 
-    # assert that code_repo.update() was called with correct arguments
-    code_arg: VerificationCode = mocks.uow.code_repo.update.call_args[0][0]
+    # assert that code_repo.mark_as_used() was called with correct arguments
+    code_arg: VerificationCode = mocks.uow.code_repo.mark_as_used.call_args[0][
+        0
+    ]
     assert code_arg.code == unused_code.code
     assert code_arg.user_public_id == unused_code.user_public_id
     assert code_arg.payload is None
@@ -119,7 +121,7 @@ async def test_verification_fails_when_user_does_not_exist(
     # assert was not called
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -143,7 +145,7 @@ async def test_verification_fails_when_user_already_verified(
     # assert was not called
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -167,7 +169,7 @@ async def test_verification_fails_when_user_inactive(
     # assert was not called
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -199,7 +201,7 @@ async def test_verification_fails_when_get_user_fails(
     # assert was not called
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -230,7 +232,7 @@ async def test_verification_fails_when_user_state_is_corrupted(
     # assert was not called
     mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -252,7 +254,7 @@ async def test_verification_fails_when_code_does_not_exist(
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -276,7 +278,7 @@ async def test_verification_fails_when_code_already_used(
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -300,7 +302,7 @@ async def test_verification_fails_when_code_expired(
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -329,7 +331,7 @@ async def test_verification_fails_when_code_type_is_invalid(
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -358,7 +360,7 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -388,7 +390,7 @@ async def test_verification_fails_when_veritication_code_state_is_corrupted(
 
     # assert was not called
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.__aenter__.assert_not_awaited()
     mocks.uow.__aexit__.assert_not_awaited()
@@ -423,7 +425,7 @@ async def test_verification_fails_when_persist_user_update_fails(
     mocks.uow.__aenter__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
 
@@ -437,7 +439,7 @@ async def test_verification_fails_when_persist_code_update_fails(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
-    mocks.uow.code_repo.update.side_effect = InfrastructureError(
+    mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
@@ -452,7 +454,7 @@ async def test_verification_fails_when_persist_code_update_fails(
     mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
 
@@ -485,7 +487,7 @@ async def test_verification_fails_when_message_persists_fails(
     mocks.uow.user_repo.get_by_email.assert_awaited_once()
     mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
@@ -523,7 +525,7 @@ def mocks_factory(
     uow.user_repo.update.return_value = None
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    uow.code_repo.update.return_value = None
+    uow.code_repo.mark_as_used.return_value = None
     uow.code_repo.get_by_user_id_and_code.return_value = verification_code
 
     uow.message_repo = AsyncMock(spec=MessageRepositoryPort)

@@ -118,5 +118,5 @@ class EmailVerificationUseCase:
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
             await self.uow.user_repo.update(user)
-            await self.uow.code_repo.update(verification_code)
+            await self.uow.code_repo.mark_as_used(verification_code)
             await self.uow.message_repo.create(message)

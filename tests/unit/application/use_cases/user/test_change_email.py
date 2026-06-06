@@ -82,7 +82,7 @@ async def test_email_changed_successfully(
     mocks.uow.__aexit__.assert_awaited_once()
 
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
     mocks.uow.token_repo.revoke_all.assert_awaited_once_with(
         active_user.public_id
@@ -95,7 +95,9 @@ async def test_email_changed_successfully(
     assert user_arg.is_active is True
 
     # assert verification code persisted state
-    code_arg: VerificationCode = mocks.uow.code_repo.update.call_args[0][0]
+    code_arg: VerificationCode = mocks.uow.code_repo.mark_as_used.call_args[0][
+        0
+    ]
     assert code_arg.user_public_id == (unused_code.user_public_id)
     assert code_arg.user_public_id == (active_user.public_id)
     assert code_arg.type == CodeType.CHANGE_EMAIL
@@ -138,7 +140,7 @@ async def test_change_email_fails_when_token_invalid():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -175,7 +177,7 @@ async def test_change_email_fails_when_token_type_is_invalid():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -210,7 +212,7 @@ async def test_change_email_fails_when_token_validate_fails():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -244,7 +246,7 @@ async def test_change_email_fails_when_token_not_found():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -283,7 +285,7 @@ async def test_change_email_fails_when_check_token_exists_fails():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -317,7 +319,7 @@ async def test_change_email_fails_when_token_revoked():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -356,7 +358,7 @@ async def test_change_email_fails_when_check_token_revoke_fails():
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -389,7 +391,7 @@ async def test_change_email_fails_when_code_not_found(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -426,7 +428,7 @@ async def test_change_email_fails_when_code_already_used(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -465,7 +467,7 @@ async def test_change_email_fails_when_code_expired(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -508,7 +510,7 @@ async def test_change_email_fails_when_code_type_invalid(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -552,7 +554,7 @@ async def test_change_email_fails_when_get_code_fails(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -592,7 +594,7 @@ async def test_change_email_fails_when_code_state_corrupted(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -631,7 +633,7 @@ async def test_change_email_fails_when_user_not_found(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -671,7 +673,7 @@ async def test_change_email_fails_when_user_inactive(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -716,7 +718,7 @@ async def test_change_email_fails_when_get_user_fails(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -759,7 +761,7 @@ async def test_change_email_fails_when_user_state_corrupted(
     mocks.uow.__aexit__.assert_not_awaited()
 
     mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -806,7 +808,7 @@ async def test_change_email_fails_when_persist_user_update_fails(
     mocks.uow.user_repo.update.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.update.assert_not_awaited()
+    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
     mocks.uow.token_repo.revoke_all.assert_not_awaited()
 
@@ -825,7 +827,7 @@ async def test_change_email_fails_when_persist_code_update_fails(
         unused_code,
     )
 
-    mocks.uow.code_repo.update.side_effect = InfrastructureError(
+    mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update verification code',
         InfrastructureErrorCode.DATABASE,
         Exception(),
@@ -851,7 +853,7 @@ async def test_change_email_fails_when_persist_code_update_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
 
     # assert was not called
     mocks.uow.message_repo.create.assert_not_awaited()
@@ -898,7 +900,7 @@ async def test_change_email_fails_when_persist_message_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
 
     # assert was not called
@@ -945,7 +947,7 @@ async def test_change_email_fails_when_revoke_refresh_tokens_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.update.assert_awaited_once()
+    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited_once()
     mocks.uow.token_repo.revoke_all.assert_awaited_once()
 
@@ -995,7 +997,7 @@ def mocks_factory(
     uow.user_repo.get_by_public_id.return_value = user
 
     uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    uow.code_repo.update.return_value = None
+    uow.code_repo.mark_as_used.return_value = None
     # Simulate a persisted verification code returned by repository lookup.
     uow.code_repo.get_by_user_id_and_code.return_value = verification_code
 

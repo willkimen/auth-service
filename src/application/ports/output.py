@@ -87,12 +87,11 @@ class VerificationCodeRepositoryPort(Protocol):
         """
         ...
 
-    async def update(self, verification_code: VerificationCode) -> None:
-        """Updates a verification code record.
+    async def mark_as_used(self, verification_code: VerificationCode) -> None:
+        """Marks a verification code as used in the database.
 
         Raises:
-            InfrastructureError:
-                If database update fails.
+            InfrastructureError: If database update fails.
         """
         ...
 
