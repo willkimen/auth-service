@@ -5,7 +5,9 @@ import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
 from adapters.outputs.repositories.models import UserRowMapper
-from adapters.outputs.repositories.user import PostgresUserRepository
+from adapters.outputs.repositories.user_repository import (
+    PostgresUserRepository,
+)
 from application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,

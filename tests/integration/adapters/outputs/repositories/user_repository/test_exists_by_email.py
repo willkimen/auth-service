@@ -1,12 +1,12 @@
-import uuid
-
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.user import PostgresUserRepository
+from adapters.outputs.repositories.user_repository import (
+    PostgresUserRepository,
+)
 from domain.entities.user import User
 
 
-async def test_should_return_user_when_public_id_exists(
+async def test_should_return_true_when_user_exists_by_email(
     conn_rollback: AsyncConnection,
     user: User,
 ):
@@ -16,20 +16,20 @@ async def test_should_return_user_when_public_id_exists(
     await repository.create(user)
 
     # act
-    actual_user = await repository.get_by_public_id(user.public_id)
+    actual = await repository.exists_by_email(user.email.value)
 
     # assert
-    assert user == actual_user
+    assert actual is True
 
 
-async def test_should_return_none_when_public_id_does_not_exist(
+async def test_should_return_false_when_user_does_not_exist_by_email(
     conn_rollback: AsyncConnection,
 ):
     # arrange
     repository = PostgresUserRepository(conn_rollback)
 
     # act
-    actual_user = await repository.get_by_public_id(uuid.uuid4())
+    actual = await repository.exists_by_email('nonexistent@example.com')
 
     # assert
-    assert actual_user is None
+    assert actual is False

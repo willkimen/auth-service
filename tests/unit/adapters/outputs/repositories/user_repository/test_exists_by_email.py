@@ -3,16 +3,16 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.user import PostgresUserRepository
+from adapters.outputs.repositories.user_repository import (
+    PostgresUserRepository,
+)
 from application.exceptions import InfrastructureError
 
 
 async def test_existence_check_fails_when_database_error_occurs():
     # arrange
     mock_conn = AsyncMock()
-    mock_conn.execute.side_effect = SQLAlchemyError(
-        'Database connection lost'
-    )
+    mock_conn.execute.side_effect = SQLAlchemyError('Database connection lost')
 
     repository = PostgresUserRepository(mock_conn)
 
