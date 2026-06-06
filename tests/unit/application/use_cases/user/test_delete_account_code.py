@@ -124,7 +124,7 @@ async def test_delete_not_initialize_process_when_token_validation_fails(
 
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error validating token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -197,7 +197,7 @@ async def test_delete_account_not_initialize_when_token_is_invalid(
     mocks: DependenciesMocked = mocks_factory(active_user)
 
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
 
     use_case = DeleteCodeUseCase(
@@ -236,7 +236,7 @@ async def test_delete_account_not_initialize_when_token_check_fails(
 
     mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -309,7 +309,7 @@ async def test_delete_account_not_initialize_when_token_revoke_check_fails(
 
     mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -382,7 +382,7 @@ async def test_delete_account_not_initialize_when_get_user_fails(
 
     mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error fetching user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -529,7 +529,7 @@ async def test_delete_account_not_initialize_when_persist_code_fails(
 
     mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error persisting verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -571,7 +571,7 @@ async def test_delete_account_not_initialize_when_persist_message_fails(
 
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error persisting message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

@@ -104,7 +104,7 @@ async def test_delete_not_performed_when_token_is_invalid(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
     use_case = DeleteUseCase(
         token_manager=mocks.token_manager,
@@ -146,7 +146,7 @@ async def test_delete_not_performed_when_token_validation_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error validating token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = DeleteUseCase(
@@ -230,7 +230,7 @@ async def test_delete_not_performed_when_token_exists_check_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = DeleteUseCase(
@@ -300,7 +300,7 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -370,7 +370,7 @@ async def test_delete_not_performed_when_get_user_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error fetching user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = DeleteUseCase(
@@ -498,7 +498,7 @@ async def test_delete_not_performed_when_get_code_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         InfrastructureError(
             'Error fetching code',
-            InfrastructureErrorCode.DATABASE,
+            InfrastructureErrorCode.DATABASE_ERROR,
             Exception(),
         )
     )
@@ -713,7 +713,7 @@ async def test_delete_not_performed_when_user_delete_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.user_repo.delete.side_effect = InfrastructureError(
         'Error deleting user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -756,7 +756,7 @@ async def test_delete_not_performed_when_code_delete_all_fails(
 
     mocks.uow.code_repo.delete_all.side_effect = InfrastructureError(
         'Error deleting codes',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -797,7 +797,7 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
         'Error revoking refresh tokens',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = DeleteUseCase(
@@ -837,7 +837,7 @@ async def test_delete_not_performed_when_message_create_fails(
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error creating message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

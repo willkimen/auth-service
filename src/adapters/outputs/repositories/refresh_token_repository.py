@@ -32,7 +32,7 @@ class PostgresRefreshTokenRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Token creating operation failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -49,7 +49,7 @@ class PostgresRefreshTokenRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Operation to revoke all user refreshes failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -66,7 +66,7 @@ class PostgresRefreshTokenRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Operation to revoke user refresh failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -86,7 +86,7 @@ class PostgresRefreshTokenRepository:
                 message=(
                     'Operation to verify the existence of the token failed'
                 ),
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -108,6 +108,6 @@ class PostgresRefreshTokenRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Operation to check if the token has expired failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e

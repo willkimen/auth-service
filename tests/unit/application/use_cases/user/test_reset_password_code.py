@@ -150,7 +150,7 @@ async def test_reset_process_not_initialize_when_get_user_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordCodeUseCase(mocks.uow)
@@ -203,7 +203,7 @@ async def test_reset_process_not_initialize_when_code_persits_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordCodeUseCase(mocks.uow)
@@ -235,7 +235,7 @@ async def test_reset_process_not_initialize_when_message_persits_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordCodeUseCase(mocks.uow)

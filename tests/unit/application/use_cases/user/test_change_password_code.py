@@ -121,7 +121,7 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
 
     use_case = ChangePasswordCodeUseCase(
@@ -159,7 +159,7 @@ async def test_change_process_not_initialize_when_token_validation_fails(
 
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error attempting to validate token',
-        InfrastructureErrorCode.UNKNOWN,
+        InfrastructureErrorCode.UNKNOWN_ERROR,
         Exception(),
     )
 
@@ -233,7 +233,7 @@ async def test_password_change_process_not_initialize_when_token_check_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error attempting to check token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ChangePasswordCodeUseCase(
@@ -300,7 +300,7 @@ async def test_password_change_not_initialize_when_token_revoke_check_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error attempting to check revoked token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -367,7 +367,7 @@ async def test_password_change_not_initialize_when_get_user_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -503,7 +503,7 @@ async def test_password_change_not_initialize_when_persist_code_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -541,7 +541,7 @@ async def test_password_change_not_initialize_when_persist_message_fails(
     mocks: DependeciesMocked = mocks_factory(active_user)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import StrEnum, auto
 
 # =========================
 # Infrastructure Errors
@@ -8,28 +8,28 @@ from enum import StrEnum
 class InfrastructureErrorCode(StrEnum):
     """Enumerates infrastructure failure error codes.
     Attributes:
-        `UNKNOWN` (str):
+        `UNKNOWN_ERROR` (str):
             - Used when an unclassified or unexpected infrastructure
               failure occurs.
-        `DATABASE` (str):
+        `DATABASE_ERROR` (str):
             - Indicates a failure during database persistence or connection
               operations.
-        `PASSWORD_HASHER` (str):
+        `PASSWORD_HASHER_ERROR` (str):
             - Represents an error inside the password hashing and
               verification service.
-        `AUTH_TOKEN` (str):
+        `AUTH_TOKEN_ERROR` (str):
             - Indicates a failure during cryptographic token generation,
               signing, or processing.
-        `CORRUPTED_PERSISTENCE_STATE` (str):
+        `CORRUPTED_PERSISTENCE_STATE_ERROR` (str):
             - Raised when the retrieved database data cannot be successfully
               mapped into valid domain objects.
     """
 
-    UNKNOWN = 'INFRA_UNKNOWN_ERROR'
-    DATABASE = 'INFRA_DATABASE_ERROR'
-    PASSWORD_HASHER = 'INFRA_PASSWORD_HASHER_ERROR'
-    AUTH_TOKEN = 'INFRA_AUTH_TOKEN_ERROR'
-    CORRUPTED_PERSISTENCE_STATE = 'INFRA_CORRUPTED_PERSISTENCE_STATE'
+    UNKNOWN_ERROR = auto()
+    DATABASE_ERROR = auto()
+    PASSWORD_HASHER_ERROR = auto()
+    AUTH_TOKEN_ERROR = auto()
+    CORRUPTED_PERSISTENCE_STATE_ERROR = auto()
 
 
 class InfrastructureError(Exception):
@@ -51,7 +51,7 @@ class InfrastructureError(Exception):
     def __init__(
         self,
         message: str,
-        code: InfrastructureErrorCode = InfrastructureErrorCode.UNKNOWN,
+        code: InfrastructureErrorCode = InfrastructureErrorCode.UNKNOWN_ERROR,
         cause: Exception | None = None,
     ):
         super().__init__(message)
@@ -78,7 +78,7 @@ class CorruptedPersistenceStateError(InfrastructureError):
                 'Persisted data is invalid and could not '
                 'be reconstructed into domain objects'
             ),
-            code=InfrastructureErrorCode.CORRUPTED_PERSISTENCE_STATE,
+            code=InfrastructureErrorCode.CORRUPTED_PERSISTENCE_STATE_ERROR,
             cause=cause,
         )
 
@@ -180,24 +180,24 @@ class InvalidTokenErrorCode(StrEnum):
     """Enumerates token validation error codes.
 
     Attributes:
-        `EXPIRED` (str):
+        `TOKEN_EXPIRED` (str):
             - Indicates that the validation failed because the token
               has expired.
-        `INVALID_SIGNATURE` (str):
+        `TOKEN_INVALID_SIGNATURE` (str):
             - Indicates that the cryptographic signature of the token
               is invalid.
-        `MALFORMED` (str):
+        `TOKEN_MALFORMED` (str):
             - Indicates that the token structure does not follow the
               expected format.
-        `INVALID` (str):
+        `TOKEN_INVALID` (str):
             - Used for general token validation failures that do not match
               other codes.
     """
 
-    EXPIRED = 'TOKEN_EXPIRED'
-    INVALID_SIGNATURE = 'TOKEN_INVALID_SIGNATURE'
-    MALFORMED = 'TOKEN_MALFORMED'
-    INVALID = 'TOKEN_INVALID'
+    TOKEN_EXPIRED = auto()
+    TOKEN_INVALID_SIGNATURE = auto()
+    TOKEN_MALFORMED = auto()
+    TOKEN_INVALID = auto()
 
 
 class InvalidTokenError(ApplicationError):
@@ -213,12 +213,12 @@ class InvalidTokenError(ApplicationError):
 
     def __init__(self, code: InvalidTokenErrorCode):
         message_map = {
-            InvalidTokenErrorCode.EXPIRED: 'Token has expired.',
-            InvalidTokenErrorCode.INVALID_SIGNATURE: (
+            InvalidTokenErrorCode.TOKEN_EXPIRED: 'Token has expired.',
+            InvalidTokenErrorCode.TOKEN_INVALID_SIGNATURE: (
                 'Token signature is invalid.'
             ),
-            InvalidTokenErrorCode.MALFORMED: 'Token is malformed.',
-            InvalidTokenErrorCode.INVALID: 'Token is invalid.',
+            InvalidTokenErrorCode.TOKEN_MALFORMED: 'Token is malformed.',
+            InvalidTokenErrorCode.TOKEN_INVALID: 'Token is invalid.',
         }
 
         super().__init__(message=message_map[code], code=code.value)

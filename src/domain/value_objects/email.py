@@ -36,7 +36,7 @@ class Email:
     def _validate(value: str) -> str:
         if value is None or not value.strip():
             raise InvalidEmailError(
-                'email cannot be None or empty', EmailErrorCode.REQUIRED
+                'email cannot be None or empty', EmailErrorCode.EMAIL_REQUIRED
             )
 
         value = value.strip().lower()
@@ -44,7 +44,7 @@ class Email:
         if _EMAIL_PATTERN.match(value) is None:
             raise InvalidEmailError(
                 'email must be in a valid format',
-                EmailErrorCode.INVALID_FORMAT,
+                EmailErrorCode.EMAIL_INVALID_FORMAT,
             )
 
         return value

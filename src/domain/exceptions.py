@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import StrEnum, auto
 
 
 class DomainError(Exception):
@@ -25,9 +25,9 @@ class UserErrorCode(StrEnum):
     """Enumerates user-related domain error codes.
 
     Attributes:
-        `ALREADY_VERIFIED` (str):
+        `EMAIL_ALREADY_VERIFIED` (str):
             - Raised when the user email has already been verified.
-        `INACTIVE` (str):
+        `INACTIVE_USER` (str):
             - Raised when the user account state is inactive.
         `UNVERIFIED_EMAIL` (str):
             - Raised when an action requires a verified email.
@@ -35,10 +35,10 @@ class UserErrorCode(StrEnum):
             - Raised when a new email address is required but missing.
     """
 
-    ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED'
-    INACTIVE = 'INACTIVE_USER'
-    UNVERIFIED_EMAIL = 'UNVERIFIED_EMAIL'
-    MISSING_NEW_EMAIL = 'MISSING_NEW_EMAIL'
+    EMAIL_ALREADY_VERIFIED = auto()
+    INACTIVE_USER = auto()
+    UNVERIFIED_EMAIL = auto()
+    MISSING_NEW_EMAIL = auto()
 
 
 class InactiveUserError(DomainError):
@@ -50,7 +50,7 @@ class InactiveUserError(DomainError):
     """
 
     def __init__(self, message: str = 'User account is inactive'):
-        super().__init__(message, UserErrorCode.INACTIVE)
+        super().__init__(message, UserErrorCode.INACTIVE_USER)
 
 
 class EmailAlreadyVerifiedError(DomainError):
@@ -62,7 +62,7 @@ class EmailAlreadyVerifiedError(DomainError):
     """
 
     def __init__(self, message: str = 'Email is already verified'):
-        super().__init__(message, UserErrorCode.ALREADY_VERIFIED)
+        super().__init__(message, UserErrorCode.EMAIL_ALREADY_VERIFIED)
 
 
 class UnverifiedEmailError(DomainError):
@@ -86,34 +86,34 @@ class PasswordErrorCode(StrEnum):
     """Enumerates password validation error codes.
 
     Attributes:
-        `REQUIRED` (str):
+        `PASSWORD_REQUIRED` (str):
             - Indicates that the password field is missing or empty.
-        `TOO_SHORT` (str):
+        `PASSWORD_TOO_SHORT` (str):
             - Raised when the password does not meet the minimum length
               requirement.
-        `TOO_LONG` (str):
+        `PASSWORD_TOO_LONG` (str):
             - Raised when the password exceeds the maximum allowed length.
-        `MISSING_LETTER` (str):
+        `PASSWORD_MISSING_LETTER` (str):
             - Indicates the password lacks at least one alphabetic
               character.
-        `MISSING_NUMBER` (str):
+        `PASSWORD_MISSING_NUMBER` (str):
             - Indicates the password lacks at least one numeric digit.
-        `MISSING_SPECIAL` (str):
+        `PASSWORD_MISSING_SPECIAL` (str):
             - Indicates the password lacks at least one special character.
-        `MISSING_UPPERCASE` (str):
+        `PASSWORD_MISSING_UPPERCASE` (str):
             - Indicates the password lacks at least one uppercase letter.
-        `MISSING_LOWERCASE` (str):
+        `PASSWORD_MISSING_LOWERCASE` (str):
             - Indicates the password lacks at least one lowercase letter.
     """
 
-    REQUIRED = 'PASSWORD_REQUIRED'
-    TOO_SHORT = 'PASSWORD_TOO_SHORT'
-    TOO_LONG = 'PASSWORD_TOO_LONG'
-    MISSING_LETTER = 'PASSWORD_MISSING_LETTER'
-    MISSING_NUMBER = 'PASSWORD_MISSING_NUMBER'
-    MISSING_SPECIAL = 'PASSWORD_MISSING_SPECIAL'
-    MISSING_UPPERCASE = 'PASSWORD_MISSING_UPPERCASE'
-    MISSING_LOWERCASE = 'PASSWORD_MISSING_LOWERCASE'
+    PASSWORD_REQUIRED = auto()
+    PASSWORD_TOO_SHORT = auto()
+    PASSWORD_TOO_LONG = auto()
+    PASSWORD_MISSING_LETTER = auto()
+    PASSWORD_MISSING_NUMBER = auto()
+    PASSWORD_MISSING_SPECIAL = auto()
+    PASSWORD_MISSING_UPPERCASE = auto()
+    PASSWORD_MISSING_LOWERCASE = auto()
 
 
 class InvalidPasswordError(DomainError):
@@ -139,14 +139,14 @@ class EmailErrorCode(StrEnum):
     """Enumerates email validation error codes.
 
     Attributes:
-        `REQUIRED` (str):
+        `EMAIL_REQUIRED` (str):
             - Indicates that the email field is missing or empty.
-        `INVALID_FORMAT` (str):
+        `EMAIL_INVALID_FORMAT` (str):
             - Raised when the provided email string format is invalid.
     """
 
-    REQUIRED = 'EMAIL_REQUIRED'
-    INVALID_FORMAT = 'EMAIL_INVALID_FORMAT'
+    EMAIL_REQUIRED = auto()
+    EMAIL_INVALID_FORMAT = auto()
 
 
 class InvalidEmailError(DomainError):
@@ -172,12 +172,12 @@ class CodeErrorCode(StrEnum):
     """Enumerates code validation error codes.
 
     Attributes:
-        `INVALID_FORMAT` (str):
+        `CODE_INVALID_FORMAT` (str):
             - Raised when the code structure or format
               is invalid.
     """
 
-    INVALID_FORMAT = 'CODE_INVALID_FORMAT'
+    CODE_INVALID_FORMAT = auto()
 
 
 class InvalidCodeError(DomainError):
@@ -203,17 +203,17 @@ class VerificationCodeErrorCode(StrEnum):
     """Enumerates verification code domain error codes.
 
     Attributes:
-        `EXPIRED` (str):
+        `VERIFICATION_CODE_EXPIRED` (str):
             - Raised when the verification code validity has expired.
-        `ALREADY_USED` (str):
+        `VERIFICATION_CODE_ALREADY_USED` (str):
             - Raised when the verification code has already been consumed.
-        `INCORRECT_TYPE` (str):
+        `VERIFICATION_CODE_INCORRECT_TYPE` (str):
             - Raised when the verification code purpose type is invalid.
     """
 
-    EXPIRED = 'VERIFICATION_CODE_EXPIRED'
-    ALREADY_USED = 'VERIFICATION_CODE_ALREADY_USED'
-    INCORRECT_TYPE = 'VERIFICATION_CODE_INCORRECT_TYPE'
+    VERIFICATION_CODE_EXPIRED = auto()
+    VERIFICATION_CODE_ALREADY_USED = auto()
+    VERIFICATION_CODE_INCORRECT_TYPE = auto()
 
 
 class VerificationCodeAlreadyUsedError(DomainError):
@@ -227,7 +227,9 @@ class VerificationCodeAlreadyUsedError(DomainError):
     def __init__(
         self, message: str = 'Verification code has already been used'
     ):
-        super().__init__(message, VerificationCodeErrorCode.ALREADY_USED)
+        super().__init__(
+            message, VerificationCodeErrorCode.VERIFICATION_CODE_ALREADY_USED
+        )
 
 
 class VerificationCodeTypeError(DomainError):
@@ -239,7 +241,9 @@ class VerificationCodeTypeError(DomainError):
     """
 
     def __init__(self, message: str = 'Verification code type is incorrect'):
-        super().__init__(message, VerificationCodeErrorCode.INCORRECT_TYPE)
+        super().__init__(
+            message, VerificationCodeErrorCode.VERIFICATION_CODE_INCORRECT_TYPE
+        )
 
 
 class VerificationCodeExpiredError(DomainError):
@@ -251,7 +255,9 @@ class VerificationCodeExpiredError(DomainError):
     """
 
     def __init__(self, message: str = 'Verification code has expired'):
-        super().__init__(message, VerificationCodeErrorCode.EXPIRED)
+        super().__init__(
+            message, VerificationCodeErrorCode.VERIFICATION_CODE_EXPIRED
+        )
 
 
 class MissingNewEmailError(DomainError):

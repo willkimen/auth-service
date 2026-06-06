@@ -32,7 +32,8 @@ class PasswordHash:
     def _validate(value: str) -> str:
         if not value:
             raise InvalidPasswordError(
-                'password hash cannot be empty', PasswordErrorCode.REQUIRED
+                'password hash cannot be empty',
+                PasswordErrorCode.PASSWORD_REQUIRED,
             )
 
         return value

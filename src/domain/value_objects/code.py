@@ -60,7 +60,7 @@ class Code:
         if len(value) != self._LENGTH or not value.isdigit():
             raise InvalidCodeError(
                 'code must be a 6-digit numeric string',
-                CodeErrorCode.INVALID_FORMAT,
+                CodeErrorCode.CODE_INVALID_FORMAT,
             )
 
         return value

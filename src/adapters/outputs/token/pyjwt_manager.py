@@ -55,7 +55,7 @@ class PyJWTManagerAdapter:
         except Exception as e:
             raise InfrastructureError(
                 message='',
-                code=InfrastructureErrorCode.AUTH_TOKEN,
+                code=InfrastructureErrorCode.AUTH_TOKEN_ERROR,
                 cause=e,
             )
 
@@ -71,7 +71,9 @@ class PyJWTManagerAdapter:
             return self._create_token(self._create_payload(sub, 'access'))
         except Exception as e:
             raise InfrastructureError(
-                message='', code=InfrastructureErrorCode.AUTH_TOKEN, cause=e
+                message='',
+                code=InfrastructureErrorCode.AUTH_TOKEN_ERROR,
+                cause=e,
             )
 
     def validate(self, token: str) -> PayloadTokenDTO:
@@ -96,26 +98,28 @@ class PyJWTManagerAdapter:
             )
             return PayloadTokenDTO(**payload)
         except jwt.exceptions.ExpiredSignatureError as e:
-            raise InvalidTokenError(InvalidTokenErrorCode.EXPIRED) from e
+            raise InvalidTokenError(InvalidTokenErrorCode.TOKEN_EXPIRED) from e
 
         except jwt.exceptions.InvalidSignatureError as e:
             raise InvalidTokenError(
-                InvalidTokenErrorCode.INVALID_SIGNATURE
+                InvalidTokenErrorCode.TOKEN_INVALID_SIGNATURE
             ) from e
 
         except (
             jwt.exceptions.DecodeError,
             jwt.exceptions.InvalidAlgorithmError,
         ) as e:
-            raise InvalidTokenError(InvalidTokenErrorCode.MALFORMED) from e
+            raise InvalidTokenError(
+                InvalidTokenErrorCode.TOKEN_MALFORMED
+            ) from e
 
         except jwt.exceptions.InvalidTokenError as e:
-            raise InvalidTokenError(InvalidTokenErrorCode.INVALID) from e
+            raise InvalidTokenError(InvalidTokenErrorCode.TOKEN_INVALID) from e
 
         except Exception as e:
             raise InfrastructureError(
                 message='Unexpected error during token decoding.',
-                code=InfrastructureErrorCode.UNKNOWN,
+                code=InfrastructureErrorCode.UNKNOWN_ERROR,
                 cause=e,
             ) from e
 

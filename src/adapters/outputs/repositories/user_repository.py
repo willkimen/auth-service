@@ -69,7 +69,7 @@ class PostgresUserRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Failed to create user',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -110,7 +110,7 @@ class PostgresUserRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='User update operation failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -136,7 +136,7 @@ class PostgresUserRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='User delete operation failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
 
@@ -172,7 +172,7 @@ class PostgresUserRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='User retrieval operation failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
         except (DomainError, ValueError, TypeError, AttributeError) as e:
@@ -210,7 +210,7 @@ class PostgresUserRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='User retrieval operation failed',
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
         except (DomainError, ValueError, TypeError, AttributeError) as e:
@@ -237,6 +237,6 @@ class PostgresUserRepository:
                 message=(
                     'Operation to verify the existence of the user failed'
                 ),
-                code=InfrastructureErrorCode.DATABASE,
+                code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e

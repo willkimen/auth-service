@@ -252,7 +252,7 @@ async def test_reset_password_fails_when_get_user_fails(
     )
     mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(
@@ -367,7 +367,7 @@ async def test_reset_password_fails_when_hash_password_fails(
     )
     mocks.hasher.hash.side_effect = InfrastructureError(
         'Error attempting to hash password',
-        InfrastructureErrorCode.UNKNOWN,
+        InfrastructureErrorCode.UNKNOWN_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(
@@ -410,7 +410,7 @@ async def test_reset_password_fails_when_get_code_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         InfrastructureError(
             'Error attempting to get code',
-            InfrastructureErrorCode.DATABASE,
+            InfrastructureErrorCode.DATABASE_ERROR,
             Exception(),
         )
     )
@@ -624,7 +624,7 @@ async def test_reset_password_fails_when_persist_user_update_fails(
     )
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(
@@ -666,7 +666,7 @@ async def test_reset_password_fails_when_persist_code_update_fails(
     )
     mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(
@@ -708,7 +708,7 @@ async def test_reset_password_fails_when_revoke_tokens_fails(
     )
     mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
         'Error attempting to revoke refresh tokens',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(
@@ -750,7 +750,7 @@ async def test_reset_password_fails_when_message_persist_fails(
     )
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = ResetPasswordUseCase(

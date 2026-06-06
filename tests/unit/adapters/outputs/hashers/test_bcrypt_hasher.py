@@ -24,7 +24,7 @@ def test_hash_raises_infrastructure_error_on_invalid_input_type():
         hasher.hash(b'fakepassword')  # type: ignore
 
     error = e.value
-    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER
+    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER_ERROR
     assert isinstance(error.cause, AttributeError)
     assert 'password hashing service' in str(error)
 
@@ -44,7 +44,7 @@ def test_hash_raises_infrastructure_error_on_cryptographic_failure(
         hasher.hash(senha_plana)
 
     error = e.value
-    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER
+    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER_ERROR
     assert isinstance(error.cause, ValueError)
     assert 'password hashing service' in str(error)
 
@@ -63,6 +63,6 @@ def test_verify_password_raises_infrastructure_error_on_cryptographic_failure(
         hasher.verify_password('qualquer_senha', 'qualquer_hash')
 
     error = e.value
-    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER
+    assert error.code == InfrastructureErrorCode.PASSWORD_HASHER_ERROR
     assert isinstance(error.cause, ValueError)
     assert 'Password verification failure' in str(error)

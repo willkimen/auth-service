@@ -79,7 +79,7 @@ async def test_login_not_performed_when_user_fetch_fails(
     mocks = mocks_factory(verified_user)
     mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error fetching user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -183,7 +183,7 @@ async def test_login_not_performed_when_password_verification_fails_due_infra(
     mocks = mocks_factory(verified_user)
     mocks.hasher.verify_password.side_effect = InfrastructureError(
         'Error verifying password',
-        InfrastructureErrorCode.PASSWORD_HASHER,
+        InfrastructureErrorCode.PASSWORD_HASHER_ERROR,
         Exception(),
     )
 
@@ -319,7 +319,7 @@ async def test_login_not_performed_when_user_update_fails(
 
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error updating user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -357,7 +357,7 @@ async def test_login_not_performed_when_get_pair_fails(
     mocks = mocks_factory(verified_user)
     mocks.token_manager.new_pair_token.side_effect = InfrastructureError(
         'Error generating tokens',
-        InfrastructureErrorCode.AUTH_TOKEN,
+        InfrastructureErrorCode.AUTH_TOKEN_ERROR,
         Exception(),
     )
 
@@ -395,7 +395,7 @@ async def test_login_not_performed_when_save_refresh_fails(
 
     mocks.uow.token_repo.create.side_effect = InfrastructureError(
         'Error saving refresh token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

@@ -237,7 +237,7 @@ async def test_password_change_not_performed_when_password_hashing_fails(
 
     mocks.hasher.hash.side_effect = InfrastructureError(
         'Error attempting to hash password',
-        InfrastructureErrorCode.PASSWORD_HASHER,
+        InfrastructureErrorCode.PASSWORD_HASHER_ERROR,
         Exception(),
     )
 
@@ -286,7 +286,7 @@ async def test_password_change_not_performed_when_token_is_invalid(
     )
 
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
 
     use_case = ChangePasswordUseCase(
@@ -335,7 +335,7 @@ async def test_password_change_not_performed_when_token_validation_fails(
 
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error attempting to validate token',
-        InfrastructureErrorCode.AUTH_TOKEN,
+        InfrastructureErrorCode.AUTH_TOKEN_ERROR,
         Exception(),
     )
 
@@ -433,7 +433,7 @@ async def test_password_change_not_performed_when_token_existence_check_fails(
 
     mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error attempting to check token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -483,7 +483,7 @@ async def test_password_change_not_performed_when_token_revocation_check_fails(
 
     mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error attempting to check token revocation',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -624,7 +624,7 @@ async def test_password_change_not_performed_when_get_user_fails(
 
     mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -816,7 +816,7 @@ async def test_change_password_not_performed_when_get_code_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         InfrastructureError(
             'Error attempting to get verification code',
-            InfrastructureErrorCode.DATABASE,
+            InfrastructureErrorCode.DATABASE_ERROR,
             Exception(),
         )
     )
@@ -1107,7 +1107,7 @@ async def test_change_password_not_performed_when_update_user_fails(
 
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user password',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -1160,7 +1160,7 @@ async def test_change_password_not_performed_when_update_code_fails(
 
     mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -1213,7 +1213,7 @@ async def test_change_password_not_performed_when_revoke_tokens_fails(
 
     mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
         'Error attempting to revoke refresh tokens',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -1266,7 +1266,7 @@ async def test_change_password_not_performed_when_create_message_fails(
 
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to create message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

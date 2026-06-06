@@ -88,7 +88,7 @@ async def test_detail_fails_when_token_validation_fails_unexpectedly():
 
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error validating token',
-        InfrastructureErrorCode.AUTH_TOKEN,
+        InfrastructureErrorCode.AUTH_TOKEN_ERROR,
         Exception(),
     )
 
@@ -144,7 +144,7 @@ async def test_detail_fails_when_token_type_is_invalid():
 async def test_detail_fails_when_token_is_invalid():
     mocks: DependeciesMocked = mocks_factory(None, None)
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.EXPIRED
+        InvalidTokenErrorCode.TOKEN_EXPIRED
     )
     use_case = DetailUseCase(
         mocks.user_repo,
@@ -212,7 +212,7 @@ async def test_detail_fails_when_token_exists_check_fails():
 
     mocks.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -285,7 +285,7 @@ async def test_detail_fails_when_token_revocation_check_fails():
 
     mocks.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -355,7 +355,7 @@ async def test_detail_fails_when_get_user_fails():
 
     mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

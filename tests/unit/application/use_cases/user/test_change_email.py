@@ -115,7 +115,7 @@ async def test_email_changed_successfully(
 async def test_change_email_fails_when_token_invalid():
     mocks: DependeciesMocked = mocks_factory(None, None)
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.EXPIRED
+        InvalidTokenErrorCode.TOKEN_EXPIRED
     )
 
     use_case = ChangeEmailUseCase(
@@ -186,7 +186,7 @@ async def test_change_email_fails_when_token_validate_fails():
     mocks: DependeciesMocked = mocks_factory(None, None)
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error attempting to validate token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -259,7 +259,7 @@ async def test_change_email_fails_when_check_token_exists_fails():
     mocks: DependeciesMocked = mocks_factory(None, None)
     mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error attempting to check token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -332,7 +332,7 @@ async def test_change_email_fails_when_check_token_revoke_fails():
     mocks: DependeciesMocked = mocks_factory(None, None)
     mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error attempting to check token revoke state',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -527,7 +527,7 @@ async def test_change_email_fails_when_get_code_fails(
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         InfrastructureError(
             'Error attempting to get verification code',
-            InfrastructureErrorCode.DATABASE,
+            InfrastructureErrorCode.DATABASE_ERROR,
             Exception(),
         )
     )
@@ -693,7 +693,7 @@ async def test_change_email_fails_when_get_user_fails(
 
     mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -782,7 +782,7 @@ async def test_change_email_fails_when_persist_user_update_fails(
 
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -829,7 +829,7 @@ async def test_change_email_fails_when_persist_code_update_fails(
 
     mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -876,7 +876,7 @@ async def test_change_email_fails_when_persist_message_fails(
 
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -923,7 +923,7 @@ async def test_change_email_fails_when_revoke_refresh_tokens_fails(
 
     mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
         'Error attempting to revoke refresh tokens',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

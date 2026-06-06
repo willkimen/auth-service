@@ -32,7 +32,7 @@ class BcryptHasher:
                     'An unexpected cryptographic or data error occurred'
                     ' within the password hashing service.'
                 ),
-                code=InfrastructureErrorCode.PASSWORD_HASHER,
+                code=InfrastructureErrorCode.PASSWORD_HASHER_ERROR,
                 cause=e,
             )
 
@@ -61,6 +61,6 @@ class BcryptHasher:
         except Exception as e:
             raise InfrastructureError(
                 message=f'Password verification failure. Original error: {e}',
-                code=InfrastructureErrorCode.PASSWORD_HASHER,
+                code=InfrastructureErrorCode.PASSWORD_HASHER_ERROR,
                 cause=e,
             )

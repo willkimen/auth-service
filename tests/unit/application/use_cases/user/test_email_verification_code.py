@@ -180,7 +180,7 @@ async def test_verification_process_not_initialize_when_get_user_fails(
     mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationCodeUseCase(mocks.uow)
@@ -237,7 +237,7 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
     mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.uow.code_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationCodeUseCase(mocks.uow)
@@ -266,7 +266,7 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
     mocks: DependeciesMocked = mocks_factory(unverified_user)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationCodeUseCase(mocks.uow)

@@ -53,7 +53,7 @@ async def test_revoke_all_refreshes_aborts_when_invalid_token():
     """
     mocks = mocks_factory()
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
     use_case = RevokeAllRefreshesUseCase(
         uow=mocks.uow,
@@ -80,7 +80,7 @@ async def test_revoke_all_refreshes_aborts_when_token_validation_fails():
     mocks = mocks_factory()
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error validating token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = RevokeAllRefreshesUseCase(
@@ -134,7 +134,7 @@ async def test_revoke_all_refreshes_aborts_when_refresh_revocation_fails():
     mocks = mocks_factory()
     mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
         'Error revoking refresh tokens',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = RevokeAllRefreshesUseCase(

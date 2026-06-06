@@ -53,7 +53,7 @@ def test_raise_invalid_token_error_when_token_is_expired(
     with pytest.raises(InvalidTokenError) as exc:
         manager.validate('expired-token')
 
-    assert exc.value.code == InvalidTokenErrorCode.EXPIRED
+    assert exc.value.code == InvalidTokenErrorCode.TOKEN_EXPIRED
 
 
 def test_raise_invalid_token_error_when_signature_is_invalid(
@@ -71,7 +71,7 @@ def test_raise_invalid_token_error_when_signature_is_invalid(
     with pytest.raises(InvalidTokenError) as exc:
         manager.validate('invalid-token')
 
-    assert exc.value.code == InvalidTokenErrorCode.INVALID_SIGNATURE
+    assert exc.value.code == InvalidTokenErrorCode.TOKEN_INVALID_SIGNATURE
 
 
 @pytest.mark.parametrize(
@@ -97,7 +97,7 @@ def test_raise_invalid_token_error_when_token_is_malformed(
     with pytest.raises(InvalidTokenError) as exc:
         manager.validate('malformed-token')
 
-    assert exc.value.code == InvalidTokenErrorCode.MALFORMED
+    assert exc.value.code == InvalidTokenErrorCode.TOKEN_MALFORMED
 
 
 def test_raise_invalid_token_error_when_token_is_invalid(
@@ -115,7 +115,7 @@ def test_raise_invalid_token_error_when_token_is_invalid(
     with pytest.raises(InvalidTokenError) as exc:
         manager.validate('invalid-token')
 
-    assert exc.value.code == InvalidTokenErrorCode.INVALID
+    assert exc.value.code == InvalidTokenErrorCode.TOKEN_INVALID
 
 
 def test_raise_infrastructure_error_when_unexpected_error_occurs(
@@ -135,6 +135,6 @@ def test_raise_infrastructure_error_when_unexpected_error_occurs(
     with pytest.raises(InfrastructureError) as exc:
         manager.validate('token')
 
-    assert exc.value.code == InfrastructureErrorCode.UNKNOWN
+    assert exc.value.code == InfrastructureErrorCode.UNKNOWN_ERROR
     assert str(exc.value) == 'Unexpected error during token decoding.'
     assert exc.value.cause is original_error

@@ -149,7 +149,7 @@ async def test_checking_email_availability_can_raise_infrastructure_error():
     mocks: DependeciesMocked = mock_dependecies_factory()
     mocks.uow.user_repo.exists_by_email.side_effect = InfrastructureError(
         message='An unexpected error occurred while accessing the database.',
-        code=InfrastructureErrorCode.DATABASE,
+        code=InfrastructureErrorCode.DATABASE_ERROR,
         cause=Exception(),
     )
     use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
@@ -176,7 +176,7 @@ async def test_hashing_password_can_raise_infrastructure_error():
     mocks: DependeciesMocked = mock_dependecies_factory()
     mocks.hasher.hash.side_effect = InfrastructureError(
         message='An unexpected error occurred while hashing password.',
-        code=InfrastructureErrorCode.PASSWORD_HASHER,
+        code=InfrastructureErrorCode.PASSWORD_HASHER_ERROR,
         cause=Exception(),
     )
     use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)
@@ -203,7 +203,7 @@ async def test_create_user_can_raise_infrastructure_error():
     mocks: DependeciesMocked = mock_dependecies_factory()
     mocks.uow.user_repo.create.side_effect = InfrastructureError(
         message='An unexpected error occurred while accessing the database.',
-        code=InfrastructureErrorCode.DATABASE,
+        code=InfrastructureErrorCode.DATABASE_ERROR,
         cause=Exception(),
     )
     use_case = RegisterUserUseCase(mocks.hasher, mocks.uow)

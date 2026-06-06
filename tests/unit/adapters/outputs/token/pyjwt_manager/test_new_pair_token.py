@@ -71,7 +71,7 @@ def test_raise_infrastructure_error_when_payload_creation_fails(
     with pytest.raises(InfrastructureError) as exc:
         manager.new_pair_token(sub)
 
-    assert exc.value.code == InfrastructureErrorCode.AUTH_TOKEN
+    assert exc.value.code == InfrastructureErrorCode.AUTH_TOKEN_ERROR
     assert exc.value.cause is original_error
 
 
@@ -96,5 +96,5 @@ def test_raise_infrastructure_error_when_token_creation_fails(
     with pytest.raises(InfrastructureError) as exc:
         manager.new_pair_token(sub)
 
-    assert exc.value.code == InfrastructureErrorCode.AUTH_TOKEN
+    assert exc.value.code == InfrastructureErrorCode.AUTH_TOKEN_ERROR
     assert exc.value.cause is original_error

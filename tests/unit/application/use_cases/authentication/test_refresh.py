@@ -69,7 +69,7 @@ async def test_refresh_aborts_when_token_validation_fails(
     mocks = mocks_factory(verified_user)
     mocks.token_manager.validate.side_effect = InfrastructureError(
         'Error validating token',
-        InfrastructureErrorCode.AUTH_TOKEN,
+        InfrastructureErrorCode.AUTH_TOKEN_ERROR,
         Exception(),
     )
     use_case = RefreshUseCase(
@@ -130,7 +130,7 @@ async def test_refresh_aborts_when_token_is_invalid(
     mocks = mocks_factory(verified_user)
 
     mocks.token_manager.validate.side_effect = InvalidTokenError(
-        InvalidTokenErrorCode.INVALID
+        InvalidTokenErrorCode.TOKEN_INVALID
     )
     use_case = RefreshUseCase(
         user_repo=mocks.user_repo,
@@ -162,7 +162,7 @@ async def test_refresh_aborts_when_token_exists_check_fails(
 
     mocks.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -226,7 +226,7 @@ async def test_refresh_aborts_when_token_revocation_check_fails(
 
     mocks.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = RefreshUseCase(
@@ -288,7 +288,7 @@ async def test_refresh_aborts_when_get_user_fails(
 
     mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error fetching user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -412,7 +412,7 @@ async def test_refresh_aborts_when_access_token_generation_fails(
 
     mocks.token_manager.new_access.side_effect = InfrastructureError(
         'Error generating access token',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 

@@ -186,7 +186,7 @@ async def test_verification_fails_when_get_user_fails(
     mocks: DependeciesMocked = mocks_factory(None, unused_code)
     mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationUseCase(mocks.uow)
@@ -344,7 +344,7 @@ async def test_verification_fails_when_get_code_fails(unverified_user: User):
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         InfrastructureError(
             'Error attempting to get code',
-            InfrastructureErrorCode.DATABASE,
+            InfrastructureErrorCode.DATABASE_ERROR,
             Exception(),
         )
     )
@@ -409,7 +409,7 @@ async def test_verification_fails_when_persist_user_update_fails(
     use_case = EmailVerificationUseCase(mocks.uow)
     mocks.uow.user_repo.update.side_effect = InfrastructureError(
         'Error attempting to update user',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
@@ -441,7 +441,7 @@ async def test_verification_fails_when_persist_code_update_fails(
     mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update code',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationUseCase(mocks.uow)
@@ -474,7 +474,7 @@ async def test_verification_fails_when_message_persists_fails(
     mocks: DependeciesMocked = mocks_factory(unverified_user, unused_code)
     mocks.uow.message_repo.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
-        InfrastructureErrorCode.DATABASE,
+        InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
     use_case = EmailVerificationUseCase(mocks.uow)

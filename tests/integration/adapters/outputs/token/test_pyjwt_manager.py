@@ -102,7 +102,7 @@ def test_should_reject_token_signed_with_different_key():
     with pytest.raises(InvalidTokenError) as exc:
         manager.validate(token)
 
-    assert exc.value.code == InvalidTokenErrorCode.INVALID_SIGNATURE
+    assert exc.value.code == InvalidTokenErrorCode.TOKEN_INVALID_SIGNATURE
 
 
 def test_should_reject_manually_modified_token():
@@ -148,8 +148,8 @@ def test_should_reject_empty_token():
         manager.validate('')
 
     assert exc.value.code in {
-        InvalidTokenErrorCode.MALFORMED,
-        InvalidTokenErrorCode.INVALID,
+        InvalidTokenErrorCode.TOKEN_MALFORMED,
+        InvalidTokenErrorCode.TOKEN_INVALID,
     }
 
 
@@ -175,6 +175,6 @@ def test_should_reject_completely_invalid_token():
         manager.validate('abc')
 
     assert exc.value.code in {
-        InvalidTokenErrorCode.MALFORMED,
-        InvalidTokenErrorCode.INVALID,
+        InvalidTokenErrorCode.TOKEN_MALFORMED,
+        InvalidTokenErrorCode.TOKEN_INVALID,
     }
