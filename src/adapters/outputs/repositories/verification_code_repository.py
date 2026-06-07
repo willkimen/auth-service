@@ -1,6 +1,7 @@
 import uuid
 
-from sqlalchemy import CursorResult, Row, text
+from sqlalchemy import CursorResult, Row, bindparam, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
@@ -48,7 +49,7 @@ class PostgresVerificationCodeRepository:
                     :payload
                 )
                 """
-            )
+            ).bindparams(bindparam('payload', type_=JSONB))
 
             await self.conn.execute(
                 query,
