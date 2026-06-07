@@ -118,7 +118,9 @@ class ChangePasswordCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.PASSWORD_CHANGE_CODE, payload=payload
+            type=MessageType.PASSWORD_CHANGE_CODE,
+            payload=payload,
+            expires_at=verification_code.expires_at,
         )
 
         # Persist related changes atomically as a single unit of work.

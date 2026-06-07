@@ -91,6 +91,7 @@ async def test_initialize_email_verification_process_successfully(
     # contain the following state:
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.type == MessageType.EMAIL_VERIFICATION_CODE
+    assert message_arg.expires_at == code_arg.expires_at
 
     payload: EmailVerificationPayload = message_arg.payload
     assert payload.to == unverified_user.email.value

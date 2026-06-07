@@ -95,6 +95,7 @@ class EmailVerificationCodeUseCase:
         message = Message(
             type=MessageType.EMAIL_VERIFICATION_CODE,
             payload=payload,
+            expires_at=verification_code.expires_at,
         )
 
         # Persist related changes atomically as a single unit of work.

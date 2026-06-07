@@ -136,6 +136,7 @@ class ChangeEmailCodeUseCase:
                 code=verification_code.code.value,
                 expiration=str(code_expiration_time),
             ),
+            expires_at=verification_code.expires_at,
         )
 
         # Persist related changes atomically as a single unit of work.

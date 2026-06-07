@@ -79,6 +79,7 @@ async def test_initialize_reset_password_process_successfully(
 
     assert message_arg.id is not None
     assert message_arg.type == MessageType.PASSWORD_RESET_CODE
+    assert message_arg.expires_at == code_arg.expires_at
 
     payload: ResetPasswordPayload = message_arg.payload
 

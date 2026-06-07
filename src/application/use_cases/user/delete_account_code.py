@@ -117,7 +117,11 @@ class DeleteCodeUseCase:
             expiration=str(code_expiration_time),
         )
 
-        message = Message(type=MessageType.DELETE_CODE, payload=payload)
+        message = Message(
+            type=MessageType.DELETE_CODE,
+            payload=payload,
+            expires_at=verification_code.expires_at,
+        )
 
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
