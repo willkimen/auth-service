@@ -109,7 +109,6 @@ async def test_initialize_change_password_process_successfully(
     payload: ChangePasswordPayload = message_arg.payload
     assert payload.to == active_user.email.value
     assert payload.code == code_arg.code.value
-    assert payload.expiration == str(code_expiration_time)
     assert payload.subject == ('Security code for password change')
 
 

@@ -133,7 +133,6 @@ class ChangeEmailCodeUseCase:
             payload=ChangeEmailPayload(
                 to=email_vo.value,
                 code=verification_code.code.value,
-                expiration=str(code_expiration_time),
             ),
             expires_at=verification_code.expires_at,
         )

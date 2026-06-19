@@ -117,7 +117,6 @@ class DeleteCodeUseCase:
         payload = DeleteAccountPayload(
             to=user.email.value,
             code=verification_code.code.value,
-            expiration=str(code_expiration_time),
         )
 
         message = Message(

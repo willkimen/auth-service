@@ -89,8 +89,6 @@ class EmailVerificationCodeUseCase:
         payload = EmailVerificationPayload(
             to=user.email.value,
             code=verification_code.code.value,
-            expiration=str(code_expiration_time),
-            deadline=str(deadline),
         )
 
         message = Message(

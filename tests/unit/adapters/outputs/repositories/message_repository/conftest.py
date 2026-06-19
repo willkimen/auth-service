@@ -7,7 +7,8 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 
 payload = EmailVerificationPayload(
-    to='email@email.com', code='123456', expiration='15', deadline='7,'
+    to='email@email.com',
+    code='123456',
 )
 
 

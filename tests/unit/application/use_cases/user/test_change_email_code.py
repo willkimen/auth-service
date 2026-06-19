@@ -103,7 +103,6 @@ async def test_initialize_change_email_process_successfully(
 
     payload: ChangeEmailPayload = message_arg.payload
     assert payload.to == new_email
-    assert payload.expiration == str(code_expiration_time)
     assert payload.code == code_arg.code.value
     assert payload.subject == 'Confirm your email change'
 

@@ -117,7 +117,6 @@ class ChangePasswordCodeUseCase:
         payload = ChangePasswordPayload(
             to=user.email.value,
             code=verification_code.code.value,
-            expiration=str(code_expiraton_time),
         )
 
         message = Message(

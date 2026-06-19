@@ -107,7 +107,6 @@ async def test_initialize_account_deletion_process_successfully(
     payload: DeleteAccountPayload = message_arg.payload
     assert payload.to == active_user.email.value
     assert payload.code == code_arg.code.value
-    assert payload.expiration == str(code_expiration_time)
     assert payload.subject == 'Confirm account deletion'
 
 

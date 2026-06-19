@@ -95,8 +95,6 @@ async def test_initialize_email_verification_process_successfully(
 
     payload: EmailVerificationPayload = message_arg.payload
     assert payload.to == unverified_user.email.value
-    assert payload.expiration == str(code_expiration_time)
-    assert payload.deadline == str(deadline)
     assert payload.code == code_arg.code.value
     assert payload.subject == 'Verify your email'
 

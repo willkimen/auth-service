@@ -85,7 +85,6 @@ async def test_initialize_reset_password_process_successfully(
 
     assert payload.to == email
     assert payload.code == code_arg.code.value
-    assert payload.expiration == str(code_expiration_time)
     assert payload.subject == 'Reset your password'
 
 
