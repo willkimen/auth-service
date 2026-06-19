@@ -29,11 +29,6 @@ class ResetPasswordUseCase:
     """
     Completes the password reset process for a user account.
 
-    The use case validates the new password, verifies the reset code,
-    updates the user's password, revokes all active refresh tokens,
-    and persists a notification message informing the user that the
-    password was successfully changed.
-
     Attributes:
         `hasher` (HasherPort):
             - Port/Interface responsible for securely hashing raw
@@ -61,10 +56,15 @@ class ResetPasswordUseCase:
         """
         Resets a user's password using a valid verification code.
 
-        The flow validates the password policy, confirms password
-        equality, retrieves the user and verification code, validates
-        reset eligibility, updates the password, revokes all refresh
-        tokens, and persists a notification message.
+        This method:
+            - Validates the password policy.
+            - Confirms password equality.
+            - Retrieves the user and verification code, validates
+              reset eligibility.
+            - Updates the password.
+            - Revokes all refresh tokens.
+            - Persists a message containing the data required to send
+              the verification code.
 
         Args:
             `email` (str):

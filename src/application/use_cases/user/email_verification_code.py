@@ -18,11 +18,6 @@ class EmailVerificationCodeUseCase:
     """
     Starts the email verification process for a user account.
 
-    The process is initiated by creating the verification code,
-    persisting it in the database, and persisting the data required
-    to send the code to the user's email address, represented by
-    the Message object.
-
     Attributes:
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
@@ -39,6 +34,12 @@ class EmailVerificationCodeUseCase:
         deadline: int,
     ):
         """Generates a code and persists an email verification message.
+
+        This method:
+            - Creating the verification code and persisting it in the database.
+            - Retrieves and validate user.
+            - Persists a message containing the data required to send
+              the verification code.
 
         Args:
             `email` (str):

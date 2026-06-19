@@ -24,11 +24,6 @@ class EmailVerificationUseCase:
     """
     Completes the user email verification process.
 
-    Retrieves the user and verification code, validates verification
-    eligibility, marks the email as verified, marks the verification
-    code as used, and persists a message to notify
-    the user about successful email verification.
-
     Attributes:
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
@@ -44,7 +39,15 @@ class EmailVerificationUseCase:
     async def execute(self, email: str, code: str):
         """
         Verifies a user's email using a verification code and
-        registers an asynchronous notification message.
+        registers an notification message.
+
+        This method:
+            - Retrieves the user and verification code.
+            - Validates user and verification code.
+            - Marks the user as verified.
+            - Marks the verification code as used.
+            - Persists a notification message informing the user about
+              the successful email verified.
 
         Args:
             `email` (str):

@@ -34,12 +34,6 @@ class ChangePasswordUseCase:
     """
     Handles the authenticated password change workflow.
 
-    This use case validates the new password against domain rules,
-    confirms password confirmation consistency, validates the user's
-    refresh token, verifies the authorization code, updates the user's
-    password hash, revokes all active refresh tokens, and persists
-    a notification message informing the user about the password change.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation.
@@ -69,6 +63,17 @@ class ChangePasswordUseCase:
     ):
         """
         Executes the authenticated password change flow.
+
+        This method:
+            - Validates the new password against domain rules.
+            - Confirms password confirmation consistency.
+            - Validates the user's access token.
+            - Validates the user state.
+            - Validates the verification code.
+            - Retrieved and updates the user's password hash.
+            - Revokes all active refresh tokens.
+            - Persists a notification message informing the
+              user about the password change.
 
         Args:
             `access` (str):

@@ -33,12 +33,6 @@ class ChangeEmailUseCase:
     generated verification code associated with an authenticated
     session.
 
-    The use case validates the authenticated token, checks whether
-    the token exists and is not revoked, validates the verification
-    code state, updates the user's email address, revokes all active
-    refresh tokens, and persists a notification message informing
-    the user about the successful email change.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
@@ -62,11 +56,14 @@ class ChangeEmailUseCase:
         validating a previously generated email change verification
         code.
 
-        The flow validates the access token, verifies whether the
-        token exists and is active, validates the verification code,
-        updates the user's email address, revokes all active refresh
-        tokens, and persists a notification message informing the
-        user about the completed email change.
+        This method:
+            - Validates the authenticated token.
+            - Checks whether the token exists and is not revoked.
+            - Validates the verification code state
+            - Updates the user's email address.
+            - Revokes all active refresh tokens.
+            - Persists a notification message informing the user about
+              the successful email change.
 
         Args:
             `access` (str):

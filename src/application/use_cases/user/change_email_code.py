@@ -27,11 +27,6 @@ class ChangeEmailCodeUseCase:
     Initializes the email change verification process for
     an authenticated user.
 
-    The use case validates the authentication token, verifies token state,
-    retrieves the authenticated user, generates a verification code for the
-    new email address, persists the verification code, and persists a message
-    containing the data required to send the verification code asynchronously.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and payload
@@ -59,11 +54,15 @@ class ChangeEmailCodeUseCase:
         Generates and persists an email change verification code for
         the authenticated user.
 
-        The use case validates the provided email address and token,
-        checks token existence and revocation state, retrieves the
-        authenticated user, generates an email change verification code,
-        and persists both the verification code and the asynchronous
-        message responsible for email delivery.
+        This method:
+            - Validates the authentication access token.
+            - Validates the email address.
+            - Verifies token state and existence.
+            - Retrieves the authenticated user
+            - Generates a verification code for the new email address.
+            - Persists the verification code.
+            - Persists a message containing the data required to send
+              the verification code.
 
         Args:
             `access` (str):

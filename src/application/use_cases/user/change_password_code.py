@@ -26,12 +26,6 @@ class ChangePasswordCodeUseCase:
     Generates and persists a verification code used to authorize a
     password change operation for an authenticated user.
 
-    The flow validates the provided access token, verifies if the
-    token exists and is not revoked, retrieves the authenticated
-    user, validates the user state, generates a password change
-    verification code, and persists both the code and the
-    notification message inside a transactional boundary.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and decoding.
@@ -51,6 +45,15 @@ class ChangePasswordCodeUseCase:
     async def execute(self, access: str, code_expiraton_time: int):
         """
         Initializes the password change code generation use case.
+
+        This method:
+            - Validates the provided access token, verifies if the
+              token exists and is not revoked.
+            - Retrieves the authenticated user.
+            - Validates the user state.
+            - Generates a password change verification code and persists.
+            - Persists a message containing the data required to send
+              the verification code.
 
         Args:
             `access` (str):

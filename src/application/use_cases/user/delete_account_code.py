@@ -26,12 +26,6 @@ class DeleteCodeUseCase:
     Generates and persists a verification code used to authorize
     the account deletion process for an authenticated user.
 
-    The flow validates the provided access token, verifies if the
-    token exists and is not revoked, retrieves the authenticated
-    user, validates the user state, generates a delete-account
-    verification code, and persists both the code and the
-    notification message inside a transactional boundary.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and decoding.
@@ -51,6 +45,15 @@ class DeleteCodeUseCase:
     async def execute(self, access: str, code_expiration_time: int):
         """
         Initializes the delete account code generation use case.
+
+        This method:
+            - Validates the provided access token.
+            - Verifies if the token exists and is not revoked.
+            - Retrieves the authenticated user.
+            - Validates the user state.
+            - Gnerates a delete-account verification code and persists.
+            - Persists a message containing the data required to send
+              the verification code.
 
         Args:
             `access` (str):

@@ -12,9 +12,6 @@ class RegisterUserUseCase:
     """
     Application use case responsible for registering new users.
 
-    This use case validates user credentials, ensures email uniqueness,
-    hashes the password, persists the user, and returns a public-safe DTO.
-
     Attributes:
         `hasher` (HasherPort):
             - Port/Interface responsible for hashing raw passwords securely.
@@ -31,9 +28,11 @@ class RegisterUserUseCase:
         """
         Registers a new user in the system using a hashed password.
 
-        The use case validates the email and password, verifies that
-        the email is not already in use, hashes the password, creates
-        the user entity, persists it, and returns a public-safe DTO.
+        This method:
+            - Validates user credentials.
+            - Ensures email uniqueness.
+            - Hashes the password.
+            - Persists the user, and returns a public-safe DTO.
 
         Args:
             `email` (str):

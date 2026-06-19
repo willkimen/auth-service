@@ -30,15 +30,6 @@ class DeleteUseCase:
     """
     Handles the authenticated account deletion workflow.
 
-    This use case validates the authentication token, verifies token
-    existence and revocation status, loads and validates the user,
-    checks the provided verification code, ensures it matches the
-    DELETE_ACCOUNT flow, enforces expiration and single-use rules,
-    performs the account deletion inside a transactional boundary,
-    revokes all refresh tokens, deletes verification codes, and
-    persists a notification message informing the user about account
-    deletion.
-
     Attributes:
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and decoding.
@@ -58,6 +49,16 @@ class DeleteUseCase:
     async def execute(self, access: str, code: str):
         """
         Executes the authenticated account deletion flow.
+
+        This method:
+            - Validates the access token.
+            - Verifies token existence and revocation status.
+            - Loads and validates the user.
+            - Validates the provided verification code.
+            - Revokes all refresh tokens.
+            - Deletes verification codes.
+            - Persists a notification message informing the user about
+              the successful account delete.
 
         Args:
             `access` (str):

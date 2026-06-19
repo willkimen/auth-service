@@ -19,11 +19,6 @@ class DetailUseCase:
     """
     Retrieves authenticated user details from a valid access token.
 
-    The use case validates the token, verifies token persistence
-    and revocation status, retrieves the associated user, validates
-    the user's state, and returns a public-safe representation of
-    the user.
-
     Attributes:
         `user_repo` (UserRepositoryPort):
             - Port/Interface responsible for user data retrieval
@@ -51,8 +46,12 @@ class DetailUseCase:
         Validates an access token and returns the associated user's
         public information.
 
-        The token must exist, must not be revoked, and must reference
-        an active user account.
+        This method:
+            - Validates the token.
+            - Verifies token persistence and revocation status.
+            - Retrieves the associated user.
+            - Validates the user's state.
+            - Returns a public-safe representation of the user.
 
         Args:
             `access` (str):

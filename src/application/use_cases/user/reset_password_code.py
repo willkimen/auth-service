@@ -16,10 +16,6 @@ class ResetPasswordCodeUseCase:
     """
     Starts the password reset process for a user account.
 
-    The process is initiated by generating a password reset
-    verification code, persisting it, and persisting the data
-    required to notify the user through a message.
-
     Attributes:
         `uow` (UnitOfWorkPort):
             - Port/Interface responsible for managing atomic database
@@ -37,6 +33,10 @@ class ResetPasswordCodeUseCase:
         """
         Generates a password reset verification code and persists
         the notification message required to deliver it to the user.
+
+        This method:
+            - Generating a password reset verification code and persisting it.
+            - Retrieves and validate an user.
 
         Args:
             `email` (str):
