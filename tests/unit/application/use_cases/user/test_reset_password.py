@@ -125,7 +125,7 @@ async def test_password_reset_successfully(
     # user that the password was successfully reset.
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.id is not None
-    assert message_arg.type == MessageType.NOTIFICATION_PASSWORD_RESET
+    assert message_arg.type == MessageType.NOTIFY_PASSWORD_RESET
 
     payload: PasswordResetPayload = message_arg.payload
     assert payload.to == active_user.email.value

@@ -133,7 +133,7 @@ class DeleteUseCase:
         verification_code.mark_as_used(datetime.now(timezone.utc))
 
         message = Message(
-            type=MessageType.NOTIFICATION_DELETED,
+            type=MessageType.NOTIFY_ACCOUNT_DELETED,
             payload=AccountDeletedPayload(to=user.email.value),
         )
 

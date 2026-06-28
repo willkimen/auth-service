@@ -120,7 +120,7 @@ class ChangePasswordCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.PASSWORD_CHANGE_CODE,
+            type=MessageType.CHANGE_PASSWORD_CODE,
             payload=payload,
             expires_at=verification_code.expires_at,
         )

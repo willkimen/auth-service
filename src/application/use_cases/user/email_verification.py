@@ -114,7 +114,7 @@ class EmailVerificationUseCase:
         payload = EmailVerifiedPayload(user.email.value)
 
         message = Message(
-            type=MessageType.NOTIFICATION_EMAIL_VERIFIED,
+            type=MessageType.NOTIFY_EMAIL_VERIFIED,
             payload=payload,
         )
 

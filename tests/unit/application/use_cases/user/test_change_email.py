@@ -105,7 +105,7 @@ async def test_email_changed_successfully(
 
     # assert message persisted state
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.NOTIFICATION_EMAIL_CHANGED
+    assert message_arg.type == MessageType.NOTIFY_EMAIL_CHANGED
 
     payload: EmailChangedPayload = message_arg.payload
     assert payload.to == user_arg.email.value

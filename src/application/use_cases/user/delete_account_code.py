@@ -120,7 +120,7 @@ class DeleteCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.DELETE_CODE,
+            type=MessageType.ACCOUNT_DELETION_CODE,
             payload=payload,
             expires_at=verification_code.expires_at,
         )

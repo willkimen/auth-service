@@ -78,7 +78,7 @@ async def test_initialize_reset_password_process_successfully(
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
 
     assert message_arg.id is not None
-    assert message_arg.type == MessageType.PASSWORD_RESET_CODE
+    assert message_arg.type == MessageType.RESET_PASSWORD_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
     payload: ResetPasswordPayload = message_arg.payload

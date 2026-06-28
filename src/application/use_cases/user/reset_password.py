@@ -143,7 +143,7 @@ class ResetPasswordUseCase:
         user.change_password(password_hash_vo)
 
         message = Message(
-            type=MessageType.NOTIFICATION_PASSWORD_RESET,
+            type=MessageType.NOTIFY_PASSWORD_RESET,
             payload=PasswordResetPayload(user.email.value),
         )
 

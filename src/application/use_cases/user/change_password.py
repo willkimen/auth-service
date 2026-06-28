@@ -166,7 +166,7 @@ class ChangePasswordUseCase:
         verification_code.mark_as_used(datetime.now(timezone.utc))
 
         message = Message(
-            type=MessageType.NOTIFICATION_PASSWORD_CHANGED,
+            type=MessageType.NOTIFY_PASSWORD_CHANGED,
             payload=PasswordChangedPayload(user.email.value),
         )
 

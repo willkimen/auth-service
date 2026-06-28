@@ -87,7 +87,7 @@ async def test_delete_account_successfully(
 
     # assert message.create() arguments
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.NOTIFICATION_DELETED
+    assert message_arg.type == MessageType.NOTIFY_ACCOUNT_DELETED
 
     payload: AccountDeletedPayload = message_arg.payload
     assert payload.to == active_user.email.value

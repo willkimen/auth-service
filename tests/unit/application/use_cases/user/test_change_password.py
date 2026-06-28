@@ -130,7 +130,7 @@ async def test_change_password_successfully(
 
     # assert message_repo.create() arguments
     message_args: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_args.type == MessageType.NOTIFICATION_PASSWORD_CHANGED
+    assert message_args.type == MessageType.NOTIFY_PASSWORD_CHANGED
 
     payload_args: PasswordChangedPayload = message_args.payload
     assert payload_args.to == active_user.email.value

@@ -98,7 +98,7 @@ async def test_initialize_change_email_process_successfully(
     # assert that message_repo.create()
     # was called with the correct expected arguments.
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.EMAIL_CHANGE_CODE
+    assert message_arg.type == MessageType.CHANGE_EMAIL_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
     payload: ChangeEmailPayload = message_arg.payload

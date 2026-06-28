@@ -153,7 +153,7 @@ class ChangeEmailUseCase:
         user.change_email(new_email_vo)
 
         message = Message(
-            type=MessageType.NOTIFICATION_EMAIL_CHANGED,
+            type=MessageType.NOTIFY_EMAIL_CHANGED,
             payload=EmailChangedPayload(to=user.email.value),
         )
 

@@ -129,7 +129,7 @@ class ChangeEmailCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.EMAIL_CHANGE_CODE,
+            type=MessageType.CHANGE_EMAIL_CODE,
             payload=ChangeEmailPayload(
                 to=email_vo.value,
                 code=verification_code.code.value,

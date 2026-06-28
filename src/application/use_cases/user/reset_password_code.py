@@ -81,7 +81,7 @@ class ResetPasswordCodeUseCase:
         )
 
         message = Message(
-            type=MessageType.PASSWORD_RESET_CODE,
+            type=MessageType.RESET_PASSWORD_CODE,
             payload=payload,
             expires_at=verification_code.expires_at,
         )

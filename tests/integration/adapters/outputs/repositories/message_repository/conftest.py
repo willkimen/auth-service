@@ -15,7 +15,7 @@ payload = EmailVerificationPayload(
 @pytest.fixture
 def message():
     return Message(
-        type=MessageType.DELETE_CODE,
+        type=MessageType.ACCOUNT_DELETION_CODE,
         payload=payload,
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
     )

@@ -101,7 +101,7 @@ async def test_initialize_account_deletion_process_successfully(
     # The expected argument is a Message instance,
     # which must contain the following state:
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
-    assert message_arg.type == MessageType.DELETE_CODE
+    assert message_arg.type == MessageType.ACCOUNT_DELETION_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
     payload: DeleteAccountPayload = message_arg.payload
