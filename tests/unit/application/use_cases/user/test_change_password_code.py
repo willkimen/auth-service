@@ -18,7 +18,7 @@ from application.exceptions import (
     TokenRevokedError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import ChangePasswordPayload
+from application.messages.email_payloads import EmailCodePayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -106,10 +106,9 @@ async def test_initialize_change_password_process_successfully(
     assert message_arg.type == MessageType.CHANGE_PASSWORD_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
-    payload: ChangePasswordPayload = message_arg.payload
+    payload: EmailCodePayload = message_arg.payload
     assert payload.to == active_user.email.value
     assert payload.code == code_arg.code.value
-    assert payload.subject == ('Security code for password change')
 
 
 async def test_change_password_process_not_initialize_when_token_invalid(

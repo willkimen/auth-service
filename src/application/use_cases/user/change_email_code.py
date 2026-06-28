@@ -7,7 +7,7 @@ from application.exceptions import (
     TokenRevokedError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import ChangeEmailPayload
+from application.messages.email_payloads import EmailCodePayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -130,7 +130,7 @@ class ChangeEmailCodeUseCase:
 
         message = Message(
             type=MessageType.CHANGE_EMAIL_CODE,
-            payload=ChangeEmailPayload(
+            payload=EmailCodePayload(
                 to=email_vo.value,
                 code=verification_code.code.value,
             ),

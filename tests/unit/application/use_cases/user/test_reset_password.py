@@ -12,7 +12,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import PasswordResetPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -127,9 +127,8 @@ async def test_password_reset_successfully(
     assert message_arg.id is not None
     assert message_arg.type == MessageType.NOTIFY_PASSWORD_RESET
 
-    payload: PasswordResetPayload = message_arg.payload
+    payload: EmailNotificationPayload = message_arg.payload
     assert payload.to == active_user.email.value
-    assert payload.subject == 'Your password has been reset'
 
 
 async def test_reset_password_fails_when_password_invalid(

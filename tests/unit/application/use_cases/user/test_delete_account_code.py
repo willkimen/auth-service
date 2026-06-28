@@ -18,7 +18,7 @@ from application.exceptions import (
     TokenRevokedError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import DeleteAccountPayload
+from application.messages.email_payloads import EmailCodePayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -104,10 +104,9 @@ async def test_initialize_account_deletion_process_successfully(
     assert message_arg.type == MessageType.ACCOUNT_DELETION_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
-    payload: DeleteAccountPayload = message_arg.payload
+    payload: EmailCodePayload = message_arg.payload
     assert payload.to == active_user.email.value
     assert payload.code == code_arg.code.value
-    assert payload.subject == 'Confirm account deletion'
 
 
 async def test_delete_not_initialize_process_when_token_validation_fails(

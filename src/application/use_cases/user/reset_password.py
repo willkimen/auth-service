@@ -5,7 +5,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import PasswordResetPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -144,7 +144,7 @@ class ResetPasswordUseCase:
 
         message = Message(
             type=MessageType.NOTIFY_PASSWORD_RESET,
-            payload=PasswordResetPayload(user.email.value),
+            payload=EmailNotificationPayload(user.email.value),
         )
 
         # Persist related changes atomically as a single unit of work.

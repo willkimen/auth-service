@@ -11,7 +11,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailVerifiedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -34,9 +34,6 @@ from domain.exceptions import (
     VerificationCodeExpiredError,
     VerificationCodeTypeError,
 )
-
-# args para use_case.execute()
-subject = 'Email verified successfully'
 
 
 async def test_email_verified_successfully(
@@ -97,11 +94,10 @@ async def test_email_verified_successfully(
     # assert that message.create() was called with correct arguments
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.id is not None
-    assert message_arg.type == MessageType.NOTIFICATION_EMAIL_VERIFIED
+    assert message_arg.type == MessageType.NOTIFY_EMAIL_VERIFIED
 
-    payload: EmailVerifiedPayload = message_arg.payload
+    payload: EmailNotificationPayload = message_arg.payload
     assert payload.to == user_arg.email.value
-    assert payload.subject == 'Email verified successfully'
 
 
 async def test_verification_fails_when_user_does_not_exist(

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from application.exceptions import UserNotFoundError
-from application.messages.email_payloads import EmailVerificationPayload
+from application.messages.email_payloads import EmailCodePayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import UnitOfWorkPort
@@ -86,7 +86,7 @@ class EmailVerificationCodeUseCase:
             ),
         )
 
-        payload = EmailVerificationPayload(
+        payload = EmailCodePayload(
             to=user.email.value,
             code=verification_code.code.value,
         )

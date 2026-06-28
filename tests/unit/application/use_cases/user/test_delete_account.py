@@ -19,7 +19,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import AccountDeletedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -89,7 +89,7 @@ async def test_delete_account_successfully(
     message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_arg.type == MessageType.NOTIFY_ACCOUNT_DELETED
 
-    payload: AccountDeletedPayload = message_arg.payload
+    payload: EmailNotificationPayload = message_arg.payload
     assert payload.to == active_user.email.value
 
 

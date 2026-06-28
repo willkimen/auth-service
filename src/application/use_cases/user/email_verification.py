@@ -4,7 +4,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailVerifiedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import UnitOfWorkPort
@@ -111,7 +111,7 @@ class EmailVerificationUseCase:
 
         user.mark_email_as_verified()
 
-        payload = EmailVerifiedPayload(user.email.value)
+        payload = EmailNotificationPayload(user.email.value)
 
         message = Message(
             type=MessageType.NOTIFY_EMAIL_VERIFIED,

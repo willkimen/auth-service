@@ -8,7 +8,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import AccountDeletedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -134,7 +134,7 @@ class DeleteUseCase:
 
         message = Message(
             type=MessageType.NOTIFY_ACCOUNT_DELETED,
-            payload=AccountDeletedPayload(to=user.email.value),
+            payload=EmailNotificationPayload(to=user.email.value),
         )
 
         # Persist related changes atomically as a single unit of work.

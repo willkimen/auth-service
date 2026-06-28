@@ -20,7 +20,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import PasswordChangedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -132,9 +132,8 @@ async def test_change_password_successfully(
     message_args: Message = mocks.uow.message_repo.create.call_args[0][0]
     assert message_args.type == MessageType.NOTIFY_PASSWORD_CHANGED
 
-    payload_args: PasswordChangedPayload = message_args.payload
+    payload_args: EmailNotificationPayload = message_args.payload
     assert payload_args.to == active_user.email.value
-    assert payload_args.subject == 'Your password was changed'
 
 
 async def test_password_change_not_performed_when_password_is_invalid(

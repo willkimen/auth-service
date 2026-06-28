@@ -18,7 +18,7 @@ from application.exceptions import (
     TokenRevokedError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import ChangeEmailPayload
+from application.messages.email_payloads import EmailCodePayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -101,10 +101,9 @@ async def test_initialize_change_email_process_successfully(
     assert message_arg.type == MessageType.CHANGE_EMAIL_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
-    payload: ChangeEmailPayload = message_arg.payload
+    payload: EmailCodePayload = message_arg.payload
     assert payload.to == new_email
     assert payload.code == code_arg.code.value
-    assert payload.subject == 'Confirm your email change'
 
 
 async def test_change_email_process_not_initialize_when_email_invalid(

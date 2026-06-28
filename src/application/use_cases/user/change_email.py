@@ -8,7 +8,7 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailChangedPayload
+from application.messages.email_payloads import EmailNotificationPayload
 from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
@@ -154,7 +154,7 @@ class ChangeEmailUseCase:
 
         message = Message(
             type=MessageType.NOTIFY_EMAIL_CHANGED,
-            payload=EmailChangedPayload(to=user.email.value),
+            payload=EmailNotificationPayload(to=user.email.value),
         )
 
         # Persist related changes atomically as a single unit of work.
