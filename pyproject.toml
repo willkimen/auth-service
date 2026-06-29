@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "fastapi[standard]>=0.137.2",
     "psycopg[binary]>=3.3.4",
     "pyjwt>=2.13.0",
     "sqlalchemy[asyncio]>=2.0.50",
