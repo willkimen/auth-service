@@ -441,7 +441,6 @@ class EmailVerificationCodePort(Protocol):
         self,
         email: str,
         code_expiration_time: int,
-        deadline: int,
     ):
         """Generates a code and persists an email verification message.
 
@@ -450,9 +449,6 @@ class EmailVerificationCodePort(Protocol):
                 - User email address used to identify the account.
             `code_expiration_time` (int):
                 - Verification code expiration time in minutes.
-            `deadline` (int):
-                - Maximum number of days allowed for the user to
-                  verify the email address before account expiration.
 
         Raises:
             `UserNotFoundError`:

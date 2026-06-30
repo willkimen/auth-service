@@ -32,7 +32,6 @@ from domain.exceptions import (
 from domain.value_objects.code import Code
 
 code_expiration_time = 15
-deadline = 7
 
 
 async def test_initialize_email_verification_process_successfully(
@@ -56,7 +55,7 @@ async def test_initialize_email_verification_process_successfully(
 
     # act
     await use_case.execute(
-        unverified_user.email.value, code_expiration_time, deadline
+        unverified_user.email.value, code_expiration_time,
     )
 
     # Assert was called
