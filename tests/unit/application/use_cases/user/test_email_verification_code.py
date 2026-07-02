@@ -55,7 +55,8 @@ async def test_initialize_email_verification_process_successfully(
 
     # act
     await use_case.execute(
-        unverified_user.email.value, code_expiration_time,
+        unverified_user.email.value,
+        code_expiration_time,
     )
 
     # Assert was called
