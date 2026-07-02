@@ -4,7 +4,7 @@ import bcrypt
 from application.exceptions import InfrastructureError, InfrastructureErrorCode
 
 
-class BcryptHasher:
+class BcryptHasherAdapter:
     """Defines password hashing and verification operations."""
 
     def hash(self, raw_password: str) -> str:
