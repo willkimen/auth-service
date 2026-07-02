@@ -260,7 +260,7 @@ class ChangePasswordPort(Protocol):
         ...
 
 
-class DeleteCodePort(Protocol):
+class DeleteAccountCodePort(Protocol):
     """
     Initializes the verification process for delete the user,
     creating a verification code.
@@ -312,7 +312,7 @@ class DeleteCodePort(Protocol):
         ...
 
 
-class DeletePort(Protocol):
+class DeleteAccountPort(Protocol):
     """
     Delete user.
 

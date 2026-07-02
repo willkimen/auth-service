@@ -29,7 +29,9 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.delete_account_code import DeleteCodeUseCase
+from application.use_cases.user.delete_account_code import (
+    DeleteAccountCodeUseCase,
+)
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
@@ -58,7 +60,7 @@ async def test_initialize_account_deletion_process_successfully(
     """
     mocks: DependenciesMocked = mocks_factory(active_user)
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -127,7 +129,7 @@ async def test_delete_not_initialize_process_when_token_validation_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -162,7 +164,7 @@ async def test_delete_not_initialize_process_when_token_type_is_invalid(
         typ='refresh',  # incorrect type
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -199,7 +201,7 @@ async def test_delete_account_not_initialize_when_token_is_invalid(
         InvalidTokenErrorCode.TOKEN_INVALID
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -239,7 +241,7 @@ async def test_delete_account_not_initialize_when_token_check_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -273,7 +275,7 @@ async def test_delete_account_not_initialize_when_token_not_found(
     mocks: DependenciesMocked = mocks_factory(active_user)
     mocks.uow.token_repo.exists.return_value = False
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -312,7 +314,7 @@ async def test_delete_account_not_initialize_when_token_revoke_check_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -346,7 +348,7 @@ async def test_delete_account_not_initialize_when_token_is_revoked(
     mocks: DependenciesMocked = mocks_factory(active_user)
     mocks.uow.token_repo.is_revoked.return_value = True
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -385,7 +387,7 @@ async def test_delete_account_not_initialize_when_get_user_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -424,7 +426,7 @@ async def test_delete_account_not_initialize_when_user_state_is_corrupted(
         CorruptedPersistenceStateError(DomainError('corrupted state'))
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -457,7 +459,7 @@ async def test_delete_account_not_initialize_when_user_not_found():
     """
     mocks: DependenciesMocked = mocks_factory(None)
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -490,7 +492,7 @@ async def test_delete_account_not_initialize_when_user_is_inactive(
     """
     mocks: DependenciesMocked = mocks_factory(inactive_user)
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -532,7 +534,7 @@ async def test_delete_account_not_initialize_when_persist_code_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )
@@ -574,7 +576,7 @@ async def test_delete_account_not_initialize_when_persist_message_fails(
         Exception(),
     )
 
-    use_case = DeleteCodeUseCase(
+    use_case = DeleteAccountCodeUseCase(
         mocks.token_manager,
         mocks.uow,
     )

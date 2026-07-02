@@ -30,7 +30,7 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.delete_account import DeleteUseCase
+from application.use_cases.user.delete_account import DeleteAccountUseCase
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType
@@ -55,7 +55,7 @@ async def test_delete_account_successfully(
     """
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -106,7 +106,7 @@ async def test_delete_not_performed_when_token_is_invalid(
     mocks.token_manager.validate.side_effect = InvalidTokenError(
         InvalidTokenErrorCode.TOKEN_INVALID
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -149,7 +149,7 @@ async def test_delete_not_performed_when_token_validation_fails(
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -190,7 +190,7 @@ async def test_delete_not_performed_when_token_type_is_invalid(
         exp=int(exp.timestamp()),
         typ='refresh',  # incorrect type
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -233,7 +233,7 @@ async def test_delete_not_performed_when_token_exists_check_fails(
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -268,7 +268,7 @@ async def test_delete_not_performed_when_token_not_found(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.token_repo.exists.return_value = False
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -304,7 +304,7 @@ async def test_delete_not_performed_when_token_revoke_check_fails(
         Exception(),
     )
 
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -338,7 +338,7 @@ async def test_delete_not_performed_when_token_is_revoked(
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, unused_code)
     mocks.uow.token_repo.is_revoked.return_value = True
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -373,7 +373,7 @@ async def test_delete_not_performed_when_get_user_fails(
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -406,7 +406,7 @@ async def test_delete_not_performed_when_user_state_is_corrupted(
     mocks.uow.user_repo.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('corrupted'))
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -435,7 +435,7 @@ async def test_delete_not_performed_when_user_not_found(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(None, unused_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -465,7 +465,7 @@ async def test_delete_not_performed_when_user_is_inactive(
 ):
     unused_code = create_unused_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(inactive_user, unused_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -502,7 +502,7 @@ async def test_delete_not_performed_when_get_code_fails(
             Exception(),
         )
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -535,7 +535,7 @@ async def test_delete_not_performed_when_code_state_is_corrupted(
     mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('corrupted'))
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -566,7 +566,7 @@ async def test_delete_not_performed_when_code_not_found(
     The delete account flow is aborted when code does not exist.
     """
     mocks = mocks_factory(active_user, None)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -602,7 +602,7 @@ async def test_delete_not_performed_when_code_already_used(
     """
     used_code = create_used_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, used_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -639,7 +639,7 @@ async def test_delete_not_performed_when_code_type_is_invalid(
     """
     unused_code = create_unused_code(CodeType.EMAIL_VERIFICATION)
     mocks = mocks_factory(active_user, unused_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -675,7 +675,7 @@ async def test_delete_not_performed_when_code_is_expired(
     """
     expired_code = create_expired_code(CodeType.DELETE_ACCOUNT)
     mocks = mocks_factory(active_user, expired_code)
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -717,7 +717,7 @@ async def test_delete_not_performed_when_user_delete_fails(
         Exception(),
     )
 
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -760,7 +760,7 @@ async def test_delete_not_performed_when_code_delete_all_fails(
         Exception(),
     )
 
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -800,7 +800,7 @@ async def test_delete_not_performed_when_revoke_tokens_fails(
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )
@@ -841,7 +841,7 @@ async def test_delete_not_performed_when_message_create_fails(
         Exception(),
     )
 
-    use_case = DeleteUseCase(
+    use_case = DeleteAccountUseCase(
         token_manager=mocks.token_manager,
         uow=mocks.uow,
     )

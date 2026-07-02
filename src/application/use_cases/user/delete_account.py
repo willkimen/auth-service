@@ -26,7 +26,7 @@ from domain.exceptions import (
 )
 
 
-class DeleteUseCase:
+class DeleteAccountUseCase:
     """
     Handles the authenticated account deletion workflow.
 

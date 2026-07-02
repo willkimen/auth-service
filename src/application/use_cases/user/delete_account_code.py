@@ -21,7 +21,7 @@ from domain.exceptions import InactiveUserError
 from domain.value_objects.code import Code
 
 
-class DeleteCodeUseCase:
+class DeleteAccountCodeUseCase:
     """
     Generates and persists a verification code used to authorize
     the account deletion process for an authenticated user.
