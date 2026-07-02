@@ -1,5 +1,3 @@
-from typing import Self
-
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -18,13 +16,24 @@ from adapters.outputs.repositories.user_repository import (
 from adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
+from application.ports.output import (
+    MessageRepositoryPort,
+    RefreshTokenRepositoryPort,
+    UserRepositoryPort,
+    VerificationCodeRepositoryPort,
+)
 
 
 class SqlAlchemyUnitOfWork:
+    user_repo: UserRepositoryPort
+    code_repo: VerificationCodeRepositoryPort
+    message_repo: MessageRepositoryPort
+    token_repo: RefreshTokenRepositoryPort
+
     def __init__(self, engine: AsyncEngine):
         self.engine = engine
 
-    async def __aenter__(self) -> Self:
+    async def __aenter__(self):
         self.conn: AsyncConnection = await self.engine.connect()
         self.tx: AsyncTransaction = await self.conn.begin()
 
@@ -35,7 +44,7 @@ class SqlAlchemyUnitOfWork:
 
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
+    async def __aexit__(self, exc_type, exc, tb):
         if exc_type:
             await self.tx.rollback()
         else:

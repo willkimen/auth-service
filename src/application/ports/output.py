@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Protocol, Self
+from typing import Protocol
 
 from application.dtos.token_dto import (
     PairTokensDTO,
@@ -235,7 +235,7 @@ class UnitOfWorkPort(Protocol):
     message_repo: MessageRepositoryPort
     token_repo: RefreshTokenRepositoryPort
 
-    async def __aenter__(self) -> Self:
+    async def __aenter__(self):
         """Starts a transaction context.
 
         Raises:
@@ -244,7 +244,7 @@ class UnitOfWorkPort(Protocol):
         """
         ...
 
-    async def __aexit__(self, exc_type, exc_value, traceback) -> bool | None:
+    async def __aexit__(self, exc_type, exc, tb):
         """Ends a transaction, committing or rolling back.
 
         Raises:

@@ -36,7 +36,9 @@ class BcryptHasherAdapter:
                 cause=e,
             )
 
-    def verify_password(self, raw_password: str, hashed_password: str) -> bool:
+    def verify_password(
+        self, plain_password: str, hashed_password: str
+    ) -> bool:
         """
         Verifies a raw password against an existing secure hash representation.
 
@@ -55,7 +57,7 @@ class BcryptHasherAdapter:
                 - If the verification process or cryptographic library fails.
         """
         try:
-            password_bytes = raw_password.encode('utf-8')
+            password_bytes = plain_password.encode('utf-8')
             hash_bytes = hashed_password.encode('utf-8')
             return bcrypt.checkpw(password_bytes, hash_bytes)
         except Exception as e:
