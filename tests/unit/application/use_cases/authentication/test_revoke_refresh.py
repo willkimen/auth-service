@@ -41,7 +41,7 @@ async def test_revoke_refresh_successfully():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(refresh_token)
-    mocks.uow.token_repo.revoke.assert_awaited_once_with(jti)
+    mocks.uow.tokens.revoke.assert_awaited_once_with(jti)
 
 
 async def test_revoke_refresh_aborts_when_invalid_token():
@@ -65,7 +65,7 @@ async def test_revoke_refresh_aborts_when_invalid_token():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke.assert_not_awaited()
+    mocks.uow.tokens.revoke.assert_not_awaited()
 
 
 async def test_revoke_refresh_aborts_when_token_validation_fails():
@@ -91,7 +91,7 @@ async def test_revoke_refresh_aborts_when_token_validation_fails():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke.assert_not_awaited()
+    mocks.uow.tokens.revoke.assert_not_awaited()
 
 
 async def test_revoke_refresh_aborts_when_token_type_is_invalid():
@@ -115,7 +115,7 @@ async def test_revoke_refresh_aborts_when_token_type_is_invalid():
     mocks.token_manager.validate.assert_called_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke.assert_not_awaited()
+    mocks.uow.tokens.revoke.assert_not_awaited()
 
 
 async def test_revoke_refresh_aborts_when_refresh_revocation_fails():
@@ -124,7 +124,7 @@ async def test_revoke_refresh_aborts_when_refresh_revocation_fails():
     fails due to an infrastructure error.
     """
     mocks = mocks_factory()
-    mocks.uow.token_repo.revoke.side_effect = InfrastructureError(
+    mocks.uow.tokens.revoke.side_effect = InfrastructureError(
         'Error revoking refresh token',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -139,7 +139,7 @@ async def test_revoke_refresh_aborts_when_refresh_revocation_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.revoke.assert_awaited_once()
+    mocks.uow.tokens.revoke.assert_awaited_once()
 
 
 @dataclass(frozen=True)
@@ -152,8 +152,8 @@ def mocks_factory() -> DependenciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
-    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.token_repo.revoke.return_value = None
+    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.tokens.revoke.return_value = None
 
     exp = datetime.now(timezone.utc) + timedelta(days=7)
     token_manager = Mock(spec=TokenManagerPort)

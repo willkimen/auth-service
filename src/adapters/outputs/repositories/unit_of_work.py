@@ -40,23 +40,23 @@ class SqlAlchemyUnitOfWork:
     connection is released.
 
     Attributes:
-        `user_repo` (`UserRepositoryPort`):
+        `users` (`UserRepositoryPort`):
             - Repository responsible for user persistence operations.
-        `code_repo` (`VerificationCodeRepositoryPort`):
+        `codes` (`VerificationCodeRepositoryPort`):
             - Repository responsible for verification code persistence
               operations.
-        `message_repo` (`MessageRepositoryPort`):
+        `messages` (`MessageRepositoryPort`):
             - Repository responsible for message persistence
               operations.
-        `token_repo` (`RefreshTokenRepositoryPort`):
+        `tokens` (`RefreshTokenRepositoryPort`):
             - Repository responsible for refresh token persistence
               operations.
     """
 
-    user_repo: UserRepositoryPort
-    code_repo: VerificationCodeRepositoryPort
-    message_repo: MessageRepositoryPort
-    token_repo: RefreshTokenRepositoryPort
+    users: UserRepositoryPort
+    codes: VerificationCodeRepositoryPort
+    messages: MessageRepositoryPort
+    tokens: RefreshTokenRepositoryPort
 
     def __init__(self, engine: AsyncEngine):
         """
@@ -88,10 +88,10 @@ class SqlAlchemyUnitOfWork:
             self.conn: AsyncConnection = await self.engine.connect()
             self.tx: AsyncTransaction = await self.conn.begin()
 
-            self.user_repo = PostgresUserRepository(self.conn)
-            self.code_repo = PostgresVerificationCodeRepository(self.conn)
-            self.token_repo = PostgresRefreshTokenRepository(self.conn)
-            self.message_repo = PostgresMessageRepository(self.conn)
+            self.users = PostgresUserRepository(self.conn)
+            self.codes = PostgresVerificationCodeRepository(self.conn)
+            self.tokens = PostgresRefreshTokenRepository(self.conn)
+            self.messages = PostgresMessageRepository(self.conn)
 
             return self
 

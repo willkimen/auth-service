@@ -73,28 +73,26 @@ async def test_password_reset_successfully(
     )
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(
+    mocks.uow.users.get_by_email.assert_awaited_once_with(
         active_user.email.value
     )
     mocks.hasher.hash.assert_called_once_with(raw_password)
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once_with(
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once_with(
         active_user.public_id,
         unused_code.code.value,
     )
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
-    mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all.assert_awaited_once_with(
-        active_user.public_id
-    )
-    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.users.update.assert_awaited_once()
+    mocks.uow.codes.mark_as_used.assert_awaited_once()
+    mocks.uow.tokens.revoke_all.assert_awaited_once_with(active_user.public_id)
+    mocks.uow.messages.create.assert_awaited_once()
 
-    # assert that user_repo.update()
+    # assert that users.update()
     # was called with the correct expected arguments.
     # The expected argument is a User instance with the password
     # updated using the hashed password returned by the hasher.
-    user_arg: User = mocks.uow.user_repo.update.call_args[0][0]
+    user_arg: User = mocks.uow.users.update.call_args[0][0]
     assert user_arg.public_id == active_user.public_id
     assert user_arg.email.value == active_user.email.value
     assert user_arg.hash_password.value == hashed_password
@@ -104,13 +102,11 @@ async def test_password_reset_successfully(
     assert user_arg.last_login_at == active_user.last_login_at
     assert isinstance(user_arg.updated_at, datetime)
 
-    # assert that code_repo.mark_as_used()
+    # assert that codes.mark_as_used()
     # was called with the correct expected arguments.
     # The expected argument is a VerificationCode instance marked
     # as used during the password reset process.
-    code_arg: VerificationCode = mocks.uow.code_repo.mark_as_used.call_args[0][
-        0
-    ]
+    code_arg: VerificationCode = mocks.uow.codes.mark_as_used.call_args[0][0]
     assert code_arg.code == unused_code.code
     assert code_arg.user_public_id == unused_code.user_public_id
     assert code_arg.type == unused_code.type
@@ -119,11 +115,11 @@ async def test_password_reset_successfully(
     assert code_arg.payload == unused_code.payload
     assert isinstance(code_arg.used_at, datetime)
 
-    # assert that message_repo.create()
+    # assert that messages.create()
     # was called with the correct expected arguments.
     # The expected argument is a Message instance notifying the
     # user that the password was successfully reset.
-    message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
+    message_arg: Message = mocks.uow.messages.create.call_args[0][0]
     assert message_arg.id is not None
     assert message_arg.type == MessageType.NOTIFY_PASSWORD_RESET
 
@@ -159,13 +155,13 @@ async def test_reset_password_fails_when_password_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_email.assert_not_awaited()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.users.get_by_email.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_passwords_do_not_match(
@@ -199,13 +195,13 @@ async def test_reset_password_fails_when_passwords_do_not_match(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_email.assert_not_awaited()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.users.get_by_email.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_user_does_not_exist(
@@ -227,17 +223,17 @@ async def test_reset_password_fails_when_user_does_not_exist(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_get_user_fails(
@@ -253,7 +249,7 @@ async def test_reset_password_fails_when_get_user_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.users.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -268,17 +264,17 @@ async def test_reset_password_fails_when_get_user_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_user_state_is_corrupted(
@@ -295,8 +291,8 @@ async def test_reset_password_fails_when_user_state_is_corrupted(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.user_repo.get_by_email.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_email.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
     use_case = ResetPasswordUseCase(
         mocks.hasher,
@@ -308,17 +304,17 @@ async def test_reset_password_fails_when_user_state_is_corrupted(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_user_inactive(
@@ -341,17 +337,17 @@ async def test_reset_password_fails_when_user_inactive(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
     mocks.hasher.hash.assert_not_called()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_hash_password_fails(
@@ -383,17 +379,17 @@ async def test_reset_password_fails_when_hash_password_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_not_awaited()
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.get_by_user_id_and_code.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_get_code_fails(
@@ -410,12 +406,10 @@ async def test_reset_password_fails_when_get_code_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
-        InfrastructureError(
-            'Error attempting to get code',
-            InfrastructureErrorCode.DATABASE_ERROR,
-            Exception(),
-        )
+    mocks.uow.codes.get_by_user_id_and_code.side_effect = InfrastructureError(
+        'Error attempting to get code',
+        InfrastructureErrorCode.DATABASE_ERROR,
+        Exception(),
     )
     use_case = ResetPasswordUseCase(
         mocks.hasher,
@@ -427,17 +421,17 @@ async def test_reset_password_fails_when_get_code_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_verification_code_state_is_corrupted(
@@ -455,7 +449,7 @@ async def test_reset_password_fails_when_verification_code_state_is_corrupted(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.code_repo.get_by_user_id_and_code.side_effect = (
+    mocks.uow.codes.get_by_user_id_and_code.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
     use_case = ResetPasswordUseCase(
@@ -468,17 +462,17 @@ async def test_reset_password_fails_when_verification_code_state_is_corrupted(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_code_does_not_exist(
@@ -499,17 +493,17 @@ async def test_reset_password_fails_when_code_does_not_exist(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_code_already_used(
@@ -532,17 +526,17 @@ async def test_reset_password_fails_when_code_already_used(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_code_expired(
@@ -565,17 +559,17 @@ async def test_reset_password_fails_when_code_expired(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_code_type_is_invalid(
@@ -598,17 +592,17 @@ async def test_reset_password_fails_when_code_type_is_invalid(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.update.assert_not_awaited()
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.users.update.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_persist_user_update_fails(
@@ -625,7 +619,7 @@ async def test_reset_password_fails_when_persist_user_update_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.user_repo.update.side_effect = InfrastructureError(
+    mocks.uow.users.update.side_effect = InfrastructureError(
         'Error attempting to update user',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -640,17 +634,17 @@ async def test_reset_password_fails_when_persist_user_update_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
-    mocks.uow.user_repo.update.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.users.update.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.mark_as_used.assert_not_awaited()
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.mark_as_used.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_persist_code_update_fails(
@@ -667,7 +661,7 @@ async def test_reset_password_fails_when_persist_code_update_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.code_repo.mark_as_used.side_effect = InfrastructureError(
+    mocks.uow.codes.mark_as_used.side_effect = InfrastructureError(
         'Error attempting to update verification code',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -682,17 +676,17 @@ async def test_reset_password_fails_when_persist_code_update_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
-    mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.users.update.assert_awaited_once()
+    mocks.uow.codes.mark_as_used.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.revoke_all.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.tokens.revoke_all.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_revoke_tokens_fails(
@@ -709,7 +703,7 @@ async def test_reset_password_fails_when_revoke_tokens_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.token_repo.revoke_all.side_effect = InfrastructureError(
+    mocks.uow.tokens.revoke_all.side_effect = InfrastructureError(
         'Error attempting to revoke refresh tokens',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -724,17 +718,17 @@ async def test_reset_password_fails_when_revoke_tokens_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
-    mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.users.update.assert_awaited_once()
+    mocks.uow.codes.mark_as_used.assert_awaited_once()
+    mocks.uow.tokens.revoke_all.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_reset_password_fails_when_message_persist_fails(
@@ -751,7 +745,7 @@ async def test_reset_password_fails_when_message_persist_fails(
         unused_code,
         'hashed-password',
     )
-    mocks.uow.message_repo.create.side_effect = InfrastructureError(
+    mocks.uow.messages.create.side_effect = InfrastructureError(
         'Error attempting to persist message',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -766,13 +760,13 @@ async def test_reset_password_fails_when_message_persist_fails(
         await use_case.execute('', '', 'Password12345!', 'Password12345!')
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once()
+    mocks.uow.users.get_by_email.assert_awaited_once()
     mocks.hasher.hash.assert_called_once()
-    mocks.uow.code_repo.get_by_user_id_and_code.assert_awaited_once()
-    mocks.uow.user_repo.update.assert_awaited_once()
-    mocks.uow.code_repo.mark_as_used.assert_awaited_once()
-    mocks.uow.token_repo.revoke_all.assert_awaited_once()
-    mocks.uow.message_repo.create.assert_awaited_once()
+    mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once()
+    mocks.uow.users.update.assert_awaited_once()
+    mocks.uow.codes.mark_as_used.assert_awaited_once()
+    mocks.uow.tokens.revoke_all.assert_awaited_once()
+    mocks.uow.messages.create.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -812,18 +806,18 @@ def mocks_factory(
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
 
-    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
-    uow.user_repo.get_by_email.return_value = user
-    uow.user_repo.update.return_value = None
+    uow.users = AsyncMock(spec=UserRepositoryPort)
+    uow.users.get_by_email.return_value = user
+    uow.users.update.return_value = None
 
-    uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    uow.code_repo.get_by_user_id_and_code.return_value = verification_code
-    uow.code_repo.mark_as_used.return_value = None
+    uow.codes = AsyncMock(spec=VerificationCodeRepositoryPort)
+    uow.codes.get_by_user_id_and_code.return_value = verification_code
+    uow.codes.mark_as_used.return_value = None
 
-    uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
-    uow.message_repo.create.return_value = None
+    uow.messages = AsyncMock(spec=MessageRepositoryPort)
+    uow.messages.create.return_value = None
 
-    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.token_repo.revoke_all.return_value = None
+    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.tokens.revoke_all.return_value = None
 
     return DependeciesMocked(hasher, uow)

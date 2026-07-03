@@ -60,19 +60,19 @@ async def test_initialize_email_verification_process_successfully(
     )
 
     # Assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited_once_with(
+    mocks.uow.users.get_by_email.assert_awaited_once_with(
         unverified_user.email.value
     )
-    mocks.uow.code_repo.create.assert_awaited_once()
-    mocks.uow.message_repo.create.assert_awaited()
+    mocks.uow.codes.create.assert_awaited_once()
+    mocks.uow.messages.create.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
-    # Assert that code_repo.create()
+    # Assert that codes.create()
     # was called with the correct expected arguments.
     # The expected argument is a VerificationCode instance, which must
     # contain the following state:
-    code_arg: VerificationCode = mocks.uow.code_repo.create.call_args[0][0]
+    code_arg: VerificationCode = mocks.uow.codes.create.call_args[0][0]
     assert code_arg.user_public_id == unverified_user.public_id
     assert code_arg.used_at is None
     assert code_arg.expires_at > code_arg.created_at
@@ -85,11 +85,11 @@ async def test_initialize_email_verification_process_successfully(
     assert len(code.value) == number_digits
     assert code.value.isdigit()
 
-    # Assert that message_repo.create()
+    # Assert that messages.create()
     # was called with the correct expected arguments.
     # The expected argument is a Message instance, which must
     # contain the following state:
-    message_arg: Message = mocks.uow.message_repo.create.call_args[0][0]
+    message_arg: Message = mocks.uow.messages.create.call_args[0][0]
     assert message_arg.type == MessageType.EMAIL_VERIFICATION_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
@@ -111,13 +111,13 @@ async def test_user_must_exist():
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.create.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_already_verified_user_cannot_perform_verification_again(
@@ -135,13 +135,13 @@ async def test_already_verified_user_cannot_perform_verification_again(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.create.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_inactive_users_cannot_initiate_verification_process(
@@ -159,13 +159,13 @@ async def test_inactive_users_cannot_initiate_verification_process(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.create.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_verification_process_not_initialize_when_get_user_fails(
@@ -176,7 +176,7 @@ async def test_verification_process_not_initialize_when_get_user_fails(
     while trying to fetch a user from the repository.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.uow.user_repo.get_by_email.side_effect = InfrastructureError(
+    mocks.uow.users.get_by_email.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -188,13 +188,13 @@ async def test_verification_process_not_initialize_when_get_user_fails(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.create.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_verification_process_not_initialize_when_user_state_corrupted(
@@ -206,8 +206,8 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
     case, aborting the verification flow.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.uow.user_repo.get_by_email.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_email.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
     use_case = EmailVerificationCodeUseCase(mocks.uow)
 
@@ -216,13 +216,13 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.code_repo.create.assert_not_awaited()
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.codes.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_verification_process_not_initialize_when_persists_code_fails(
@@ -233,7 +233,7 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
     while trying to persist a verification code in the repository.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.uow.code_repo.create.side_effect = InfrastructureError(
+    mocks.uow.codes.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -245,13 +245,13 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
-    mocks.uow.code_repo.create.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
+    mocks.uow.codes.create.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.message_repo.create.assert_not_awaited()
+    mocks.uow.messages.create.assert_not_awaited()
 
 
 async def test_verification_process_not_initialize_when_message_persits_fails(
@@ -262,7 +262,7 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
     while trying to persist a message in the repository.
     """
     mocks: DependeciesMocked = mocks_factory(unverified_user)
-    mocks.uow.message_repo.create.side_effect = InfrastructureError(
+    mocks.uow.messages.create.side_effect = InfrastructureError(
         'Error attempting to persist verification code',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -274,11 +274,11 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
         await use_case.execute('', 0)
 
     # assert was called
-    mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.users.get_by_email.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
-    mocks.uow.code_repo.create.assert_awaited()
-    mocks.uow.message_repo.create.assert_awaited()
+    mocks.uow.codes.create.assert_awaited()
+    mocks.uow.messages.create.assert_awaited()
 
 
 @dataclass(frozen=True)
@@ -303,14 +303,14 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
 
-    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow.users = AsyncMock(spec=UserRepositoryPort)
     # Simulate a persisted user returned by repository lookup.
-    uow.user_repo.get_by_email.return_value = user
+    uow.users.get_by_email.return_value = user
 
-    uow.code_repo = AsyncMock(spec=VerificationCodeRepositoryPort)
-    uow.code_repo.create.return_value = None
+    uow.codes = AsyncMock(spec=VerificationCodeRepositoryPort)
+    uow.codes.create.return_value = None
 
-    uow.message_repo = AsyncMock(spec=MessageRepositoryPort)
-    uow.message_repo.create.return_value = None
+    uow.messages = AsyncMock(spec=MessageRepositoryPort)
+    uow.messages.create.return_value = None
 
     return DependeciesMocked(uow)

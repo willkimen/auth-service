@@ -100,13 +100,13 @@ class DeleteAccountUseCase:
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
 
-            if not await self.uow.token_repo.exists(token_payload.jti):
+            if not await self.uow.tokens.exists(token_payload.jti):
                 raise TokenNotFoundError()
 
-            if await self.uow.token_repo.is_revoked(token_payload.jti):
+            if await self.uow.tokens.is_revoked(token_payload.jti):
                 raise TokenRevokedError()
 
-            user: User | None = await self.uow.user_repo.get_by_public_id(
+            user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub
             )
 
@@ -118,7 +118,7 @@ class DeleteAccountUseCase:
 
             verification_code: (
                 VerificationCode | None
-            ) = await self.uow.code_repo.get_by_user_id_and_code(
+            ) = await self.uow.codes.get_by_user_id_and_code(
                 user.public_id, code
             )
 
@@ -141,7 +141,7 @@ class DeleteAccountUseCase:
                 payload=EmailNotificationPayload(to=user.email.value),
             )
 
-            await self.uow.user_repo.delete(user.public_id)
-            await self.uow.code_repo.delete_all(user.public_id)
-            await self.uow.token_repo.revoke_all(user.public_id)
-            await self.uow.message_repo.create(message)
+            await self.uow.users.delete(user.public_id)
+            await self.uow.codes.delete_all(user.public_id)
+            await self.uow.tokens.revoke_all(user.public_id)
+            await self.uow.messages.create(message)

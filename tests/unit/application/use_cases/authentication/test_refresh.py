@@ -48,9 +48,9 @@ async def test_refresh_successfully(verified_user: User):
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(refresh_input)
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.token_manager.new_access.assert_called_once_with(
         verified_user.public_id
     )
@@ -88,9 +88,9 @@ async def test_refresh_aborts_when_token_validation_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_awaited()
-    mocks.uow.token_repo.is_revoked.assert_not_awaited()
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.tokens.exists.assert_not_awaited()
+    mocks.uow.tokens.is_revoked.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
 
 
 async def test_refresh_aborts_when_token_type_is_invalid(
@@ -119,9 +119,9 @@ async def test_refresh_aborts_when_token_type_is_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_awaited()
-    mocks.uow.token_repo.is_revoked.assert_not_awaited()
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.tokens.exists.assert_not_awaited()
+    mocks.uow.tokens.is_revoked.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
 
 
 async def test_refresh_aborts_when_token_is_invalid(
@@ -150,9 +150,9 @@ async def test_refresh_aborts_when_token_is_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.exists.assert_not_awaited()
-    mocks.uow.token_repo.is_revoked.assert_not_awaited()
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.tokens.exists.assert_not_awaited()
+    mocks.uow.tokens.is_revoked.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -165,7 +165,7 @@ async def test_refresh_aborts_when_token_exists_check_fails(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.token_repo.exists.side_effect = InfrastructureError(
+    mocks.uow.tokens.exists.side_effect = InfrastructureError(
         'Error checking token existence',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -181,13 +181,13 @@ async def test_refresh_aborts_when_token_exists_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_awaited()
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.tokens.is_revoked.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -200,7 +200,7 @@ async def test_refresh_aborts_when_token_not_found(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.token_repo.exists.return_value = False
+    mocks.uow.tokens.exists.return_value = False
 
     use_case = RefreshUseCase(
         token_manager=mocks.token_manager,
@@ -212,13 +212,13 @@ async def test_refresh_aborts_when_token_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.token_repo.is_revoked.assert_not_awaited()
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.tokens.is_revoked.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -231,7 +231,7 @@ async def test_refresh_aborts_when_token_revocation_check_fails(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
+    mocks.uow.tokens.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -246,13 +246,13 @@ async def test_refresh_aborts_when_token_revocation_check_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -264,7 +264,7 @@ async def test_refresh_aborts_when_token_is_revoked(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.token_repo.is_revoked.return_value = True
+    mocks.uow.tokens.is_revoked.return_value = True
 
     use_case = RefreshUseCase(
         token_manager=mocks.token_manager,
@@ -276,13 +276,13 @@ async def test_refresh_aborts_when_token_is_revoked(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.token_manager.new_access.assert_not_called()
 
 
@@ -295,7 +295,7 @@ async def test_refresh_aborts_when_get_user_fails(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
+    mocks.uow.users.get_by_public_id.side_effect = InfrastructureError(
         'Error fetching user',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
@@ -311,9 +311,9 @@ async def test_refresh_aborts_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -330,7 +330,7 @@ async def test_refresh_aborts_when_user_state_is_corrupted(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.user_repo.get_by_public_id.side_effect = (
+    mocks.uow.users.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('corrupted user state'))
     )
 
@@ -344,9 +344,9 @@ async def test_refresh_aborts_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -363,7 +363,7 @@ async def test_refresh_aborts_when_user_is_not_found(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.user_repo.get_by_public_id.return_value = None
+    mocks.uow.users.get_by_public_id.return_value = None
 
     use_case = RefreshUseCase(
         token_manager=mocks.token_manager,
@@ -375,9 +375,9 @@ async def test_refresh_aborts_when_user_is_not_found(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -404,9 +404,9 @@ async def test_refresh_aborts_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -439,9 +439,9 @@ async def test_refresh_aborts_when_access_token_generation_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.token_repo.exists.assert_awaited_once()
-    mocks.uow.token_repo.is_revoked.assert_awaited_once()
-    mocks.uow.user_repo.get_by_public_id.assert_awaited_once()
+    mocks.uow.tokens.exists.assert_awaited_once()
+    mocks.uow.tokens.is_revoked.assert_awaited_once()
+    mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.token_manager.new_access.assert_called_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -457,12 +457,12 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
-    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
-    uow.user_repo.get_by_public_id.return_value = user
+    uow.users = AsyncMock(spec=UserRepositoryPort)
+    uow.users.get_by_public_id.return_value = user
 
-    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.token_repo.exists.return_value = True
-    uow.token_repo.is_revoked.return_value = False
+    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.tokens.exists.return_value = True
+    uow.tokens.is_revoked.return_value = False
 
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     token_manager = Mock(spec=TokenManagerPort)

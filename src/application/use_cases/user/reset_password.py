@@ -112,7 +112,7 @@ class ResetPasswordUseCase:
                 raise PasswordMismatchError()
 
             # Retorna
-            user: User | None = await self.uow.user_repo.get_by_email(email)
+            user: User | None = await self.uow.users.get_by_email(email)
 
             if user is None:
                 raise UserNotFoundError()
@@ -124,7 +124,7 @@ class ResetPasswordUseCase:
 
             verification_code: (
                 VerificationCode | None
-            ) = await self.uow.code_repo.get_by_user_id_and_code(
+            ) = await self.uow.codes.get_by_user_id_and_code(
                 user.public_id, code
             )
 
@@ -149,7 +149,7 @@ class ResetPasswordUseCase:
                 payload=EmailNotificationPayload(user.email.value),
             )
 
-            await self.uow.user_repo.update(user)
-            await self.uow.code_repo.mark_as_used(verification_code)
-            await self.uow.token_repo.revoke_all(user.public_id)
-            await self.uow.message_repo.create(message)
+            await self.uow.users.update(user)
+            await self.uow.codes.mark_as_used(verification_code)
+            await self.uow.tokens.revoke_all(user.public_id)
+            await self.uow.messages.create(message)

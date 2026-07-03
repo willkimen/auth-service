@@ -49,4 +49,4 @@ class RevokeRefreshUseCase:
 
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
-            await self.uow.token_repo.revoke(token_payload.jti)
+            await self.uow.tokens.revoke(token_payload.jti)

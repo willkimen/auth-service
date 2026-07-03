@@ -81,7 +81,7 @@ class LoginUseCase:
         """
 
         async with self.uow:
-            user: User | None = await self.uow.user_repo.get_by_email(email)
+            user: User | None = await self.uow.users.get_by_email(email)
 
             if user is None:
                 raise InvalidCredentialsError()
@@ -110,8 +110,8 @@ class LoginUseCase:
                 tz=ZoneInfo('UTC'),
             )
 
-            await self.uow.user_repo.update(user)
-            await self.uow.token_repo.create(
+            await self.uow.users.update(user)
+            await self.uow.tokens.create(
                 pair_tokens.refresh.payload.sub,
                 pair_tokens.refresh.payload.jti,
                 exp,

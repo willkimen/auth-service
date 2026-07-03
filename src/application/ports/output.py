@@ -238,22 +238,22 @@ class UnitOfWorkPort(Protocol):
     or rolled back atomically when the context exits.
 
     Attributes:
-        `user_repo` (`UserRepositoryPort`):
+        `users` (`UserRepositoryPort`):
             - Repository responsible for user persistence operations.
-        `code_repo` (`VerificationCodeRepositoryPort`):
+        `codes` (`VerificationCodeRepositoryPort`):
             - Repository responsible for verification code persistence
               operations.
-        `message_repo` (`MessageRepositoryPort`):
+        `messages` (`MessageRepositoryPort`):
             - Repository responsible for message persistence operations.
-        `token_repo` (`RefreshTokenRepositoryPort`):
+        `tokens` (`RefreshTokenRepositoryPort`):
             - Repository responsible for refresh token persistence
               operations.
     """
 
-    user_repo: UserRepositoryPort
-    code_repo: VerificationCodeRepositoryPort
-    message_repo: MessageRepositoryPort
-    token_repo: RefreshTokenRepositoryPort
+    users: UserRepositoryPort
+    codes: VerificationCodeRepositoryPort
+    messages: MessageRepositoryPort
+    tokens: RefreshTokenRepositoryPort
 
     async def __aenter__(self):
         """

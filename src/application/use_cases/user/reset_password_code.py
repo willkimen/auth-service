@@ -58,7 +58,7 @@ class ResetPasswordCodeUseCase:
         """
 
         async with self.uow:
-            user: User | None = await self.uow.user_repo.get_by_email(email)
+            user: User | None = await self.uow.users.get_by_email(email)
 
             if user is None:
                 raise UserNotFoundError()
@@ -88,5 +88,5 @@ class ResetPasswordCodeUseCase:
                 expires_at=verification_code.expires_at,
             )
 
-            await self.uow.code_repo.create(verification_code)
-            await self.uow.message_repo.create(message)
+            await self.uow.codes.create(verification_code)
+            await self.uow.messages.create(message)

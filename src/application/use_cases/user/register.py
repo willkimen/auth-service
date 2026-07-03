@@ -59,9 +59,7 @@ class RegisterUserUseCase:
             PasswordPolicy.validate(raw_password)
 
             # The email must not already be associated with another account.
-            exists: bool = await self.uow.user_repo.exists_by_email(
-                email_vo.value
-            )
+            exists: bool = await self.uow.users.exists_by_email(email_vo.value)
             if exists is True:
                 raise EmailAlreadyUsedError()
 
@@ -69,7 +67,7 @@ class RegisterUserUseCase:
             password_hash_vo: PasswordHash = PasswordHash(hashed_password)
 
             user: User = create_new_user(email_vo, password_hash_vo)
-            await self.uow.user_repo.create(user)
+            await self.uow.users.create(user)
 
             # Sensitive data such as password hashes must never be exposed.
             return UserPublicDTO.from_entity(user)

@@ -53,4 +53,4 @@ class RevokeAllRefreshesUseCase:
 
         # Persist related changes atomically as a single unit of work.
         async with self.uow:
-            await self.uow.token_repo.revoke_all(token_payload.sub)
+            await self.uow.tokens.revoke_all(token_payload.sub)
