@@ -228,7 +228,27 @@ class HasherPort(Protocol):
 
 
 class UnitOfWorkPort(Protocol):
-    """Defines transactional boundaries for application operations."""
+    """
+    Defines a transactional persistence context for application use cases.
+
+    A Unit of Work coordinates the lifecycle of the database connection
+    and transaction while exposing repository instances that participate
+    in the same persistence context. All repository operations performed
+    within the Unit of Work share the same connection and are committed
+    or rolled back atomically when the context exits.
+
+    Attributes:
+        `user_repo` (`UserRepositoryPort`):
+            - Repository responsible for user persistence operations.
+        `code_repo` (`VerificationCodeRepositoryPort`):
+            - Repository responsible for verification code persistence
+              operations.
+        `message_repo` (`MessageRepositoryPort`):
+            - Repository responsible for message persistence operations.
+        `token_repo` (`RefreshTokenRepositoryPort`):
+            - Repository responsible for refresh token persistence
+              operations.
+    """
 
     user_repo: UserRepositoryPort
     code_repo: VerificationCodeRepositoryPort
@@ -236,20 +256,29 @@ class UnitOfWorkPort(Protocol):
     token_repo: RefreshTokenRepositoryPort
 
     async def __aenter__(self):
-        """Starts a transaction context.
+        """
+        Enters the transactional persistence context.
+
+        Initializes the underlying database connection, starts a new
+        transaction, and makes repository instances available for use.
 
         Raises:
             InfrastructureError:
-                If transaction initialization fails.
+                If the persistence context cannot be initialized.
         """
         ...
 
     async def __aexit__(self, exc_type, exc, tb):
-        """Ends a transaction, committing or rolling back.
+        """
+        Exits the transactional persistence context.
+
+        Commits the transaction if no exception occurred; otherwise rolls
+        back all changes. Releases the underlying database connection after
+        the transaction completes.
 
         Raises:
             InfrastructureError:
-                If commit or rollback fails.
+                If transaction finalization fails.
         """
         ...
 
