@@ -56,37 +56,37 @@ class ResetPasswordCodeUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        user: User | None = await self.uow.user_repo.get_by_email(email)
 
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        # Newly generated reset password codes must start as unused.
-        verification_code: VerificationCode = new_reset_password_code(
-            user_public_id=user.public_id,
-            code=Code.generate(),
-            created_at=datetime.now(timezone.utc),
-            expires_at=(
-                datetime.now(timezone.utc)
-                + timedelta(minutes=code_expiration_time)
-            ),
-        )
-
-        payload = EmailCodePayload(
-            to=user.email.value,
-            code=verification_code.code.value,
-        )
-
-        message = Message(
-            type=MessageType.RESET_PASSWORD_CODE,
-            payload=payload,
-            expires_at=verification_code.expires_at,
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            user: User | None = await self.uow.user_repo.get_by_email(email)
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            # Newly generated reset password codes must start as unused.
+            verification_code: VerificationCode = new_reset_password_code(
+                user_public_id=user.public_id,
+                code=Code.generate(),
+                created_at=datetime.now(timezone.utc),
+                expires_at=(
+                    datetime.now(timezone.utc)
+                    + timedelta(minutes=code_expiration_time)
+                ),
+            )
+
+            payload = EmailCodePayload(
+                to=user.email.value,
+                code=verification_code.code.value,
+            )
+
+            message = Message(
+                type=MessageType.RESET_PASSWORD_CODE,
+                payload=payload,
+                expires_at=verification_code.expires_at,
+            )
+
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

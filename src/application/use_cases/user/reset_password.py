@@ -104,51 +104,51 @@ class ResetPasswordUseCase:
                 - If an unexpected failure occurs within an output
                   adapter (infrastructure layer)
         """
-        PasswordPolicy.validate(raw_password)
 
-        if raw_password != raw_password_confirmation:
-            raise PasswordMismatchError()
-
-        # Retorna
-        user: User | None = await self.uow.user_repo.get_by_email(email)
-
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        password_hash_vo = PasswordHash(self.hasher.hash(raw_password))
-
-        verification_code: (
-            VerificationCode | None
-        ) = await self.uow.code_repo.get_by_user_id_and_code(
-            user.public_id, code
-        )
-
-        if verification_code is None:
-            raise VerificationCodeNotFoundError()
-
-        if verification_code.is_used():
-            raise VerificationCodeAlreadyUsedError()
-
-        if not verification_code.type == CodeType.RESET_PASSWORD:
-            raise VerificationCodeTypeError()
-
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
-        verification_code.mark_as_used(datetime.now(timezone.utc))
-
-        user.change_password(password_hash_vo)
-
-        message = Message(
-            type=MessageType.NOTIFY_PASSWORD_RESET,
-            payload=EmailNotificationPayload(user.email.value),
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            PasswordPolicy.validate(raw_password)
+
+            if raw_password != raw_password_confirmation:
+                raise PasswordMismatchError()
+
+            # Retorna
+            user: User | None = await self.uow.user_repo.get_by_email(email)
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            password_hash_vo = PasswordHash(self.hasher.hash(raw_password))
+
+            verification_code: (
+                VerificationCode | None
+            ) = await self.uow.code_repo.get_by_user_id_and_code(
+                user.public_id, code
+            )
+
+            if verification_code is None:
+                raise VerificationCodeNotFoundError()
+
+            if verification_code.is_used():
+                raise VerificationCodeAlreadyUsedError()
+
+            if not verification_code.type == CodeType.RESET_PASSWORD:
+                raise VerificationCodeTypeError()
+
+            if verification_code.is_expired(datetime.now(timezone.utc)):
+                raise VerificationCodeExpiredError()
+
+            verification_code.mark_as_used(datetime.now(timezone.utc))
+
+            user.change_password(password_hash_vo)
+
+            message = Message(
+                type=MessageType.NOTIFY_PASSWORD_RESET,
+                payload=EmailNotificationPayload(user.email.value),
+            )
+
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.mark_as_used(verification_code)
             await self.uow.token_repo.revoke_all(user.public_id)

@@ -53,22 +53,23 @@ class RegisterUserUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        email_vo: Email = Email(email)
-        PasswordPolicy.validate(raw_password)
 
-        # The email must not already be associated with another account.
-        exists: bool = await self.uow.user_repo.exists_by_email(email_vo.value)
-        if exists is True:
-            raise EmailAlreadyUsedError()
-
-        hashed_password: str = self.hasher.hash(raw_password)
-        password_hash_vo: PasswordHash = PasswordHash(hashed_password)
-
-        user: User = create_new_user(email_vo, password_hash_vo)
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            email_vo: Email = Email(email)
+            PasswordPolicy.validate(raw_password)
+
+            # The email must not already be associated with another account.
+            exists: bool = await self.uow.user_repo.exists_by_email(
+                email_vo.value
+            )
+            if exists is True:
+                raise EmailAlreadyUsedError()
+
+            hashed_password: str = self.hasher.hash(raw_password)
+            password_hash_vo: PasswordHash = PasswordHash(hashed_password)
+
+            user: User = create_new_user(email_vo, password_hash_vo)
             await self.uow.user_repo.create(user)
 
-        # Sensitive data such as password hashes must never be exposed.
-        return UserPublicDTO.from_entity(user)
+            # Sensitive data such as password hashes must never be exposed.
+            return UserPublicDTO.from_entity(user)

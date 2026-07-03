@@ -107,58 +107,59 @@ class ChangeEmailUseCase:
                   layer during repository, token, or persistence
                   operations.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
-
-        if token_payload.typ != 'access':
-            raise InvalidTokenTypeError()
-
-        if not await self.uow.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
-
-        if await self.uow.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
-
-        verification_code: (
-            VerificationCode | None
-        ) = await self.uow.code_repo.get_by_user_id_and_code(
-            token_payload.sub, code
-        )
-
-        if verification_code is None:
-            raise VerificationCodeNotFoundError()
-
-        if verification_code.is_used():
-            raise VerificationCodeAlreadyUsedError()
-
-        if not verification_code.type == CodeType.CHANGE_EMAIL:
-            raise VerificationCodeTypeError()
-
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
-        verification_code.mark_as_used(datetime.now(timezone.utc))
-
-        user: User | None = await self.uow.user_repo.get_by_public_id(
-            token_payload.sub
-        )
-
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        new_email = verification_code.get_new_email()
-        new_email_vo: Email = Email(new_email)
-        user.change_email(new_email_vo)
-
-        message = Message(
-            type=MessageType.NOTIFY_EMAIL_CHANGED,
-            payload=EmailNotificationPayload(to=user.email.value),
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                access
+            )
+
+            if token_payload.typ != 'access':
+                raise InvalidTokenTypeError()
+
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
+
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
+
+            verification_code: (
+                VerificationCode | None
+            ) = await self.uow.code_repo.get_by_user_id_and_code(
+                token_payload.sub, code
+            )
+
+            if verification_code is None:
+                raise VerificationCodeNotFoundError()
+
+            if verification_code.is_used():
+                raise VerificationCodeAlreadyUsedError()
+
+            if not verification_code.type == CodeType.CHANGE_EMAIL:
+                raise VerificationCodeTypeError()
+
+            if verification_code.is_expired(datetime.now(timezone.utc)):
+                raise VerificationCodeExpiredError()
+
+            verification_code.mark_as_used(datetime.now(timezone.utc))
+
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            new_email = verification_code.get_new_email()
+            new_email_vo: Email = Email(new_email)
+            user.change_email(new_email_vo)
+
+            message = Message(
+                type=MessageType.NOTIFY_EMAIL_CHANGED,
+                payload=EmailNotificationPayload(to=user.email.value),
+            )
+
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.mark_as_used(verification_code)
             await self.uow.message_repo.create(message)

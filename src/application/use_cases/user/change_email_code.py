@@ -94,50 +94,52 @@ class ChangeEmailCodeUseCase:
                 - Raised when an unexpected infrastructure failure occurs
                   within an output adapter.
         """
-        email_vo = Email(new_email)
 
-        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
-
-        if token_payload.typ != 'access':
-            raise InvalidTokenTypeError()
-
-        if not await self.uow.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
-
-        if await self.uow.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
-
-        user: User | None = await self.uow.user_repo.get_by_public_id(
-            token_payload.sub
-        )
-
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        verification_code: VerificationCode | None = new_change_email_code(
-            user_public_id=user.public_id,
-            code=Code.generate(),
-            created_at=datetime.now(timezone.utc),
-            expires_at=(
-                datetime.now(timezone.utc)
-                + timedelta(minutes=code_expiration_time)
-            ),
-            new_email=email_vo.value,
-        )
-
-        message = Message(
-            type=MessageType.CHANGE_EMAIL_CODE,
-            payload=EmailCodePayload(
-                to=email_vo.value,
-                code=verification_code.code.value,
-            ),
-            expires_at=verification_code.expires_at,
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            email_vo = Email(new_email)
+
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                access
+            )
+
+            if token_payload.typ != 'access':
+                raise InvalidTokenTypeError()
+
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
+
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
+
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            verification_code: VerificationCode | None = new_change_email_code(
+                user_public_id=user.public_id,
+                code=Code.generate(),
+                created_at=datetime.now(timezone.utc),
+                expires_at=(
+                    datetime.now(timezone.utc)
+                    + timedelta(minutes=code_expiration_time)
+                ),
+                new_email=email_vo.value,
+            )
+
+            message = Message(
+                type=MessageType.CHANGE_EMAIL_CODE,
+                payload=EmailCodePayload(
+                    to=email_vo.value,
+                    code=verification_code.code.value,
+                ),
+                expires_at=verification_code.expires_at,
+            )
+
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

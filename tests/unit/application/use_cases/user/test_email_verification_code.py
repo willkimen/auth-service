@@ -65,8 +65,8 @@ async def test_initialize_email_verification_process_successfully(
     )
     mocks.uow.code_repo.create.assert_awaited_once()
     mocks.uow.message_repo.create.assert_awaited()
-    mocks.uow.__aenter__.assert_awaited()
-    mocks.uow.__aexit__.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # Assert that code_repo.create()
     # was called with the correct expected arguments.
@@ -112,10 +112,10 @@ async def test_user_must_exist():
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.code_repo.create.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
@@ -136,10 +136,10 @@ async def test_already_verified_user_cannot_perform_verification_again(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.code_repo.create.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
@@ -160,10 +160,10 @@ async def test_inactive_users_cannot_initiate_verification_process(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.code_repo.create.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
@@ -189,10 +189,10 @@ async def test_verification_process_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.code_repo.create.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
@@ -217,10 +217,10 @@ async def test_verification_process_not_initialize_when_user_state_corrupted(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.__aenter__.assert_not_awaited()
-    mocks.uow.__aexit__.assert_not_awaited()
     mocks.uow.code_repo.create.assert_not_awaited()
     mocks.uow.message_repo.create.assert_not_awaited()
 
@@ -246,9 +246,9 @@ async def test_verification_process_not_initialize_when_persists_code_fails(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
-    mocks.uow.__aenter__.assert_awaited()
-    mocks.uow.__aexit__.assert_awaited()
     mocks.uow.code_repo.create.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
     mocks.uow.message_repo.create.assert_not_awaited()
@@ -275,8 +275,8 @@ async def test_verification_process_not_initialize_when_message_persits_fails(
 
     # assert was called
     mocks.uow.user_repo.get_by_email.assert_awaited()
-    mocks.uow.__aenter__.assert_awaited()
-    mocks.uow.__aexit__.assert_awaited()
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.code_repo.create.assert_awaited()
     mocks.uow.message_repo.create.assert_awaited()
 

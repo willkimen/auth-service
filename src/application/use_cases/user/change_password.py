@@ -114,64 +114,66 @@ class ChangePasswordUseCase:
             `VerificationCodeExpiredError`:
                 - If verification code has expired.
         """
-        PasswordPolicy.validate(new_password)
 
-        if new_password != new_password_confirmation:
-            raise PasswordMismatchError()
-
-        hashed_password = self.hasher.hash(new_password)
-        password_hash_vo = PasswordHash(hashed_password)
-
-        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
-
-        if token_payload.typ != 'access':
-            raise InvalidTokenTypeError()
-
-        if not await self.uow.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
-
-        if await self.uow.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
-
-        user: User | None = await self.uow.user_repo.get_by_public_id(
-            token_payload.sub
-        )
-
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        user.change_password(password_hash_vo)
-
-        verification_code: (
-            VerificationCode | None
-        ) = await self.uow.code_repo.get_by_user_id_and_code(
-            user.public_id, code
-        )
-
-        if verification_code is None:
-            raise VerificationCodeNotFoundError()
-
-        if verification_code.is_used():
-            raise VerificationCodeAlreadyUsedError()
-
-        if not verification_code.type == CodeType.CHANGE_PASSWORD:
-            raise VerificationCodeTypeError()
-
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
-        verification_code.mark_as_used(datetime.now(timezone.utc))
-
-        message = Message(
-            type=MessageType.NOTIFY_PASSWORD_CHANGED,
-            payload=EmailNotificationPayload(user.email.value),
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            PasswordPolicy.validate(new_password)
+
+            if new_password != new_password_confirmation:
+                raise PasswordMismatchError()
+
+            hashed_password = self.hasher.hash(new_password)
+            password_hash_vo = PasswordHash(hashed_password)
+
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                access
+            )
+
+            if token_payload.typ != 'access':
+                raise InvalidTokenTypeError()
+
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
+
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
+
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            user.change_password(password_hash_vo)
+
+            verification_code: (
+                VerificationCode | None
+            ) = await self.uow.code_repo.get_by_user_id_and_code(
+                user.public_id, code
+            )
+
+            if verification_code is None:
+                raise VerificationCodeNotFoundError()
+
+            if verification_code.is_used():
+                raise VerificationCodeAlreadyUsedError()
+
+            if not verification_code.type == CodeType.CHANGE_PASSWORD:
+                raise VerificationCodeTypeError()
+
+            if verification_code.is_expired(datetime.now(timezone.utc)):
+                raise VerificationCodeExpiredError()
+
+            verification_code.mark_as_used(datetime.now(timezone.utc))
+
+            message = Message(
+                type=MessageType.NOTIFY_PASSWORD_CHANGED,
+                payload=EmailNotificationPayload(user.email.value),
+            )
+
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.mark_as_used(verification_code)
             await self.uow.token_repo.revoke_all(user.public_id)

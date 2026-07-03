@@ -79,36 +79,37 @@ class LoginUseCase:
             `InfrastructureError`:
                 - If repository, hashing, or token generation fails.
         """
-        user: User | None = await self.uow.user_repo.get_by_email(email)
 
-        if user is None:
-            raise InvalidCredentialsError()
-
-        if not self.hasher.verify_password(
-            plain_password=password, hashed_password=user.hash_password.value
-        ):
-            raise InvalidCredentialsError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        if not user.email_verified:
-            raise UnverifiedEmailError()
-
-        user.record_login()
-
-        pair_tokens: PairTokensDTO = self.token_manager.new_pair_token(
-            user.public_id
-        )
-
-        # convert unix timestamp to datatime aware
-        exp = datetime.fromtimestamp(
-            pair_tokens.refresh.payload.exp,
-            tz=ZoneInfo('UTC'),
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            user: User | None = await self.uow.user_repo.get_by_email(email)
+
+            if user is None:
+                raise InvalidCredentialsError()
+
+            if not self.hasher.verify_password(
+                plain_password=password,
+                hashed_password=user.hash_password.value,
+            ):
+                raise InvalidCredentialsError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            if not user.email_verified:
+                raise UnverifiedEmailError()
+
+            user.record_login()
+
+            pair_tokens: PairTokensDTO = self.token_manager.new_pair_token(
+                user.public_id
+            )
+
+            # convert unix timestamp to datatime aware
+            exp = datetime.fromtimestamp(
+                pair_tokens.refresh.payload.exp,
+                tz=ZoneInfo('UTC'),
+            )
+
             await self.uow.user_repo.update(user)
             await self.uow.token_repo.create(
                 pair_tokens.refresh.payload.sub,
@@ -116,4 +117,4 @@ class LoginUseCase:
                 exp,
             )
 
-        return pair_tokens
+            return pair_tokens

@@ -83,49 +83,51 @@ class DeleteAccountCodeUseCase:
                   transaction handling, or external infrastructure services
                   fail unexpectedly.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
-        if token_payload.typ != 'access':
-            raise InvalidTokenTypeError()
-
-        if not await self.uow.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
-
-        if await self.uow.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
-
-        user: User | None = await self.uow.user_repo.get_by_public_id(
-            token_payload.sub
-        )
-
-        if user is None:
-            raise UserNotFoundError()
-
-        if not user.is_active:
-            raise InactiveUserError()
-
-        verification_code: VerificationCode = new_delete_account_code(
-            user_public_id=user.public_id,
-            code=Code.generate(),
-            created_at=datetime.now(timezone.utc),
-            expires_at=(
-                datetime.now(timezone.utc)
-                + timedelta(minutes=code_expiration_time)
-            ),
-        )
-
-        payload = EmailCodePayload(
-            to=user.email.value,
-            code=verification_code.code.value,
-        )
-
-        message = Message(
-            type=MessageType.ACCOUNT_DELETION_CODE,
-            payload=payload,
-            expires_at=verification_code.expires_at,
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                access
+            )
+
+            if token_payload.typ != 'access':
+                raise InvalidTokenTypeError()
+
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
+
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
+
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if not user.is_active:
+                raise InactiveUserError()
+
+            verification_code: VerificationCode = new_delete_account_code(
+                user_public_id=user.public_id,
+                code=Code.generate(),
+                created_at=datetime.now(timezone.utc),
+                expires_at=(
+                    datetime.now(timezone.utc)
+                    + timedelta(minutes=code_expiration_time)
+                ),
+            )
+
+            payload = EmailCodePayload(
+                to=user.email.value,
+                code=verification_code.code.value,
+            )
+
+            message = Message(
+                type=MessageType.ACCOUNT_DELETION_CODE,
+                payload=payload,
+                expires_at=verification_code.expires_at,
+            )
+
             await self.uow.code_repo.create(verification_code)
             await self.uow.message_repo.create(message)

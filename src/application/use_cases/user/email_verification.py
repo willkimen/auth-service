@@ -77,49 +77,49 @@ class EmailVerificationUseCase:
                 - If an unexpected failure occurs within an output adapter
                   (infrastructure layer)
         """
-        user: User | None = await self.uow.user_repo.get_by_email(email)
 
-        if user is None:
-            raise UserNotFoundError()
-
-        if user.email_verified is True:
-            raise EmailAlreadyVerifiedError()
-
-        if user.is_active is False:
-            raise InactiveUserError()
-
-        verification_code: (
-            VerificationCode | None
-        ) = await self.uow.code_repo.get_by_user_id_and_code(
-            user.public_id,
-            code,
-        )
-
-        if verification_code is None:
-            raise VerificationCodeNotFoundError()
-
-        if verification_code.is_used():
-            raise VerificationCodeAlreadyUsedError()
-
-        if verification_code.type is not CodeType.EMAIL_VERIFICATION:
-            raise VerificationCodeTypeError()
-
-        if verification_code.is_expired(datetime.now(timezone.utc)):
-            raise VerificationCodeExpiredError()
-
-        verification_code.mark_as_used(datetime.now(timezone.utc))
-
-        user.mark_email_as_verified()
-
-        payload = EmailNotificationPayload(user.email.value)
-
-        message = Message(
-            type=MessageType.NOTIFY_EMAIL_VERIFIED,
-            payload=payload,
-        )
-
-        # Persist related changes atomically as a single unit of work.
         async with self.uow:
+            user: User | None = await self.uow.user_repo.get_by_email(email)
+
+            if user is None:
+                raise UserNotFoundError()
+
+            if user.email_verified is True:
+                raise EmailAlreadyVerifiedError()
+
+            if user.is_active is False:
+                raise InactiveUserError()
+
+            verification_code: (
+                VerificationCode | None
+            ) = await self.uow.code_repo.get_by_user_id_and_code(
+                user.public_id,
+                code,
+            )
+
+            if verification_code is None:
+                raise VerificationCodeNotFoundError()
+
+            if verification_code.is_used():
+                raise VerificationCodeAlreadyUsedError()
+
+            if verification_code.type is not CodeType.EMAIL_VERIFICATION:
+                raise VerificationCodeTypeError()
+
+            if verification_code.is_expired(datetime.now(timezone.utc)):
+                raise VerificationCodeExpiredError()
+
+            verification_code.mark_as_used(datetime.now(timezone.utc))
+
+            user.mark_email_as_verified()
+
+            payload = EmailNotificationPayload(user.email.value)
+
+            message = Message(
+                type=MessageType.NOTIFY_EMAIL_VERIFIED,
+                payload=payload,
+            )
+
             await self.uow.user_repo.update(user)
             await self.uow.code_repo.mark_as_used(verification_code)
             await self.uow.message_repo.create(message)
