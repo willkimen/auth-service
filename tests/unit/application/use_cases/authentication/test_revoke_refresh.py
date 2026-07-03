@@ -150,6 +150,8 @@ class DependenciesMocked:
 
 def mocks_factory() -> DependenciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = False
     uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
     uow.token_repo.revoke.return_value = None
 

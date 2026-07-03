@@ -7,9 +7,8 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.ports.output import (
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    UserRepositoryPort,
+    UnitOfWorkPort,
 )
 from domain.entities.user import User
 from domain.exceptions import InactiveUserError
@@ -20,26 +19,21 @@ class DetailUseCase:
     Retrieves authenticated user details from a valid access token.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval
-              operations.
-        `token_repo` (RefreshTokenRepositoryPort):
-            - Port/Interface responsible for token persistence and
-              revocation queries.
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
               payload extraction.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        token_repo: RefreshTokenRepositoryPort,
         token_manager: TokenManagerPort,
+        uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
-        self.token_repo = token_repo
         self.token_manager = token_manager
+        self.uow = uow
 
     async def execute(self, access: str) -> UserPublicDTO:
         """
@@ -81,25 +75,29 @@ class DetailUseCase:
                 - If an unexpected failure occurs within an output
                   adapter (infrastructure layer).
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
-        if token_payload.typ != 'access':
-            raise InvalidTokenTypeError()
+        async with self.uow:
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                access
+            )
 
-        if not await self.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
+            if token_payload.typ != 'access':
+                raise InvalidTokenTypeError()
 
-        if await self.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
 
-        user: User | None = await self.user_repo.get_by_public_id(
-            token_payload.sub
-        )
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
 
-        if user is None:
-            raise UserNotFoundError()
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
 
-        if not user.is_active:
-            raise InactiveUserError()
+            if user is None:
+                raise UserNotFoundError()
 
-        return UserPublicDTO.from_entity(user)
+            if not user.is_active:
+                raise InactiveUserError()
+
+            return UserPublicDTO.from_entity(user)

@@ -21,6 +21,7 @@ from application.exceptions import (
 from application.ports.output import (
     RefreshTokenRepositoryPort,
     TokenManagerPort,
+    UnitOfWorkPort,
     UserRepositoryPort,
 )
 from application.use_cases.user.detail import DetailUseCase
@@ -45,9 +46,8 @@ async def test_return_user_details_successfully(active_user: User):
     mocks: DependeciesMocked = mocks_factory(active_user, payload)
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act
@@ -75,9 +75,11 @@ async def test_return_user_details_successfully(active_user: User):
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
-    mocks.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 async def test_detail_fails_when_token_validation_fails_unexpectedly():
@@ -93,9 +95,8 @@ async def test_detail_fails_when_token_validation_fails_unexpectedly():
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -104,11 +105,13 @@ async def test_detail_fails_when_token_validation_fails_unexpectedly():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_awaited()
-    mocks.token_repo.is_revoked.assert_not_awaited()
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_type_is_invalid():
@@ -123,9 +126,8 @@ async def test_detail_fails_when_token_type_is_invalid():
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -134,11 +136,13 @@ async def test_detail_fails_when_token_type_is_invalid():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_awaited()
-    mocks.token_repo.is_revoked.assert_not_awaited()
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_is_invalid():
@@ -147,9 +151,8 @@ async def test_detail_fails_when_token_is_invalid():
         InvalidTokenErrorCode.TOKEN_EXPIRED
     )
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -158,11 +161,13 @@ async def test_detail_fails_when_token_is_invalid():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with('invalid-token')
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.token_repo.exists.assert_not_awaited()
-    mocks.token_repo.is_revoked.assert_not_awaited()
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.token_repo.exists.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_does_not_exist():
@@ -174,11 +179,10 @@ async def test_detail_fails_when_token_does_not_exist():
         typ='access',
     )
     mocks: DependeciesMocked = mocks_factory(None, payload)
-    mocks.token_repo.exists.return_value = False
+    mocks.uow.token_repo.exists.return_value = False
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -187,12 +191,14 @@ async def test_detail_fails_when_token_does_not_exist():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
 
     # assert was not called
-    mocks.token_repo.is_revoked.assert_not_awaited()
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_exists_check_fails():
@@ -210,16 +216,15 @@ async def test_detail_fails_when_token_exists_check_fails():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.token_repo.exists.side_effect = InfrastructureError(
+    mocks.uow.token_repo.exists.side_effect = InfrastructureError(
         'Error checking token existence',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -228,12 +233,14 @@ async def test_detail_fails_when_token_exists_check_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
 
     # assert was not called
-    mocks.token_repo.is_revoked.assert_not_awaited()
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.token_repo.is_revoked.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_is_revoked():
@@ -247,12 +254,11 @@ async def test_detail_fails_when_token_is_revoked():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.token_repo.is_revoked.return_value = True
+    mocks.uow.token_repo.is_revoked.return_value = True
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -261,11 +267,13 @@ async def test_detail_fails_when_token_is_revoked():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_token_revocation_check_fails():
@@ -283,16 +291,15 @@ async def test_detail_fails_when_token_revocation_check_fails():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.token_repo.is_revoked.side_effect = InfrastructureError(
+    mocks.uow.token_repo.is_revoked.side_effect = InfrastructureError(
         'Error checking token revocation',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -301,13 +308,13 @@ async def test_detail_fails_when_token_revocation_check_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.user_repo.get_by_public_id.assert_not_awaited()
+    mocks.uow.user_repo.get_by_public_id.assert_not_awaited()
 
 
 async def test_detail_fails_when_user_does_not_exist():
@@ -322,9 +329,8 @@ async def test_detail_fails_when_user_does_not_exist():
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -333,9 +339,11 @@ async def test_detail_fails_when_user_does_not_exist():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
-    mocks.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 async def test_detail_fails_when_get_user_fails():
@@ -353,16 +361,15 @@ async def test_detail_fails_when_get_user_fails():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.user_repo.get_by_public_id.side_effect = InfrastructureError(
+    mocks.uow.user_repo.get_by_public_id.side_effect = InfrastructureError(
         'Error attempting to get user',
         InfrastructureErrorCode.DATABASE_ERROR,
         Exception(),
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -371,9 +378,11 @@ async def test_detail_fails_when_get_user_fails():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
-    mocks.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 async def test_detail_fails_when_user_state_is_corrupted():
@@ -392,14 +401,13 @@ async def test_detail_fails_when_user_state_is_corrupted():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.user_repo.get_by_public_id.side_effect = (
+    mocks.uow.user_repo.get_by_public_id.side_effect = (
         CorruptedPersistenceStateError(DomainError('some domain error'))
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -408,12 +416,11 @@ async def test_detail_fails_when_user_state_is_corrupted():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
-
-    mocks.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 async def test_detail_fails_when_user_is_inactive(inactive_user: User):
@@ -431,9 +438,8 @@ async def test_detail_fails_when_user_is_inactive(inactive_user: User):
     )
 
     use_case = DetailUseCase(
-        mocks.user_repo,
-        mocks.token_repo,
         mocks.token_manager,
+        mocks.uow,
     )
 
     # act and assert
@@ -442,10 +448,11 @@ async def test_detail_fails_when_user_is_inactive(inactive_user: User):
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-
-    mocks.token_repo.exists.assert_awaited_once_with(payload.jti)
-    mocks.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
-    mocks.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.token_repo.exists.assert_awaited_once_with(payload.jti)
+    mocks.uow.token_repo.is_revoked.assert_awaited_once_with(payload.jti)
+    mocks.uow.user_repo.get_by_public_id.assert_awaited_once_with(payload.sub)
+    mocks.uow.__aenter__.assert_awaited_once()
+    mocks.uow.__aexit__.assert_awaited_once()
 
 
 @dataclass(frozen=True)
@@ -455,8 +462,7 @@ class DependeciesMocked:
     detail use case.
     """
 
-    user_repo: AsyncMock
-    token_repo: AsyncMock
+    uow: AsyncMock
     token_manager: Mock
 
 
@@ -474,18 +480,21 @@ def mocks_factory(
     The provided user instance simulates a persisted user returned
     by the repository during the execution flow.
     """
-    user_repo = AsyncMock(spec=UserRepositoryPort)
-    user_repo.get_by_public_id.return_value = user
+    uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = False
 
-    token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
-    token_repo.exists.return_value = True
-    token_repo.is_revoked.return_value = False
+    uow.user_repo = AsyncMock(spec=UserRepositoryPort)
+    uow.user_repo.get_by_public_id.return_value = user
+
+    uow.token_repo = AsyncMock(spec=RefreshTokenRepositoryPort)
+    uow.token_repo.exists.return_value = True
+    uow.token_repo.is_revoked.return_value = False
 
     token_manager = Mock(spec=TokenManagerPort)
     token_manager.validate.return_value = payload
 
     return DependeciesMocked(
-        user_repo,
-        token_repo,
+        uow,
         token_manager,
     )

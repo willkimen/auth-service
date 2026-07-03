@@ -4,10 +4,8 @@ from application.dtos.token_dto import PairTokensDTO
 from application.dtos.user_dto import UserPublicDTO
 from application.ports.output import (
     HasherPort,
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
-    UserRepositoryPort,
 )
 
 
@@ -373,22 +371,18 @@ class DetailPort(Protocol):
     Retrieves authenticated user details from a valid access token.
 
     Attributes:
-        `user_repo` (UserRepositoryPort):
-            - Port/Interface responsible for user data retrieval
-              operations.
-        `token_repo` (RefreshTokenRepositoryPort):
-            - Port/Interface responsible for token persistence and
-              revocation queries.
         `token_manager` (TokenManagerPort):
             - Port/Interface responsible for token validation and
               payload extraction.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for managing atomic database
+              transactions across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
-        token_repo: RefreshTokenRepositoryPort,
         token_manager: TokenManagerPort,
+        uow: UnitOfWorkPort,
     ): ...
 
     async def execute(self, access: str) -> UserPublicDTO:
@@ -718,20 +712,17 @@ class RefreshPort(Protocol):
     Handles the refresh access token workflow.
 
     Args:
-        `user_repo` (UserRepositoryPort):
-            - Repository responsible for user persistence operations.
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and generation.
-        `token_repo` (RefreshTokenRepositoryPort):
-            - Repository responsible for refresh token persistence and
-              revocation state.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for managing atomic database
+              transactions across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
         token_manager: TokenManagerPort,
-        token_repo: RefreshTokenRepositoryPort,
+        uow: UnitOfWorkPort,
     ): ...
 
     async def execute(self, refresh: str) -> str:

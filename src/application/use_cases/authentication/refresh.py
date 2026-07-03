@@ -6,9 +6,8 @@ from application.exceptions import (
     UserNotFoundError,
 )
 from application.ports.output import (
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
-    UserRepositoryPort,
+    UnitOfWorkPort,
 )
 from domain.entities.user import User
 from domain.exceptions import InactiveUserError
@@ -24,24 +23,20 @@ class RefreshUseCase:
     for the authenticated session.
 
     Args:
-        `user_repo` (UserRepositoryPort):
-            - Repository responsible for user persistence operations.
         `token_manager` (TokenManagerPort):
             - Service responsible for token validation and generation.
-        `token_repo` (RefreshTokenRepositoryPort):
-            - Repository responsible for refresh token persistence and
-              revocation state.
+        `uow` (UnitOfWorkPort):
+            - Port/Interface responsible for coordinating atomic
+              transactional operations across repositories.
     """
 
     def __init__(
         self,
-        user_repo: UserRepositoryPort,
         token_manager: TokenManagerPort,
-        token_repo: RefreshTokenRepositoryPort,
+        uow: UnitOfWorkPort,
     ):
-        self.user_repo = user_repo
         self.token_manager = token_manager
-        self.token_repo = token_repo
+        self.uow = uow
 
     async def execute(self, refresh: str) -> str:
         """
@@ -70,25 +65,28 @@ class RefreshUseCase:
             `CorruptedPersistenceStateError`:
                 - If persisted user state is corrupted.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
+        async with self.uow:
+            token_payload: PayloadTokenDTO = self.token_manager.validate(
+                refresh
+            )
 
-        if token_payload.typ != 'refresh':
-            raise InvalidTokenTypeError()
+            if token_payload.typ != 'refresh':
+                raise InvalidTokenTypeError()
 
-        if not await self.token_repo.exists(token_payload.jti):
-            raise TokenNotFoundError()
+            if not await self.uow.token_repo.exists(token_payload.jti):
+                raise TokenNotFoundError()
 
-        if await self.token_repo.is_revoked(token_payload.jti):
-            raise TokenRevokedError()
+            if await self.uow.token_repo.is_revoked(token_payload.jti):
+                raise TokenRevokedError()
 
-        user: User | None = await self.user_repo.get_by_public_id(
-            token_payload.sub
-        )
+            user: User | None = await self.uow.user_repo.get_by_public_id(
+                token_payload.sub
+            )
 
-        if user is None:
-            raise UserNotFoundError()
+            if user is None:
+                raise UserNotFoundError()
 
-        if not user.is_active:
-            raise InactiveUserError()
+            if not user.is_active:
+                raise InactiveUserError()
 
-        return self.token_manager.new_access(user.public_id)
+            return self.token_manager.new_access(user.public_id)

@@ -429,6 +429,8 @@ class DependenciesMocked:
 
 def mocks_factory(user: User | None) -> DependenciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = False
     uow.user_repo = AsyncMock(spec=UserRepositoryPort)
     uow.user_repo.get_by_email.return_value = user
 
