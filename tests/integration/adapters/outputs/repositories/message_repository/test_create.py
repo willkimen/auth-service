@@ -13,6 +13,7 @@ from application.messages.message import Message
 async def test_should_successfully_create_a_message(
     conn_rollback: AsyncConnection,
     message: Message,
+    select_message_by_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresMessageRepository(conn_rollback)
@@ -21,25 +22,9 @@ async def test_should_successfully_create_a_message(
     await repository.create(message)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT
-            id,
-            payload,
-            type,
-            created_at,
-            expires_at,
-            dispatched_at,
-            dispatch_attempts,
-            max_attempts
-        FROM messages
-        WHERE id = :id
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_message_by_id,
             {'id': message.id},
         )
     ).fetchone()
@@ -59,6 +44,7 @@ async def test_creation_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     message: Message,
+    select_id_column_by_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresMessageRepository(conn_rollback)
@@ -79,17 +65,9 @@ async def test_creation_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was persisted
-    query = sqlalchemy.text(
-        """
-        SELECT id
-        FROM messages
-        WHERE id = :id
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_id_column_by_id,
             {'id': message.id},
         )
     ).fetchone()

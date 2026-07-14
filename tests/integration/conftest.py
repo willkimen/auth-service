@@ -1,6 +1,6 @@
 import pytest
 import sqlalchemy
-from sqlalchemy import text
+from sqlalchemy import TextClause, text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 DATABASE_URL = 'postgresql+psycopg://test:test@localhost:5432/test-auth'
@@ -58,25 +58,13 @@ async def clean_database(engine: AsyncEngine):
 
 
 @pytest.fixture
-def select_user_by_public_id():
+def select_user_by_public_id() -> TextClause:
     """
     Provides a reusable SQL query for retrieving a user by its `public_id`.
-
-    The fixture returns a SQLAlchemy `TextClause` that can be executed by a
-    connection or session during integration tests to verify the data persisted
-    in the database.
     """
     return sqlalchemy.text(
         """
-        SELECT
-            public_id,
-            email,
-            hash_password,
-            email_verified,
-            is_active,
-            created_at,
-            updated_at,
-            last_login_at
+        SELECT *
         FROM users
         WHERE public_id = :public_id
         """

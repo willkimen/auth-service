@@ -17,6 +17,7 @@ used = datetime.now(timezone.utc) + timedelta(minutes=1)
 async def test_should_successfully_mark_a_verification_code_as_used(
     conn_rollback: AsyncConnection,
     verification_code: VerificationCode,
+    select_used_at_column_by_code: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -29,17 +30,9 @@ async def test_should_successfully_mark_a_verification_code_as_used(
     await repository.mark_as_used(verification_code)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT used_at
-        FROM verification_codes
-        WHERE code = :code
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_used_at_column_by_code,
             {'code': verification_code.code.value},
         )
     ).fetchone()
@@ -52,6 +45,7 @@ async def test_update_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     verification_code: VerificationCode,
+    select_used_at_column_by_code: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -76,17 +70,9 @@ async def test_update_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was update
-    query = sqlalchemy.text(
-        """
-        SELECT used_at
-        FROM verification_codes
-        WHERE code = :code
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_used_at_column_by_code,
             {'code': verification_code.code.value},
         )
     ).fetchone()

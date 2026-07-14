@@ -13,6 +13,7 @@ from domain.entities.verification_code import VerificationCode
 async def test_should_successfully_create_a_verification_code(
     conn_rollback: AsyncConnection,
     verification_code: VerificationCode,
+    select_verification_code_by_code: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -21,24 +22,9 @@ async def test_should_successfully_create_a_verification_code(
     await repository.create(verification_code)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT
-            code,
-            user_public_id,
-            type,
-            created_at,
-            expires_at,
-            used_at,
-            payload
-        FROM verification_codes
-        WHERE code = :code
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_verification_code_by_code,
             {'code': verification_code.code.value},
         )
     ).fetchone()
@@ -57,6 +43,7 @@ async def test_creation_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     verification_code: VerificationCode,
+    select_code_column_by_code: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -77,17 +64,9 @@ async def test_creation_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was persisted
-    query = sqlalchemy.text(
-        """
-        SELECT code
-        FROM verification_codes
-        WHERE code = :code
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_code_column_by_code,
             {'code': verification_code.code.value},
         )
     ).fetchone()

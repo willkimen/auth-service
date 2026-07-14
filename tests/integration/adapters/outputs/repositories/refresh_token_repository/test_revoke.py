@@ -14,6 +14,7 @@ from application.exceptions import InfrastructureError
 
 async def test_should_successfully_revoke_a_refresh_token(
     conn_rollback: AsyncConnection,
+    select_revoked_at_column_by_jti: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresRefreshTokenRepository(conn_rollback)
@@ -32,15 +33,11 @@ async def test_should_successfully_revoke_a_refresh_token(
     await repository.revoke(token_id)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT revoked_at
-        FROM refresh_tokens
-        WHERE jti = :jti;
-        """
-    )
-
-    row = (await conn_rollback.execute(query, {'jti': token_id})).fetchone()
+    row = (
+        await conn_rollback.execute(
+            select_revoked_at_column_by_jti, {'jti': token_id}
+        )
+    ).fetchone()
 
     assert row is not None
     assert row.revoked_at is not None
@@ -48,7 +45,9 @@ async def test_should_successfully_revoke_a_refresh_token(
 
 
 async def test_revocation_fails_when_a_database_error_occurs(
-    conn_rollback: AsyncConnection, monkeypatch
+    conn_rollback: AsyncConnection,
+    monkeypatch,
+    select_revoked_at_column_by_jti: sqlalchemy.TextClause,
 ):
     # arrange
     repo = PostgresRefreshTokenRepository(conn_rollback)
@@ -77,16 +76,11 @@ async def test_revocation_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure the rollback kept the state intact
-    query = sqlalchemy.text(
-        """
-        SELECT revoked_at
-        FROM refresh_tokens
-        WHERE jti = :jti
-        """
-    )
-
-    res = await conn_rollback.execute(query, {'jti': token_id})
-    row = res.fetchone()
+    row = (
+        await conn_rollback.execute(
+            select_revoked_at_column_by_jti, {'jti': token_id}
+        )
+    ).fetchone()
 
     assert row is not None
     assert row.revoked_at is None

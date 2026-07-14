@@ -13,6 +13,7 @@ from domain.entities.verification_code import VerificationCode
 async def test_should_successfully_delete_all_verification_codes_for_a_user(
     conn_rollback: AsyncConnection,
     verification_code: VerificationCode,
+    select_code_column_by_user_public_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -23,17 +24,9 @@ async def test_should_successfully_delete_all_verification_codes_for_a_user(
     await repository.delete_all(verification_code.user_public_id)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT code
-        FROM verification_codes
-        WHERE user_public_id = :user_public_id
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_code_column_by_user_public_id,
             {'user_public_id': (verification_code.user_public_id)},
         )
     ).fetchone()
@@ -45,6 +38,7 @@ async def test_delete_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     verification_code: VerificationCode,
+    select_code_column_by_code: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresVerificationCodeRepository(conn_rollback)
@@ -67,17 +61,9 @@ async def test_delete_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure nothing was deleted
-    query = sqlalchemy.text(
-        """
-        SELECT code
-        FROM verification_codes
-        WHERE code = :code
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_code_column_by_code,
             {'code': verification_code.code.value},
         )
     ).fetchone()

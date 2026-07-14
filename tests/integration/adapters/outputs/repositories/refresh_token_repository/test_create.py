@@ -14,7 +14,9 @@ from application.exceptions import InfrastructureError
 
 async def test_should_successfully_persist_a_refresh_token(
     conn_rollback: AsyncConnection,
+    select_refresh_token_by_jti: sqlalchemy.TextClause,
 ):
+
     # arrange
     repository = PostgresRefreshTokenRepository(conn_rollback)
 
@@ -30,14 +32,11 @@ async def test_should_successfully_persist_a_refresh_token(
     )
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT jti, sub, exp, revoked_at, created_at
-        FROM refresh_tokens
-        WHERE jti = :jti;
-        """
-    )
-    row = (await conn_rollback.execute(query, {'jti': token_id})).fetchone()
+    row = (
+        await conn_rollback.execute(
+            select_refresh_token_by_jti, {'jti': token_id}
+        )
+    ).fetchone()
 
     assert row is not None
     assert row.jti == token_id
@@ -48,7 +47,9 @@ async def test_should_successfully_persist_a_refresh_token(
 
 
 async def test_persistence_fails_when_a_database_error_occurs(
-    conn_rollback: AsyncConnection, monkeypatch
+    conn_rollback: AsyncConnection,
+    monkeypatch,
+    select_jti_column_by_jti: sqlalchemy.TextClause,
 ):
     # arrange
     repo = PostgresRefreshTokenRepository(conn_rollback)
@@ -70,9 +71,11 @@ async def test_persistence_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was persisted in the real database
-    query = sqlalchemy.text('SELECT jti FROM refresh_tokens WHERE jti = :jti')
-    res = await conn_rollback.execute(query, {'jti': token_id})
-    row = res.fetchone()
+    row = (
+        await conn_rollback.execute(
+            select_jti_column_by_jti, {'jti': token_id}
+        )
+    ).fetchone()
 
     # The record must not exist due to the automatic rollback
     assert row is None

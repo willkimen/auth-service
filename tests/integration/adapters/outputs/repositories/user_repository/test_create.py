@@ -13,6 +13,7 @@ from domain.entities.user import User
 async def test_should_successfully_create_a_user(
     conn_rollback: AsyncConnection,
     user: User,
+    select_user_by_public_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresUserRepository(conn_rollback)
@@ -21,25 +22,9 @@ async def test_should_successfully_create_a_user(
     await repository.create(user)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT
-            public_id,
-            email,
-            hash_password,
-            email_verified,
-            is_active,
-            created_at,
-            updated_at,
-            last_login_at
-        FROM users
-        WHERE public_id = :public_id
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_user_by_public_id,
             {'public_id': user.public_id},
         )
     ).fetchone()
@@ -60,6 +45,7 @@ async def test_creation_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     user: User,
+    select_public_id_column_by_public_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresUserRepository(conn_rollback)
@@ -78,16 +64,9 @@ async def test_creation_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure NOTHING was persisted in the real database
-    query = sqlalchemy.text(
-        """
-        SELECT public_id
-        FROM users
-        WHERE public_id = :public_id
-        """
-    )
 
     result = await conn_rollback.execute(
-        query,
+        select_public_id_column_by_public_id,
         {'public_id': user.public_id},
     )
 

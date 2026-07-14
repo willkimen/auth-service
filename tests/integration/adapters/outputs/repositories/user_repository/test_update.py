@@ -13,6 +13,7 @@ from domain.entities.user import User
 async def test_should_successfully_update_a_user(
     conn_rollback: AsyncConnection,
     user: User,
+    select_user_by_public_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresUserRepository(conn_rollback)
@@ -26,20 +27,9 @@ async def test_should_successfully_update_a_user(
     await repository.update(user)
 
     # assert
-    query = sqlalchemy.text(
-        """
-        SELECT
-            email_verified,
-            is_active,
-            updated_at
-        FROM users
-        WHERE public_id = :public_id
-        """
-    )
-
     row = (
         await conn_rollback.execute(
-            query,
+            select_user_by_public_id,
             {'public_id': user.public_id},
         )
     ).fetchone()
@@ -54,6 +44,7 @@ async def test_update_fails_when_a_database_error_occurs(
     conn_rollback: AsyncConnection,
     monkeypatch,
     user: User,
+    select_email_verified_column_by_public_id: sqlalchemy.TextClause,
 ):
     # arrange
     repository = PostgresUserRepository(conn_rollback)
@@ -76,17 +67,10 @@ async def test_update_fails_when_a_database_error_occurs(
     monkeypatch.undo()
 
     # ensure the rollback kept the state intact
-    query = sqlalchemy.text(
-        """
-        SELECT email_verified
-        FROM users
-        WHERE public_id = :public_id
-        """
-    )
 
     row = (
         await conn_rollback.execute(
-            query,
+            select_email_verified_column_by_public_id,
             {'public_id': user.public_id},
         )
     ).fetchone()
