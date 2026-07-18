@@ -35,6 +35,7 @@ async def conn_rollback(engine: AsyncEngine):
 async def clean_database(engine: AsyncEngine):
     """
     Cleans the database after each test.
+    It must be called manually at the end of the tests.
 
     The fixture allows the test to run normally and, once it completes,
     removes all rows from the tables used by the application,
@@ -42,19 +43,21 @@ async def clean_database(engine: AsyncEngine):
     referential integrity. This ensures that each test runs against
     a clean and isolated database state.
     """
-    yield
 
-    async with engine.begin() as conn:
-        await conn.execute(
-            text("""
-            TRUNCATE TABLE
-                users,
-                verification_codes,
-                messages,
-                refresh_tokens
-            RESTART IDENTITY CASCADE;
-        """)
-        )
+    async def closure():
+        async with engine.begin() as conn:
+            await conn.execute(
+                text("""
+                TRUNCATE TABLE
+                    users,
+                    verification_codes,
+                    messages,
+                    refresh_tokens
+                RESTART IDENTITY CASCADE;
+            """)
+            )
+
+    return closure
 
 
 @pytest.fixture
