@@ -5,7 +5,7 @@ from adapters.inputs.api.schemas import Credentials, UserPublic
 
 @users_router.post('/register', response_model=UserPublic)
 async def register(
-    crendentials: Credentials,
+    body: Credentials,
     use_case: RegisterUseCaseDep,
 ) -> UserPublic:
     """
@@ -17,9 +17,9 @@ async def register(
         - Returns the newly created user's public information.
 
     Args:
-        `credentials` (Credentials):
+        `body` (`Credentials`):
             - User registration credentials containing email and password.
-        `use_case` (RegisterUseCaseDep):
+        `use_case` (`RegisterUseCaseDep`):
             - Injected application use case responsible for user
               registration.
 
@@ -41,8 +41,8 @@ async def register(
     """
 
     user = await use_case.execute(
-        crendentials.email,
-        crendentials.password,
+        body.email,
+        body.password,
     )
 
     return UserPublic(
