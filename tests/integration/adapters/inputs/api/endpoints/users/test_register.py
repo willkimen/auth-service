@@ -19,7 +19,7 @@ headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
 async def test_return_correctly_response_data(
     async_client: AsyncClient,
-    clean_database,
+    clean_database: None,
     get_engine_override: None,
 ):
     # arrange
@@ -44,12 +44,10 @@ async def test_return_correctly_response_data(
 
     assert 'password' not in response_data
 
-    await clean_database()
-
 
 async def test_persists_user_correctly(
     async_client: AsyncClient,
-    clean_database,
+    clean_database: None,
     engine: AsyncEngine,
     get_engine_override: None,
     select_user_by_public_id: TextClause,
@@ -87,8 +85,6 @@ async def test_persists_user_correctly(
     assert row.hash_password != body['password']
     db_created_string = row.created_at.isoformat().replace('+00:00', 'Z')
     assert db_created_string == response_data['created_at']
-
-    await clean_database()
 
 
 async def test_should_handle_unexpected_exception(
