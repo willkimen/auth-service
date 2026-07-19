@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     postgres_host: str
     postgres_port: int
 
-    code_expiration_time: int
+    code_expiration_time: int = 20
     jwt_secret: str
 
     model_config = SettingsConfigDict(
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     @property
     def sqlalchemy_database_uri(self) -> str:
         return (
-            f'postgresql+asyncpg://'
+            f'postgresql+psycopg://'
             f'{self.postgres_user}:'
             f'{self.postgres_password}@'
             f'{self.postgres_host}:'
