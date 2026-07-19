@@ -15,3 +15,7 @@ class UserPublic(BaseModel):
 class Credentials(BaseModel):
     email: EmailStr
     password: str
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr

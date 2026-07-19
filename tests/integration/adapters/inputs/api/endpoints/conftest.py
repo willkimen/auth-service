@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime, timezone
 from functools import lru_cache
 
 import pytest
@@ -7,6 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from adapters.inputs.api.app import app
 from adapters.inputs.api.dependencies.adapters import get_settings
 from adapters.inputs.api.settings import Settings
+from adapters.outputs.repositories.user_repository import (
+    PostgresUserRepository,
+)
+from domain.entities.user import User
+from domain.value_objects.email import Email
+from domain.value_objects.password import PasswordHash
 
 
 @pytest.fixture
@@ -94,3 +102,27 @@ def use_case_override_with_error():
         app.dependency_overrides[use_case_dependecy] = use_case_factory_mock
 
     return closure
+
+
+@pytest.fixture
+async def persist_unverified_user(engine: AsyncEngine) -> User:
+    email_vo = Email('email@email.com')
+    hash_password = PasswordHash('xxxxxxxxxxxxx')
+    now = datetime.now(timezone.utc)
+
+    user = User(
+        public_id=uuid.uuid4(),
+        email=email_vo,
+        hash_password=hash_password,
+        email_verified=False,
+        is_active=True,
+        created_at=now,
+        updated_at=now,
+        last_login_at=None,
+    )
+
+    async with engine.begin() as conn:
+        repository = PostgresUserRepository(conn)
+        await repository.create(user)
+
+    return user

@@ -3,13 +3,13 @@ import sqlalchemy
 from sqlalchemy import TextClause, text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-DATABASE_URL = 'postgresql+psycopg://test:test@localhost:5432/test-auth'
-
 
 @pytest.fixture(scope='session')
 async def engine():
     "Connects to the fixed database initialized by the Docker container."
-    db_engine: AsyncEngine = create_async_engine(DATABASE_URL)
+    db_engine: AsyncEngine = create_async_engine(
+        'postgresql+psycopg://test:test@localhost:5432/test-auth'
+    )
 
     yield db_engine
 
@@ -59,13 +59,33 @@ async def clean_database(engine: AsyncEngine):
 
 @pytest.fixture
 def select_user_by_public_id() -> TextClause:
-    """
-    Provides a reusable SQL query for retrieving a user by its `public_id`.
-    """
     return sqlalchemy.text(
         """
         SELECT *
         FROM users
         WHERE public_id = :public_id
+        """
+    )
+
+
+@pytest.fixture
+def select_verification_code_by_user_public_id() -> TextClause:
+    return sqlalchemy.text(
+        """
+        SELECT *
+        FROM verification_codes
+        WHERE user_public_id = :user_public_id
+        """
+    )
+
+
+@pytest.fixture
+def select_first_message() -> TextClause:
+    return sqlalchemy.text(
+        """
+        SELECT *
+        FROM messages
+        ORDER BY id
+        LIMIT 1
         """
     )
