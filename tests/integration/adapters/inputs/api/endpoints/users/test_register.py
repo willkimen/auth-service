@@ -20,7 +20,7 @@ headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 async def test_return_correctly_response_data(
     async_client: AsyncClient,
     clean_database: None,
-    get_engine_override: None,
+    get_settings_override: None,
 ):
     # arrange
     expected_status_code = 200
@@ -49,7 +49,7 @@ async def test_persists_user_correctly(
     async_client: AsyncClient,
     clean_database: None,
     engine: AsyncEngine,
-    get_engine_override: None,
+    get_settings_override: None,
     select_user_by_public_id: TextClause,
 ):
     # act

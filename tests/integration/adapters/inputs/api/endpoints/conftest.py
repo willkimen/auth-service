@@ -1,9 +1,12 @@
+from functools import lru_cache
+
 import pytest
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from adapters.inputs.api.app import app
-from adapters.inputs.api.dependencies.adapters import get_engine
+from adapters.inputs.api.dependencies.adapters import get_settings
+from adapters.inputs.api.settings import Settings
 
 
 @pytest.fixture
@@ -35,16 +38,34 @@ async def async_client():
 
 
 @pytest.fixture
-def get_engine_override(engine: AsyncEngine):
+def get_settings_override():
     """
-    Replaces the production SQLAlchemy engine
-    with a test version.
+    Override the application's `get_settings` dependency during tests.
+
+    Instead of loading configuration from environment variables or a `.env`
+    file, this fixture provides a fixed `Settings` instance with test values.
+    This makes tests deterministic and independent of the developer's local
+    environment.
+
+    The database connection values **must match** the PostgreSQL container
+    configuration used by the test environment (e.g., Docker Compose or
+    Testcontainers). If those values differ, the application will not be able
+    to connect to the test database.
     """
 
-    def mock_get_engine():
-        return engine
+    @lru_cache
+    def mock_get_settings() -> Settings:
+        return Settings(
+            postgres_db='test-auth',
+            postgres_user='test',
+            postgres_password='test',
+            postgres_host='localhost',
+            postgres_port=5432,
+            jwt_secret='test_secret',
+            code_expiration_time=20,
+        )
 
-    app.dependency_overrides[get_engine] = mock_get_engine
+    app.dependency_overrides[get_settings] = mock_get_settings
 
 
 @pytest.fixture
