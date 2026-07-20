@@ -65,3 +65,18 @@ class VerificationCodeRequest(BaseModel):
     """
 
     code: str
+
+
+class EmailAndCodeRequest(BaseModel):
+    """
+    Email verification request body.
+
+    Attributes:
+        `email` (`EmailStr`):
+            - User email address.
+        `code` (`str`):
+            - Verification code.
+    """
+
+    email: EmailStr
+    code: str

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 import pytest
@@ -12,7 +12,13 @@ from adapters.inputs.api.settings import Settings
 from adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
+from adapters.outputs.repositories.verification_code_repository import (
+    PostgresVerificationCodeRepository,
+)
 from domain.entities.user import User
+from domain.entities.verification_code import VerificationCode
+from domain.enums import CodeType
+from domain.value_objects.code import Code
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
 
@@ -126,3 +132,26 @@ async def persist_unverified_user(engine: AsyncEngine) -> User:
         await repository.create(user)
 
     return user
+
+
+@pytest.fixture
+async def persist_unused_verification_code(
+    persist_unverified_user: User, engine: AsyncEngine
+) -> VerificationCode:
+
+    now = datetime.now(timezone.utc)
+    verification_code = VerificationCode(
+        code=Code.generate(),
+        user_public_id=persist_unverified_user.public_id,
+        type=CodeType.EMAIL_VERIFICATION,
+        created_at=now,
+        expires_at=now + timedelta(minutes=20),
+        used_at=None,
+        payload=None,
+    )
+
+    async with engine.begin() as conn:
+        repository = PostgresVerificationCodeRepository(conn)
+        await repository.create(verification_code)
+
+    return verification_code
