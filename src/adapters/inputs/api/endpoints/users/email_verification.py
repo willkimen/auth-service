@@ -20,14 +20,6 @@ async def email_verification_code(
     """
     Starts the email verification process for a user account.
 
-    This endpoint:
-        - Receives the user's email address.
-        - Delegates the verification code generation workflow to the
-          application layer.
-        - Persists the verification code and the email message in the
-          outbox for asynchronous delivery.
-        - Returns no content when the operation completes successfully.
-
     Args:
         `body` (`EmailRequest`):
             - Request body containing the email address associated with

@@ -11,12 +11,7 @@ async def register(
     """
     Registers a new user account.
 
-    This endpoint:
-        - Receives user credentials.
-        - Delegates the registration workflow to the application layer.
-        - Returns the newly created user's public information.
-
-    Args:
+        Args:
         `body` (`Credentials`):
             - User registration credentials containing email and password.
         `use_case` (`RegisterUseCaseDep`):
