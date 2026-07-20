@@ -1,6 +1,5 @@
 import pytest
-import sqlalchemy
-from sqlalchemy import TextClause, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
@@ -55,37 +54,3 @@ async def clean_database(engine: AsyncEngine):
             RESTART IDENTITY CASCADE;
         """)
         )
-
-
-@pytest.fixture
-def select_user_by_public_id() -> TextClause:
-    return sqlalchemy.text(
-        """
-        SELECT *
-        FROM users
-        WHERE public_id = :public_id
-        """
-    )
-
-
-@pytest.fixture
-def select_verification_code_by_user_public_id() -> TextClause:
-    return sqlalchemy.text(
-        """
-        SELECT *
-        FROM verification_codes
-        WHERE user_public_id = :user_public_id
-        """
-    )
-
-
-@pytest.fixture
-def select_first_message() -> TextClause:
-    return sqlalchemy.text(
-        """
-        SELECT *
-        FROM messages
-        ORDER BY id
-        LIMIT 1
-        """
-    )
