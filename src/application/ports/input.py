@@ -52,10 +52,6 @@ class ChangeEmailCodePort(Protocol):
                 - Raised when token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - Raised when token does not exist in persistence layer.
-            `TokenRevokedError`:
-                - Raised when token has already been revoked.
             `UserNotFoundError`:
                 - Raised when no user exists for the authenticated token.
             `InactiveUserError`:
@@ -103,11 +99,6 @@ class ChangeEmailPort(Protocol):
                   expired, or cannot be decoded.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - If the token identifier does not exist in the
-                  persistence layer.
-            `TokenRevokedError`:
-                - If the token has been revoked.
             `VerificationCodeNotFoundError`:
                 - If no verification code exists for the user and
                   provided code.
@@ -168,10 +159,6 @@ class ChangePasswordCodePort(Protocol):
                   malformed, or contains invalid claims.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - Raised when the token JTI does not exist in persistence.
-            `TokenRevokedError`:
-                - Raised when the token was revoked.
             `UserNotFoundError`:
                 - Raised when the authenticated user no longer exists.
             `InactiveUserError`:
@@ -238,10 +225,6 @@ class ChangePasswordPort(Protocol):
                 - If token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - If token does not exist.
-            `TokenRevokedError`:
-                - If token has been revoked.
             `UserNotFoundError`:
                 - If authenticated user cannot be found.
             `InactiveUserError`:
@@ -291,10 +274,6 @@ class DeleteAccountCodePort(Protocol):
                   malformed, or contains invalid claims.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - Raised when the token JTI does not exist in persistence.
-            `TokenRevokedError`:
-                - Raised when the token was revoked.
             `UserNotFoundError`:
                 - Raised when the authenticated user no longer exists.
             `InactiveUserError`:
@@ -346,10 +325,6 @@ class DeleteAccountPort(Protocol):
             `InfrastructureError`:
                 - If token decoding, persistence, or transactional
                   operations fail unexpectedly.
-            `TokenNotFoundError`:
-                - If token does not exist in persistence.
-            `TokenRevokedError`:
-                - If token has been revoked.
             `UserNotFoundError`:
                 - If authenticated user cannot be found.
             `InactiveUserError`:
@@ -400,10 +375,6 @@ class DetailPort(Protocol):
                 - Raised when token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - If the validated token does not exist in persistence.
-            `TokenRevokedError`:
-                - If the token has been revoked.
             `UserNotFoundError`:
                 - If no user exists for the token subject.
             `InactiveUserError`:

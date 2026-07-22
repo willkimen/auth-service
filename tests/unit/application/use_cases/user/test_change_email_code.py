@@ -14,8 +14,6 @@ from application.exceptions import (
     InvalidTokenError,
     InvalidTokenErrorCode,
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.messages.email_payloads import EmailCodePayload
@@ -23,7 +21,6 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
@@ -72,8 +69,6 @@ async def test_initialize_change_email_process_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -129,8 +124,6 @@ async def test_change_email_process_not_initialize_when_email_invalid(
 
     # assert was not called
     mocks.token_manager.validate.assert_not_called()
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -166,8 +159,6 @@ async def test_change_email_process_not_initialize_when_validate_token_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -199,8 +190,6 @@ async def test_change_email_process_not_initialize_when_token_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -233,146 +222,6 @@ async def test_change_email_process_not_initialize_when_token_type_is_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_change_email_process_not_initialize_when_token_not_found(
-    active_user: User,
-):
-    """
-    The change email process is aborted when the token does not exist
-    in persistence.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.exists.return_value = False
-
-    use_case = ChangeEmailCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenNotFoundError):
-        await use_case.execute(token, new_email, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_change_email_process_not_initialize_when_token_exists_fails(
-    active_user: User,
-):
-    """
-    Test if an exception is raised when an unexpected error occurs
-    while checking token existence.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-
-    mocks.uow.tokens.exists.side_effect = InfrastructureError(
-        'Error attempting to verify token existence',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-
-    use_case = ChangeEmailCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(token, new_email, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_change_email_process_not_initialize_when_token_revoked(
-    active_user: User,
-):
-    """
-    The change email process is aborted when the token has already
-    been revoked.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.is_revoked.return_value = True
-
-    use_case = ChangeEmailCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenRevokedError):
-        await use_case.execute(token, new_email, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_change_email_process_not_initialize_when_revoke_check_fails(
-    active_user: User,
-):
-    """
-    Test if an exception is raised when an unexpected error occurs
-    while checking if the token is revoked.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-
-    mocks.uow.tokens.is_revoked.side_effect = InfrastructureError(
-        'Error attempting to verify revoked token',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-
-    use_case = ChangeEmailCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(token, new_email, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -395,8 +244,6 @@ async def test_change_email_process_not_initialize_when_user_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -425,8 +272,6 @@ async def test_inactive_users_cannot_initialize_change_email_process(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -462,8 +307,6 @@ async def test_change_email_process_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -498,8 +341,6 @@ async def test_change_email_process_not_initialize_when_user_state_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -535,8 +376,6 @@ async def test_change_email_process_not_initialize_when_persist_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -572,8 +411,6 @@ async def test_change_email_process_not_initialize_when_message_persist_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once()
-    mocks.uow.tokens.exists.assert_awaited_once()
-    mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -617,10 +454,6 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
 
     uow.users = AsyncMock(spec=UserRepositoryPort)
     uow.users.get_by_public_id.return_value = user
-
-    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.tokens.exists.return_value = True
-    uow.tokens.is_revoked.return_value = False
 
     uow.codes = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.codes.create.return_value = None

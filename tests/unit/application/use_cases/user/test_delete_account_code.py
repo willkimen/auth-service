@@ -14,8 +14,6 @@ from application.exceptions import (
     InvalidTokenError,
     InvalidTokenErrorCode,
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.messages.email_payloads import EmailCodePayload
@@ -23,7 +21,6 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
@@ -70,8 +67,6 @@ async def test_initialize_account_deletion_process_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -144,8 +139,6 @@ async def test_delete_not_initialize_process_when_token_validation_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -179,8 +172,6 @@ async def test_delete_not_initialize_process_when_token_type_is_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
@@ -212,155 +203,6 @@ async def test_delete_account_not_initialize_when_token_is_invalid(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_delete_account_not_initialize_when_token_check_fails(
-    active_user: User,
-):
-    """
-    Test if an infrastructure exception is propagated when the use
-    case fails while checking token existence in persistence.
-
-    The flow must be aborted before revoked-token validation,
-    user retrieval, or any transactional operations.
-    """
-    mocks: DependenciesMocked = mocks_factory(active_user)
-
-    mocks.uow.tokens.exists.side_effect = InfrastructureError(
-        'Error checking token existence',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-
-    use_case = DeleteAccountCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(access, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_delete_account_not_initialize_when_token_not_found(
-    active_user: User,
-):
-    """
-    Test if the account deletion flow is aborted when the token
-    does not exist in persistence.
-
-    No further validation or persistence operations should occur.
-    """
-    mocks: DependenciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.exists.return_value = False
-
-    use_case = DeleteAccountCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenNotFoundError):
-        await use_case.execute(access, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_delete_account_not_initialize_when_token_revoke_check_fails(
-    active_user: User,
-):
-    """
-    Test if an infrastructure exception is propagated when the use
-    case fails while checking if the token is revoked.
-
-    The flow must be aborted before user retrieval and persistence.
-    """
-    mocks: DependenciesMocked = mocks_factory(active_user)
-
-    mocks.uow.tokens.is_revoked.side_effect = InfrastructureError(
-        'Error checking token revocation',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-
-    use_case = DeleteAccountCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(access, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_delete_account_not_initialize_when_token_is_revoked(
-    active_user: User,
-):
-    """
-    Test if the account deletion flow is aborted when the token
-    is marked as revoked.
-
-    No user lookup or persistence operations should occur.
-    """
-    mocks: DependenciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.is_revoked.return_value = True
-
-    use_case = DeleteAccountCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenRevokedError):
-        await use_case.execute(access, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -398,8 +240,6 @@ async def test_delete_account_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -437,8 +277,6 @@ async def test_delete_account_not_initialize_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -470,8 +308,6 @@ async def test_delete_account_not_initialize_when_user_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -503,8 +339,6 @@ async def test_delete_account_not_initialize_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         inactive_user.public_id
     )
@@ -545,8 +379,6 @@ async def test_delete_account_not_initialize_when_persist_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -587,8 +419,6 @@ async def test_delete_account_not_initialize_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -618,10 +448,6 @@ def mocks_factory(user: User | None) -> DependenciesMocked:
 
     uow.users = AsyncMock(spec=UserRepositoryPort)
     uow.users.get_by_public_id.return_value = user
-
-    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.tokens.exists.return_value = True
-    uow.tokens.is_revoked.return_value = False
 
     uow.codes = AsyncMock(spec=VerificationCodeRepositoryPort)
     uow.codes.create.return_value = None

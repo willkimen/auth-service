@@ -2,8 +2,6 @@ from application.dtos.token_dto import PayloadTokenDTO
 from application.dtos.user_dto import UserPublicDTO
 from application.exceptions import (
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.ports.output import (
@@ -42,7 +40,6 @@ class DetailUseCase:
 
         This method:
             - Validates the token.
-            - Verifies token persistence and revocation status.
             - Retrieves the associated user.
             - Validates the user's state.
             - Returns a public-safe representation of the user.
@@ -60,10 +57,6 @@ class DetailUseCase:
                 - Raised when token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - If the validated token does not exist in persistence.
-            `TokenRevokedError`:
-                - If the token has been revoked.
             `UserNotFoundError`:
                 - If no user exists for the token subject.
             `InactiveUserError`:
@@ -83,12 +76,6 @@ class DetailUseCase:
 
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
-
-            if not await self.uow.tokens.exists(token_payload.jti):
-                raise TokenNotFoundError()
-
-            if await self.uow.tokens.is_revoked(token_payload.jti):
-                raise TokenRevokedError()
 
             user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub

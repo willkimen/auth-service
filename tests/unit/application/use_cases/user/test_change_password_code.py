@@ -14,8 +14,6 @@ from application.exceptions import (
     InvalidTokenError,
     InvalidTokenErrorCode,
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.messages.email_payloads import EmailCodePayload
@@ -23,7 +21,6 @@ from application.messages.message import Message
 from application.messages.message_types import MessageType
 from application.ports.output import (
     MessageRepositoryPort,
-    RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
@@ -69,8 +66,6 @@ async def test_initialize_change_password_process_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -138,8 +133,6 @@ async def test_change_password_process_not_initialize_when_token_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
 
     mocks.uow.codes.create.assert_not_awaited()
@@ -176,8 +169,6 @@ async def test_change_process_not_initialize_when_token_validation_fails(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
 
     mocks.uow.codes.create.assert_not_awaited()
@@ -211,144 +202,8 @@ async def test_change_process_not_initialize_when_token_type_is_invalid(
     mocks.uow.__aexit__.assert_awaited_once()
 
     # assert was not called
-    mocks.uow.tokens.exists.assert_not_awaited()
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
     mocks.uow.users.get_by_public_id.assert_not_awaited()
 
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_password_change_process_not_initialize_when_token_check_fails(
-    active_user: User,
-):
-    """
-    Test if an infrastructure exception is propagated when the use
-    case fails while checking if the token exists in persistence.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.exists.side_effect = InfrastructureError(
-        'Error attempting to check token existence',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-    use_case = ChangePasswordCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_password_change_not_initialize_when_token_not_found(
-    active_user: User,
-):
-    """
-    The password change code generation flow is aborted if the token
-    does not exist in persistence storage.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.exists.return_value = False
-
-    use_case = ChangePasswordCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenNotFoundError):
-        await use_case.execute(token, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.tokens.is_revoked.assert_not_awaited()
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_password_change_not_initialize_when_token_revoke_check_fails(
-    active_user: User,
-):
-    """
-    Test if an infrastructure exception is propagated when the use
-    case fails while checking if the token is revoked.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.is_revoked.side_effect = InfrastructureError(
-        'Error attempting to check revoked token',
-        InfrastructureErrorCode.DATABASE_ERROR,
-        Exception(),
-    )
-
-    use_case = ChangePasswordCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(InfrastructureError):
-        await use_case.execute(token, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
-    mocks.uow.codes.create.assert_not_awaited()
-    mocks.uow.messages.create.assert_not_awaited()
-
-
-async def test_password_change_not_initialize_when_token_is_revoked(
-    active_user: User,
-):
-    """
-    The password change flow is aborted if the token was revoked.
-    """
-    mocks: DependeciesMocked = mocks_factory(active_user)
-    mocks.uow.tokens.is_revoked.return_value = True
-
-    use_case = ChangePasswordCodeUseCase(
-        mocks.token_manager,
-        mocks.uow,
-    )
-
-    # act and assert
-    with pytest.raises(TokenRevokedError):
-        await use_case.execute(token, code_expiration_time)
-
-    # assert was called
-    mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
-    mocks.uow.__aenter__.assert_awaited_once()
-    mocks.uow.__aexit__.assert_awaited_once()
-
-    # assert was not called
-    mocks.uow.users.get_by_public_id.assert_not_awaited()
     mocks.uow.codes.create.assert_not_awaited()
     mocks.uow.messages.create.assert_not_awaited()
 
@@ -378,8 +233,6 @@ async def test_password_change_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -414,8 +267,6 @@ async def test_password_change_not_initialize_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -445,8 +296,6 @@ async def test_password_change_not_initialize_when_user_not_found():
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once()
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -476,8 +325,6 @@ async def test_inactive_users_cannot_initialize_password_change(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         inactive_user.public_id
     )
@@ -514,8 +361,6 @@ async def test_password_change_not_initialize_when_persist_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -552,8 +397,6 @@ async def test_password_change_not_initialize_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.tokens.exists.assert_awaited_once_with(jti)
-    mocks.uow.tokens.is_revoked.assert_awaited_once_with(jti)
     mocks.uow.users.get_by_public_id.assert_awaited_once_with(
         active_user.public_id
     )
@@ -595,10 +438,6 @@ def mocks_factory(user: User | None) -> DependeciesMocked:
     uow = AsyncMock(spec=UnitOfWorkPort)
     uow.__aenter__.return_value = uow
     uow.__aexit__.return_value = False
-
-    uow.tokens = AsyncMock(spec=RefreshTokenRepositoryPort)
-    uow.tokens.exists.return_value = True
-    uow.tokens.is_revoked.return_value = False
 
     uow.users = AsyncMock(spec=UserRepositoryPort)
     uow.users.get_by_public_id.return_value = user

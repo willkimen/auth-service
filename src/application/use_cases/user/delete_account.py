@@ -3,8 +3,6 @@ from datetime import datetime, timezone
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
@@ -52,7 +50,6 @@ class DeleteAccountUseCase:
 
         This method:
             - Validates the access token.
-            - Verifies token existence and revocation status.
             - Loads and validates the user.
             - Validates the provided verification code.
             - Revokes all refresh tokens.
@@ -74,10 +71,6 @@ class DeleteAccountUseCase:
             `InfrastructureError`:
                 - If token decoding, persistence, or transactional
                   operations fail unexpectedly.
-            `TokenNotFoundError`:
-                - If token does not exist in persistence.
-            `TokenRevokedError`:
-                - If token has been revoked.
             `UserNotFoundError`:
                 - If authenticated user cannot be found.
             `InactiveUserError`:
@@ -99,12 +92,6 @@ class DeleteAccountUseCase:
 
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
-
-            if not await self.uow.tokens.exists(token_payload.jti):
-                raise TokenNotFoundError()
-
-            if await self.uow.tokens.is_revoked(token_payload.jti):
-                raise TokenRevokedError()
 
             user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub

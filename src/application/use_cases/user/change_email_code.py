@@ -3,8 +3,6 @@ from datetime import datetime, timedelta, timezone
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.messages.email_payloads import EmailCodePayload
@@ -57,7 +55,6 @@ class ChangeEmailCodeUseCase:
         This method:
             - Validates the authentication access token.
             - Validates the email address.
-            - Verifies token state and existence.
             - Retrieves the authenticated user
             - Generates a verification code for the new email address.
             - Persists the verification code.
@@ -79,10 +76,6 @@ class ChangeEmailCodeUseCase:
                 - Raised when token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - Raised when token does not exist in persistence layer.
-            `TokenRevokedError`:
-                - Raised when token has already been revoked.
             `UserNotFoundError`:
                 - Raised when no user exists for the authenticated token.
             `InactiveUserError`:
@@ -104,12 +97,6 @@ class ChangeEmailCodeUseCase:
 
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
-
-            if not await self.uow.tokens.exists(token_payload.jti):
-                raise TokenNotFoundError()
-
-            if await self.uow.tokens.is_revoked(token_payload.jti):
-                raise TokenRevokedError()
 
             user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub

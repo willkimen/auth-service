@@ -4,8 +4,6 @@ from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
     InvalidTokenTypeError,
     PasswordMismatchError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
@@ -97,10 +95,6 @@ class ChangePasswordUseCase:
                 - If token validation fails.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - If token does not exist.
-            `TokenRevokedError`:
-                - If token has been revoked.
             `UserNotFoundError`:
                 - If authenticated user cannot be found.
             `InactiveUserError`:
@@ -130,12 +124,6 @@ class ChangePasswordUseCase:
 
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
-
-            if not await self.uow.tokens.exists(token_payload.jti):
-                raise TokenNotFoundError()
-
-            if await self.uow.tokens.is_revoked(token_payload.jti):
-                raise TokenRevokedError()
 
             user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub

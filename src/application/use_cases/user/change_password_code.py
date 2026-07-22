@@ -3,8 +3,6 @@ from datetime import datetime, timedelta, timezone
 from application.dtos.token_dto import PayloadTokenDTO
 from application.exceptions import (
     InvalidTokenTypeError,
-    TokenNotFoundError,
-    TokenRevokedError,
     UserNotFoundError,
 )
 from application.messages.email_payloads import EmailCodePayload
@@ -47,8 +45,7 @@ class ChangePasswordCodeUseCase:
         Initializes the password change code generation use case.
 
         This method:
-            - Validates the provided access token, verifies if the
-              token exists and is not revoked.
+            - Validates the provided access token.
             - Retrieves the authenticated user.
             - Validates the user state.
             - Generates a password change verification code and persists.
@@ -67,10 +64,6 @@ class ChangePasswordCodeUseCase:
                   malformed, or contains invalid claims.
             `InvalidTokenTypeError`:
                 - If token type is not an access token.
-            `TokenNotFoundError`:
-                - Raised when the token JTI does not exist in persistence.
-            `TokenRevokedError`:
-                - Raised when the token was revoked.
             `UserNotFoundError`:
                 - Raised when the authenticated user no longer exists.
             `InactiveUserError`:
@@ -91,12 +84,6 @@ class ChangePasswordCodeUseCase:
 
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
-
-            if not await self.uow.tokens.exists(token_payload.jti):
-                raise TokenNotFoundError()
-
-            if await self.uow.tokens.is_revoked(token_payload.jti):
-                raise TokenRevokedError()
 
             user: User | None = await self.uow.users.get_by_public_id(
                 token_payload.sub
