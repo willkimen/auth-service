@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
+import jwt
 import pytest
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -21,6 +22,11 @@ from domain.enums import CodeType
 from domain.value_objects.code import Code
 from domain.value_objects.email import Email
 from domain.value_objects.password import PasswordHash
+
+jwt_secret = 'super_secret_jwt_key_that_has_at_least_32_characters_long'
+email_vo = Email('email@email.com')
+hash_password = PasswordHash('xxxxxxxxxxxxx')
+now = datetime.now(timezone.utc)
 
 
 @pytest.fixture
@@ -75,7 +81,7 @@ def get_settings_override():
             postgres_password='test',
             postgres_host='localhost',
             postgres_port=5432,
-            jwt_secret='test_secret',
+            jwt_secret=jwt_secret,
             code_expiration_time=20,
         )
 
@@ -112,10 +118,6 @@ def use_case_override_with_error():
 
 @pytest.fixture
 async def persist_unverified_user(engine: AsyncEngine) -> User:
-    email_vo = Email('email@email.com')
-    hash_password = PasswordHash('xxxxxxxxxxxxx')
-    now = datetime.now(timezone.utc)
-
     user = User(
         public_id=uuid.uuid4(),
         email=email_vo,
@@ -132,6 +134,41 @@ async def persist_unverified_user(engine: AsyncEngine) -> User:
         await repository.create(user)
 
     return user
+
+
+@pytest.fixture
+async def persist_verified_user(engine: AsyncEngine) -> User:
+    user = User(
+        public_id=uuid.uuid4(),
+        email=email_vo,
+        hash_password=hash_password,
+        email_verified=True,
+        is_active=True,
+        created_at=now,
+        updated_at=now,
+        last_login_at=now + timedelta(days=1),
+    )
+
+    async with engine.begin() as conn:
+        repository = PostgresUserRepository(conn)
+        await repository.create(user)
+
+    return user
+
+
+@pytest.fixture
+async def create_access_token(persist_verified_user: User) -> str:
+    payload = {
+        'jti': 'fake-jti',
+        'sub': str(persist_verified_user.public_id),
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=5),
+        'typ': 'access',
+    }
+    return jwt.encode(
+        payload=payload,
+        key=jwt_secret,
+        algorithm='HS256',
+    )
 
 
 @pytest.fixture

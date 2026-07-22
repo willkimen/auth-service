@@ -22,7 +22,7 @@ async def test_return_correctly_response_data(
 
     # act
     response = await async_client.post(
-        'api/v1/users/register',
+        '/api/v1/users/register',
         headers=headers,
         json=body,
     )
@@ -50,7 +50,7 @@ async def test_should_handle_unexpected_exception(
 
     # act
     actual_response = await async_client.post(
-        'api/v1/users/register',
+        '/api/v1/users/register',
         headers=headers,
         json=body,
     )
@@ -71,7 +71,7 @@ async def test_should_handle_domain_exception(
 
     # act
     actual_response = await async_client.post(
-        'api/v1/users/register',
+        '/api/v1/users/register',
         headers=headers,
         json=body,
     )
@@ -95,7 +95,7 @@ async def test_should_handle_corrupted_persistence_state_exception(
 
     # act
     actual_response = await async_client.post(
-        'api/v1/users/register',
+        '/api/v1/users/register',
         headers=headers,
         json=body,
     )
@@ -116,7 +116,7 @@ async def test_should_handle_application_exception(
 
     # act
     actual_response = await async_client.post(
-        'api/v1/users/register',
+        '/api/v1/users/register',
         headers=headers,
         json=body,
     )
