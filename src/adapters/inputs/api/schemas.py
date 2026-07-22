@@ -80,3 +80,54 @@ class EmailAndCodeRequest(BaseModel):
 
     email: EmailStr
     code: str
+
+
+class ResetPasswordRequest(BaseModel):
+    """
+    Password reset request body.
+
+    Attributes:
+        `email` (`EmailStr`):
+            - User email address.
+        `code` (`str`):
+            - Password reset verification code.
+        `password` (`str`):
+            - New password.
+        `password_confirmation` (`str`):
+            - Confirmation of the new password.
+    """
+
+    email: EmailStr
+    code: str
+    password: str
+    password_confirmation: str
+
+
+class ChangePasswordRequest(BaseModel):
+    """
+    Password change request body.
+
+    Attributes:
+        `code` (`str`):
+            - Password change verification code.
+        `new_password` (`str`):
+            - New password.
+        `new_password_confirmation` (`str`):
+            - Confirmation of the new password.
+    """
+
+    code: str
+    new_password: str
+    new_password_confirmation: str
+
+
+class ChangeEmailCodeRequest(BaseModel):
+    """
+    Email change request body.
+
+    Attributes:
+        `new_email` (`EmailStr`):
+            - New email address.
+    """
+
+    new_email: EmailStr
