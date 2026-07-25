@@ -172,23 +172,23 @@ async def create_access_token(persist_verified_user: User) -> str:
 
 
 @pytest.fixture
-async def persist_unused_verification_code(
-    persist_unverified_user: User, engine: AsyncEngine
-) -> VerificationCode:
+async def persist_unused_verification_code(engine: AsyncEngine):
+    async def closure(user: User, type: CodeType, payload: dict | None = None):
+        now = datetime.now(timezone.utc)
+        verification_code = VerificationCode(
+            code=Code.generate(),
+            user_public_id=user.public_id,
+            type=type,
+            created_at=now,
+            expires_at=now + timedelta(minutes=20),
+            used_at=None,
+            payload=payload,
+        )
 
-    now = datetime.now(timezone.utc)
-    verification_code = VerificationCode(
-        code=Code.generate(),
-        user_public_id=persist_unverified_user.public_id,
-        type=CodeType.EMAIL_VERIFICATION,
-        created_at=now,
-        expires_at=now + timedelta(minutes=20),
-        used_at=None,
-        payload=None,
-    )
+        async with engine.begin() as conn:
+            repository = PostgresVerificationCodeRepository(conn)
+            await repository.create(verification_code)
 
-    async with engine.begin() as conn:
-        repository = PostgresVerificationCodeRepository(conn)
-        await repository.create(verification_code)
+        return verification_code
 
-    return verification_code
+    return closure

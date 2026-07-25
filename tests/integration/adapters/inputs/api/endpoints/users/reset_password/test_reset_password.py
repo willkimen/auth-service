@@ -1,31 +1,48 @@
 from httpx2 import AsyncClient
 
 from adapters.inputs.api.dependencies.use_cases import (
-    reset_password_code_factory,
+    reset_password_factory,
 )
 from application.exceptions import (
     CorruptedPersistenceStateError,
     EmailAlreadyUsedError,
 )
 from domain.entities.user import User
+from domain.enums import CodeType
 from domain.exceptions import InactiveUserError, UserErrorCode
 
 headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+body_dummy = {
+    'email': 'email@email.com',
+    'code': '123456',
+    'password': 'Password!1234',
+    'password_confirmation': 'Password!1234',
+}
 
 
 async def test_return_correctly_status_code(
     async_client: AsyncClient,
     persist_unverified_user: User,
+    persist_unused_verification_code,
     get_settings_override: None,
     clean_database,
 ):
     # arrange
+    verification_code = await persist_unused_verification_code(
+        persist_unverified_user,
+        CodeType.RESET_PASSWORD,
+    )
     expected_status_code = 204
-    body = {'email': persist_unverified_user.email.value}
+    body = {
+        'email': persist_unverified_user.email.value,
+        'code': verification_code.code.value,
+        'password': 'Password!1234',
+        'password_confirmation': 'Password!1234',
+    }
 
     # act
     response = await async_client.post(
-        '/api/v1/users/password/reset/code',
+        '/api/v1/users/password/reset',
         headers=headers,
         json=body,
     )
@@ -39,15 +56,14 @@ async def test_should_handle_unexpected_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
-    use_case_override_with_error(reset_password_code_factory, Exception())
+    use_case_override_with_error(reset_password_factory, Exception())
     expected_status_code = 500
 
     # act
     actual_response = await async_client.post(
-        '/api/v1/users/password/reset/code',
+        '/api/v1/users/password/reset',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -61,17 +77,14 @@ async def test_should_handle_domain_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
-    use_case_override_with_error(
-        reset_password_code_factory, InactiveUserError()
-    )
+    use_case_override_with_error(reset_password_factory, InactiveUserError())
     expected_status_code = 403
 
     # act
     actual_response = await async_client.post(
-        '/api/v1/users/password/reset/code',
+        '/api/v1/users/password/reset',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -86,17 +99,16 @@ async def test_should_handle_corrupted_persistence_state_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(
-        reset_password_code_factory, CorruptedPersistenceStateError()
+        reset_password_factory, CorruptedPersistenceStateError()
     )
     expected_status_code = 500
 
     # act
     actual_response = await async_client.post(
-        '/api/v1/users/password/reset/code',
+        '/api/v1/users/password/reset',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -110,17 +122,16 @@ async def test_should_handle_application_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(
-        reset_password_code_factory, EmailAlreadyUsedError()
+        reset_password_factory, EmailAlreadyUsedError()
     )
     expected_status_code = 409
 
     # act
     actual_response = await async_client.post(
-        '/api/v1/users/password/reset/code',
+        '/api/v1/users/password/reset',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts

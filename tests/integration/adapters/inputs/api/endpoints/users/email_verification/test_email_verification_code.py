@@ -11,6 +11,7 @@ from domain.entities.user import User
 from domain.exceptions import InactiveUserError, UserErrorCode
 
 headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+body_dummy = {'email': 'email@email.comj'}
 
 
 async def test_return_correctly_status_code(
@@ -39,7 +40,6 @@ async def test_should_handle_unexpected_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(email_verification_code_factory, Exception())
     expected_status_code = 500
 
@@ -47,7 +47,7 @@ async def test_should_handle_unexpected_exception(
     actual_response = await async_client.post(
         '/api/v1/users/email/verify/code',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -61,7 +61,6 @@ async def test_should_handle_domain_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(
         email_verification_code_factory, InactiveUserError()
     )
@@ -71,7 +70,7 @@ async def test_should_handle_domain_exception(
     actual_response = await async_client.post(
         '/api/v1/users/email/verify/code',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -86,7 +85,6 @@ async def test_should_handle_corrupted_persistence_state_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(
         email_verification_code_factory, CorruptedPersistenceStateError()
     )
@@ -96,7 +94,7 @@ async def test_should_handle_corrupted_persistence_state_exception(
     actual_response = await async_client.post(
         '/api/v1/users/email/verify/code',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
@@ -110,7 +108,6 @@ async def test_should_handle_application_exception(
     use_case_override_with_error,
 ):
     # arrange
-    body = {'email': 'email@email.comj'}
     use_case_override_with_error(
         email_verification_code_factory, EmailAlreadyUsedError()
     )
@@ -120,7 +117,7 @@ async def test_should_handle_application_exception(
     actual_response = await async_client.post(
         '/api/v1/users/email/verify/code',
         headers=headers,
-        json=body,
+        json=body_dummy,
     )
 
     # asserts
