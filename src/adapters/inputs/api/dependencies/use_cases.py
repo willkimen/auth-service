@@ -139,7 +139,7 @@ def change_password_code_factory(
 
 
 ChangePasswordCodeDep = Annotated[
-    ChangeEmailCodePort, Depends(change_password_code_factory)
+    ChangePasswordCodePort, Depends(change_password_code_factory)
 ]
 
 
