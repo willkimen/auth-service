@@ -26,8 +26,22 @@ async def change_password_code(
     settings: SettingsDep,
 ):
     """
-    Generates and persists a verification code used to authorize a
-    password change operation for an authenticated user.
+    Starts the password change process for the authenticated user by
+    generating a verification code and sending it to the user's
+    registered email address.
+
+    Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
+        `use_case` (`ChangePasswordCodeDep`):
+            - Dependency responsible for executing the password change
+              verification code generation workflow.
+
+        `settings` (`SettingsDep`):
+            - Application settings containing the verification code
+              expiration time.
 
     Raises:
         `InvalidTokenError`:
@@ -65,12 +79,21 @@ async def change_password(
     use_case: ChangePasswordDep,
 ):
     """
-    Handles the authenticated password change workflow.
+    Completes the password change process for the authenticated user
+    by validating the verification code and applying the new password.
 
     Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
         `body` (`ChangePasswordRequest`):
-            - Request body containing password change verification code,
-              new password, and password confirmation.
+            - Request body containing the password change verification
+              code, new password, and password confirmation.
+
+        `use_case` (`ChangePasswordDep`):
+            - Dependency responsible for executing the authenticated
+              password change workflow.
 
     Raises:
         `InvalidPasswordError`:

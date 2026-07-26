@@ -26,8 +26,22 @@ async def delete_account_code(
     settings: SettingsDep,
 ):
     """
-    Generates and persists a verification code used to authorize
-    the account deletion process for an authenticated user.
+    Starts the account deletion process for the authenticated user by
+    generating a verification code and sending it to the user's
+    registered email address.
+
+    Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
+        `use_case` (`DeleteAccountCodeDep`):
+            - Dependency responsible for executing the account deletion
+              verification code generation workflow.
+
+        `settings` (`SettingsDep`):
+            - Application settings containing the verification code
+              expiration time.
 
     Raises:
         `InvalidTokenError`:
@@ -66,11 +80,24 @@ async def delete_account(
     settings: SettingsDep,
 ):
     """
-    Handles the authenticated account deletion workflow.
+    Completes the account deletion process for the authenticated user
+    by validating the verification code and deleting the account.
 
     Args:
         `body` (`VerificationCodeRequest`):
-            - Verification code sent to the new email address.
+            - Request body containing the account deletion verification
+              code.
+
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
+        `use_case` (`DeleteAccountDep`):
+            - Dependency responsible for executing the authenticated
+              account deletion workflow.
+
+        `settings` (`SettingsDep`):
+            - Application settings used by the account deletion workflow.
 
     Raises:
         `InvalidTokenError`:

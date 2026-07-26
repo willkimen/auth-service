@@ -21,10 +21,20 @@ async def reset_password_code(
     """
     Starts the password reset process for a user account.
 
+    This endpoint receives the user's email address and initiates the
+    password reset process by requesting a verification code that will
+    be sent to the provided email address.
+
     Args:
         `body` (`EmailRequest`):
             - Request body containing the email address associated with
-              the account.
+              the account for which the password reset should be initiated.
+        `use_case` (`ResetPasswordCodeDep`):
+            - Application use case responsible for handling the password
+              reset verification code generation workflow.
+        `settings` (`SettingsDep`):
+            - Application settings containing the verification code
+              expiration time.
 
     Raises:
         `UserNotFoundError`:
@@ -52,11 +62,20 @@ async def reset_password(
     """
     Completes the password reset process for a user account.
 
+    This endpoint receives the user's email address, the verification
+    code previously sent to that address, and the new password. The
+    provided information is validated to authorize the password reset
+    and complete the process.
+
     Args:
         `body` (`ResetPasswordRequest`):
             - Request body containing the user's email address,
               password reset verification code, new password, and
               password confirmation.
+        `use_case` (`ResetPasswordDep`):
+            - Application use case responsible for validating the
+              password reset request and completing the password reset
+              process.
 
     Raises:
         `InvalidPasswordError`:

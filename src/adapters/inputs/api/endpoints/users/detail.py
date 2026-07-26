@@ -25,11 +25,22 @@ async def detail(
     use_case: DetailUserDep,
 ) -> UserPublic:
     """
-    Retrieves authenticated user details from a valid access token.
+    Retrieves the authenticated user's public account information using
+    a valid access token.
+
+    Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
+        `use_case` (`DetailUserDep`):
+            - Dependency responsible for retrieving the authenticated
+              user's details.
 
     Returns:
-        `UserPublicDTO`:
-            - Public-safe representation of the authenticated user.
+        `UserPublic`:
+            - Public representation of the authenticated user's account
+              information.
 
     Raises:
         `InvalidTokenError`:

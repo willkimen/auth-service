@@ -30,12 +30,26 @@ async def change_email_code(
     settings: SettingsDep,
 ):
     """
-    Initializes the email change verification process for
-    an authenticated user.
+    Starts the email change process for the authenticated user by
+    generating a verification code and sending it to the requested
+    new email address.
 
     Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
         `body` (`ChangeEmailCodeRequest`):
-            - Request body containing the new email address to change email.
+            - Request body containing the new email address that will
+              receive the email change verification code.
+
+        `use_case` (`ChangeEmailCodeDep`):
+            - Dependency responsible for executing the email change
+              verification code generation workflow.
+
+        `settings` (`SettingsDep`):
+            - Application settings containing the verification code
+              expiration time.
 
     Raises:
         `InvalidEmailError`:
@@ -74,13 +88,22 @@ async def change_email(
     use_case: ChangeEmailDep,
 ):
     """
-    Completes the user email change process using a previously
-    generated verification code associated with an authenticated
-    session.
+    Completes the email change process for the authenticated user by
+    validating the verification code sent to the requested new email
+    address and applying the email change.
 
     Args:
+        `credentials` (`HTTPAuthorizationCredentials`):
+            - HTTP Bearer credentials containing the access token used
+              to authenticate the user.
+
         `body` (`VerificationCodeRequest`):
-            - Verification code sent to the new email address.
+            - Request body containing the verification code sent to the
+              user's new email address.
+
+        `use_case` (`ChangeEmailDep`):
+            - Dependency responsible for executing the email change
+              verification workflow.
 
     Raises:
         `InvalidTokenError`:

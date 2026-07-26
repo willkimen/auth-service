@@ -21,10 +21,20 @@ async def email_verification_code(
     """
     Starts the email verification process for a user account.
 
+    This endpoint receives the user's email address and initiates the
+    verification process by requesting a verification code that will be
+    sent to the provided email address.
+
     Args:
         `body` (`EmailRequest`):
             - Request body containing the email address associated with
               the account that should be verified.
+        `use_case` (`EmailVerificationCodeDep`):
+            - Application use case responsible for handling the email
+              verification code generation workflow.
+        `settings` (`SettingsDep`):
+            - Application settings containing the verification code
+              expiration time.
 
     Raises:
         `UserNotFoundError`:
@@ -54,11 +64,19 @@ async def email_verification(
     """
     Completes the user email verification process.
 
+    This endpoint receives the user's email address and the verification
+    code previously sent to that address, allowing the application to
+    validate the code and complete the email verification process.
+
     Args:
         `body` (`EmailAndCodeRequest`):
-            - Request body containing the email address associated
-              with the account and the verification code previously
-              sent to that email address.
+            - Request body containing the email address associated with
+              the account and the verification code previously sent to
+              that email address.
+        `use_case` (`EmailVerificationDep`):
+            - Application use case responsible for validating the
+              verification code and completing the email verification
+              process.
 
     Raises:
         `UserNotFoundError`:

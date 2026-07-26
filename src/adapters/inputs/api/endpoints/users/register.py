@@ -11,12 +11,17 @@ async def register(
     """
     Registers a new user account.
 
-        Args:
+    This endpoint receives the user's registration credentials and
+    initiates the account creation process using the provided email
+    address and password.
+
+    Args:
         `body` (`Credentials`):
-            - User registration credentials containing email and password.
+            - Request body containing the email address and password
+              used to register the new account.
         `use_case` (`RegisterUseCaseDep`):
-            - Injected application use case responsible for user
-              registration.
+            - Injected application use case responsible for handling
+              the user registration workflow.
 
     Returns:
         `UserPublic`:
