@@ -7,7 +7,7 @@ class RevokeAllRefreshesUseCase:
     """
     Handles the refresh token mass revocation workflow.
 
-    This use case validates the provided refresh token and revokes
+    This use case validates the provided access token and revokes
     all refresh tokens associated with the authenticated user,
     invalidating every active authenticated session for that user.
 
@@ -27,7 +27,7 @@ class RevokeAllRefreshesUseCase:
         self.token_manager = token_manager
         self.uow = uow
 
-    async def execute(self, refresh: str):
+    async def execute(self, access: str):
         """
         Executes the mass refresh token revocation flow.
 
@@ -35,8 +35,8 @@ class RevokeAllRefreshesUseCase:
         the authenticated user identified by the provided token.
 
         Args:
-            `refresh` (str):
-                - Refresh token.
+            `access` (str):
+                - Access token.
 
         Raises:
             `InfrastructureError`:
@@ -44,11 +44,11 @@ class RevokeAllRefreshesUseCase:
             `InvalidTokenError`:
                 - If token validation fails.
             `InvalidTokenTypeError`:
-                - If token type is not a refresh token.
+                - If token type is not a access token.
         """
-        token_payload: PayloadTokenDTO = self.token_manager.validate(refresh)
+        token_payload: PayloadTokenDTO = self.token_manager.validate(access)
 
-        if token_payload.typ != 'refresh':
+        if token_payload.typ != 'access':
             raise InvalidTokenTypeError()
 
         # Persist related changes atomically as a single unit of work.

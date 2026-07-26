@@ -23,7 +23,7 @@ from application.use_cases.authentication.revoke_all_refreshes import (
 )
 
 jti = 'jti'
-token = 'refresh'
+token = 'access'
 
 
 async def test_revoke_all_refreshes_successfully():
@@ -104,10 +104,10 @@ async def test_revoke_all_refreshes_aborts_when_token_type_is_invalid():
     mocks = mocks_factory()
     exp = datetime.now(timezone.utc) + timedelta(minutes=15)
     mocks.token_manager.validate.return_value = PayloadTokenDTO(
-        jti='jti',
+        jti=jti,
         sub=uuid.uuid4(),
         exp=int(exp.timestamp()),
-        typ='access',  # incorrect type
+        typ='refresh',  # incorrect type
     )
     use_case = RevokeAllRefreshesUseCase(
         uow=mocks.uow,
@@ -171,7 +171,7 @@ def mocks_factory() -> DependenciesMocked:
         jti=jti,
         sub=uuid.uuid4(),
         exp=int(exp.timestamp()),
-        typ='refresh',
+        typ='access',
     )
 
     return DependenciesMocked(

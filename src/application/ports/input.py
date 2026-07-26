@@ -744,13 +744,13 @@ class RevokeAllRefreshesPort(Protocol):
         uow: UnitOfWorkPort,
     ): ...
 
-    async def execute(self, refresh: str):
+    async def execute(self, access: str):
         """
         Executes the mass refresh token revocation flow.
 
         Args:
-            `refresh` (str):
-                - Refresh token.
+            `access` (str):
+                - Access token.
 
         Raises:
             `InfrastructureError`:
@@ -758,7 +758,7 @@ class RevokeAllRefreshesPort(Protocol):
             `InvalidTokenError`:
                 - If token validation fails.
             `InvalidTokenTypeError`:
-                - If token type is not a refresh token.
+                - If token type is not a access token.
         """
         ...
 
