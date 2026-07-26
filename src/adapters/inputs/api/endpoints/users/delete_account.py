@@ -19,7 +19,7 @@ bearer_scheme = HTTPBearer()
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_account_code(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     use_case: DeleteAccountCodeDep,
@@ -31,7 +31,7 @@ async def delete_account_code(
     registered email address.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -62,7 +62,7 @@ async def delete_account_code(
               fail unexpectedly.
     """
     await use_case.execute(
-        credentials.credentials,
+        header_authorization.credentials,
         settings.code_expiration_time,
     )
 

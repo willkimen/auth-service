@@ -19,7 +19,7 @@ bearer_scheme = HTTPBearer()
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def change_password_code(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     use_case: ChangePasswordCodeDep,
@@ -31,7 +31,7 @@ async def change_password_code(
     registered email address.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -62,7 +62,7 @@ async def change_password_code(
               fail unexpectedly.
     """
     await use_case.execute(
-        credentials.credentials,
+        header_authorization.credentials,
         settings.code_expiration_time,
     )
 
@@ -72,7 +72,7 @@ async def change_password_code(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def change_password(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     body: ChangePasswordRequest,
@@ -83,7 +83,7 @@ async def change_password(
     by validating the verification code and applying the new password.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -121,7 +121,7 @@ async def change_password(
             - If verification code has expired.
     """
     await use_case.execute(
-        credentials.credentials,
+        header_authorization.credentials,
         body.code,
         body.new_password,
         body.new_password_confirmation,

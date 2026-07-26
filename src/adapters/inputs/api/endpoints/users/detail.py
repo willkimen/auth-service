@@ -19,7 +19,7 @@ bearer_scheme = HTTPBearer()
     response_model=UserPublic,
 )
 async def detail(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     use_case: DetailUserDep,
@@ -29,7 +29,7 @@ async def detail(
     a valid access token.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -59,7 +59,7 @@ async def detail(
               adapter (infrastructure layer).
 
     """
-    user: UserPublicDTO = await use_case.execute(credentials.credentials)
+    user: UserPublicDTO = await use_case.execute(header_authorization.credentials)
 
     return UserPublic(
         public_id=user.public_id,

@@ -22,7 +22,7 @@ bearer_scheme = HTTPBearer()
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def change_email_code(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     body: ChangeEmailCodeRequest,
@@ -35,7 +35,7 @@ async def change_email_code(
     new email address.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -70,7 +70,7 @@ async def change_email_code(
               within an output adapter.
     """
     await use_case.execute(
-        credentials.credentials,
+        header_authorization.credentials,
         body.new_email,
         settings.code_expiration_time,
     )
@@ -81,7 +81,7 @@ async def change_email_code(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def change_email(
-    credentials: Annotated[
+    header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     body: VerificationCodeRequest,
@@ -93,7 +93,7 @@ async def change_email(
     address and applying the email change.
 
     Args:
-        `credentials` (`HTTPAuthorizationCredentials`):
+        `header_authorization` (`HTTPAuthorizationCredentials`):
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
@@ -137,6 +137,6 @@ async def change_email(
               operations.
     """
     await use_case.execute(
-        credentials.credentials,
+        header_authorization.credentials,
         body.code,
     )
