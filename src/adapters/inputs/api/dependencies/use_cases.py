@@ -71,6 +71,20 @@ def register_factory(
     hasher: HasherDep,
     uow: UnitOfWorkDep,
 ) -> RegisterUserPort:
+    """
+    Creates the user registration use case.
+
+    Args:
+        `hasher` (`HasherPort`):
+            - Password hashing adapter used to securely hash user passwords.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `RegisterUserPort`:
+            - User registration use case.
+    """
     return RegisterUserUseCase(hasher, uow)
 
 
@@ -81,6 +95,21 @@ def detail_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> DetailPort:
+    """
+    Creates the authenticated user detail use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `DetailPort`:
+            - Authenticated user detail use case.
+    """
     return DetailUseCase(token_manager, uow)
 
 
@@ -90,6 +119,18 @@ DetailUserDep = Annotated[DetailPort, Depends(detail_factory)]
 def email_verification_code_factory(
     uow: UnitOfWorkDep,
 ) -> EmailVerificationCodePort:
+    """
+    Creates the email verification code use case.
+
+    Args:
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `EmailVerificationCodePort`:
+            - Email verification code use case.
+    """
     return EmailVerificationCodeUseCase(uow)
 
 
@@ -101,6 +142,18 @@ EmailVerificationCodeDep = Annotated[
 def email_verification_factory(
     uow: UnitOfWorkDep,
 ) -> EmailVerificationPort:
+    """
+    Creates the email verification use case.
+
+    Args:
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `EmailVerificationPort`:
+            - Email verification use case.
+    """
     return EmailVerificationUseCase(uow)
 
 
@@ -113,6 +166,21 @@ def change_email_code_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> ChangeEmailCodePort:
+    """
+    Creates the email change code use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `ChangeEmailCodePort`:
+            - Email change code use case.
+    """
     return ChangeEmailCodeUseCase(token_manager, uow)
 
 
@@ -125,6 +193,21 @@ def change_email_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> ChangeEmailPort:
+    """
+    Creates the email change use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `ChangeEmailPort`:
+            - Email change use case.
+    """
     return ChangeEmailUseCase(token_manager, uow)
 
 
@@ -135,6 +218,21 @@ def change_password_code_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> ChangePasswordCodePort:
+    """
+    Creates the password change code use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `ChangePasswordCodePort`:
+            - Password change code use case.
+    """
     return ChangePasswordCodeUseCase(token_manager, uow)
 
 
@@ -148,6 +246,24 @@ def change_password_factory(
     uow: UnitOfWorkDep,
     hasher: HasherDep,
 ) -> ChangePasswordPort:
+    """
+    Creates the password change use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+        `hasher` (`HasherPort`):
+            - Password hashing adapter used to securely hash and verify
+              passwords.
+
+    Returns:
+        `ChangePasswordPort`:
+            - Password change use case.
+    """
     return ChangePasswordUseCase(token_manager, uow, hasher)
 
 
@@ -159,6 +275,18 @@ ChangePasswordDep = Annotated[
 def reset_password_code_factory(
     uow: UnitOfWorkDep,
 ) -> ResetPasswordCodePort:
+    """
+    Creates the password reset code use case.
+
+    Args:
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `ResetPasswordCodePort`:
+            - Password reset code use case.
+    """
     return ResetPasswordCodeUseCase(uow)
 
 
@@ -171,6 +299,20 @@ def reset_password_factory(
     hasher: HasherDep,
     uow: UnitOfWorkDep,
 ) -> ResetPasswordPort:
+    """
+    Creates the password reset use case.
+
+    Args:
+        `hasher` (`HasherPort`):
+            - Password hashing adapter used to securely hash passwords.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `ResetPasswordPort`:
+            - Password reset use case.
+    """
     return ResetPasswordUseCase(hasher, uow)
 
 
@@ -183,6 +325,21 @@ def delete_account_code_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> DeleteAccountCodePort:
+    """
+    Creates the account deletion code use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `DeleteAccountCodePort`:
+            - Account deletion code use case.
+    """
     return DeleteAccountCodeUseCase(token_manager, uow)
 
 
@@ -195,6 +352,21 @@ def delete_account_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> DeleteAccountPort:
+    """
+    Creates the account deletion use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and decode
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `DeleteAccountPort`:
+            - Account deletion use case.
+    """
     return DeleteAccountUseCase(token_manager, uow)
 
 
@@ -204,11 +376,30 @@ DeleteAccountDep = Annotated[
 
 
 # ============ Use cases - Auth =================
+
+
 def login_factory(
     token_manager: TokenManagerDep,
     hasher: HasherDep,
     uow: UnitOfWorkDep,
 ) -> LoginPort:
+    """
+    Creates the user authentication use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to generate and manage
+              authentication tokens.
+        `hasher` (`HasherPort`):
+            - Password hashing adapter used to securely verify passwords.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `LoginPort`:
+            - User authentication use case.
+    """
     return LoginUseCase(token_manager, hasher, uow)
 
 
@@ -219,6 +410,21 @@ def refresh_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> RefreshPort:
+    """
+    Creates the access token refresh use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate and generate
+              authentication tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `RefreshPort`:
+            - Access token refresh use case.
+    """
     return RefreshUseCase(token_manager, uow)
 
 
@@ -229,6 +435,21 @@ def revoke_refresh_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> RevokeRefreshPort:
+    """
+    Creates the refresh token revocation use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate authentication
+              tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `RevokeRefreshPort`:
+            - Refresh token revocation use case.
+    """
     return RevokeRefreshUseCase(token_manager, uow)
 
 
@@ -241,6 +462,21 @@ def revoke_all_refreshes_factory(
     token_manager: TokenManagerDep,
     uow: UnitOfWorkDep,
 ) -> RevokeAllRefreshesPort:
+    """
+    Creates the mass refresh token revocation use case.
+
+    Args:
+        `token_manager` (`TokenManagerPort`):
+            - Token management adapter used to validate authentication
+              tokens.
+        `uow` (`UnitOfWorkPort`):
+            - Unit of work responsible for coordinating transactional
+              persistence operations.
+
+    Returns:
+        `RevokeAllRefreshesPort`:
+            - Mass refresh token revocation use case.
+    """
     return RevokeAllRefreshesUseCase(token_manager, uow)
 
 
