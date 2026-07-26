@@ -28,6 +28,24 @@ class UserPublicBodyResponse(BaseModel):
     last_login_at: datetime | None
 
 
+class TokensBodyResponse(BaseModel):
+    """
+    Authentication tokens response body.
+
+    Attributes:
+        `access` (`str`):
+            - Access token used to authenticate requests to protected
+              endpoints.
+
+        `refresh` (`str`):
+            - Refresh token used to obtain a new access token when the
+              current access token expires.
+    """
+
+    access: str
+    refresh: str
+
+
 class CredentialsBodyRequest(BaseModel):
     """
     User authentication credentials request body.

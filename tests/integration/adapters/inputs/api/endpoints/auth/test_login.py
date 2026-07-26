@@ -1,0 +1,133 @@
+from httpx2 import AsyncClient
+
+from adapters.inputs.api.dependencies.use_cases import (
+    login_factory,
+)
+from application.exceptions import (
+    CorruptedPersistenceStateError,
+    EmailAlreadyUsedError,
+)
+from domain.entities.user import User
+from domain.exceptions import InactiveUserError, UserErrorCode
+
+body_dummy = {'email': 'email@email.com', 'password': 'Password10!'}
+
+headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+
+
+async def test_return_correctly_response_data(
+    async_client: AsyncClient,
+    clean_database: None,
+    get_settings_override: None,
+    persist_verified_user: User,
+):
+    # arrange
+    expected_status_code = 200
+    body = {
+        'email': persist_verified_user.email.value,
+        'password': 'Password!1234',
+    }
+
+    # act
+    response = await async_client.post(
+        '/api/v1/auth/token/login',
+        headers=headers,
+        json=body,
+    )
+
+    # asserts
+    response_data = response.json()
+
+    assert response.status_code == expected_status_code
+    assert 'access' in response_data
+    assert 'refresh' in response_data
+
+
+async def test_should_handle_unexpected_exception(
+    async_client: AsyncClient,
+    use_case_override_with_error,
+):
+    # arrange
+    use_case_override_with_error(login_factory, Exception())
+    expected_status_code = 500
+
+    # act
+    actual_response = await async_client.post(
+        '/api/v1/auth/token/login',
+        headers=headers,
+        json=body_dummy,
+    )
+
+    # asserts
+    assert actual_response.status_code == expected_status_code
+    response_data = actual_response.json()
+    assert response_data['error'] == 'internal error server'
+
+
+async def test_should_handle_domain_exception(
+    async_client: AsyncClient,
+    use_case_override_with_error,
+):
+    # arrange
+    use_case_override_with_error(login_factory, InactiveUserError())
+    expected_status_code = 403
+
+    # act
+    actual_response = await async_client.post(
+        '/api/v1/auth/token/login',
+        headers=headers,
+        json=body_dummy,
+    )
+
+    # asserts
+    assert actual_response.status_code == expected_status_code
+    response_data = actual_response.json()['error']
+    assert response_data['code'] == UserErrorCode.INACTIVE_USER
+    assert response_data['message'] == 'User account is inactive'
+
+
+async def test_should_handle_corrupted_persistence_state_exception(
+    async_client: AsyncClient,
+    use_case_override_with_error,
+):
+    # arrange
+    use_case_override_with_error(
+        login_factory, CorruptedPersistenceStateError()
+    )
+    expected_status_code = 500
+
+    # act
+    actual_response = await async_client.post(
+        '/api/v1/auth/token/login',
+        headers=headers,
+        json=body_dummy,
+    )
+
+    # asserts
+    assert actual_response.status_code == expected_status_code
+    response_data = actual_response.json()
+    assert response_data['error'] == 'internal error server'
+
+
+async def test_should_handle_application_exception(
+    async_client: AsyncClient,
+    use_case_override_with_error,
+):
+    # arrange
+    use_case_override_with_error(login_factory, EmailAlreadyUsedError())
+    expected_status_code = 409
+
+    # act
+    actual_response = await async_client.post(
+        '/api/v1/auth/token/login',
+        headers=headers,
+        json=body_dummy,
+    )
+
+    # asserts
+    assert actual_response.status_code == expected_status_code
+    response_data = actual_response.json()['error']
+    assert response_data['code'] == 'EMAIL_ALREADY_USE'
+    assert response_data['message'] == (
+        'An account with this email already exists'
+    )

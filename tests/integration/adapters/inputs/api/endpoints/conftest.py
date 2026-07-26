@@ -8,7 +8,10 @@ from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from adapters.inputs.api.app import app
-from adapters.inputs.api.dependencies.adapters import get_settings
+from adapters.inputs.api.dependencies.adapters import (
+    get_settings,
+    hasher_factory,
+)
 from adapters.inputs.api.settings import Settings
 from adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
@@ -25,7 +28,7 @@ from domain.value_objects.password import PasswordHash
 
 jwt_secret = 'super_secret_jwt_key_that_has_at_least_32_characters_long'
 email_vo = Email('email@email.com')
-hash_password = PasswordHash('xxxxxxxxxxxxx')
+hash_password = PasswordHash(hasher_factory().hash('Password!1234'))
 now = datetime.now(timezone.utc)
 
 
