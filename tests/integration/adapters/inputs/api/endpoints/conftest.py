@@ -13,6 +13,9 @@ from adapters.inputs.api.dependencies.adapters import (
     hasher_factory,
 )
 from adapters.inputs.api.settings import Settings
+from adapters.outputs.repositories.refresh_token_repository import (
+    PostgresRefreshTokenRepository,
+)
 from adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
@@ -30,6 +33,9 @@ jwt_secret = 'super_secret_jwt_key_that_has_at_least_32_characters_long'
 email_vo = Email('email@email.com')
 hash_password = PasswordHash(hasher_factory().hash('Password!1234'))
 now = datetime.now(timezone.utc)
+jti = str(uuid.uuid4())
+exp = datetime.now(timezone.utc) + timedelta(minutes=5)
+public_id = uuid.uuid4()
 
 
 @pytest.fixture
@@ -122,7 +128,7 @@ def use_case_override_with_error():
 @pytest.fixture
 async def persist_unverified_user(engine: AsyncEngine) -> User:
     user = User(
-        public_id=uuid.uuid4(),
+        public_id=public_id,
         email=email_vo,
         hash_password=hash_password,
         email_verified=False,
@@ -142,7 +148,7 @@ async def persist_unverified_user(engine: AsyncEngine) -> User:
 @pytest.fixture
 async def persist_verified_user(engine: AsyncEngine) -> User:
     user = User(
-        public_id=uuid.uuid4(),
+        public_id=public_id,
         email=email_vo,
         hash_password=hash_password,
         email_verified=True,
@@ -162,7 +168,7 @@ async def persist_verified_user(engine: AsyncEngine) -> User:
 @pytest.fixture
 async def create_access_token(persist_verified_user: User) -> str:
     payload = {
-        'jti': 'fake-jti',
+        'jti': jti,
         'sub': str(persist_verified_user.public_id),
         'exp': datetime.now(timezone.utc) + timedelta(minutes=5),
         'typ': 'access',
@@ -172,6 +178,28 @@ async def create_access_token(persist_verified_user: User) -> str:
         key=jwt_secret,
         algorithm='HS256',
     )
+
+
+@pytest.fixture
+async def create_refresh_token(persist_verified_user: User) -> str:
+    payload = {
+        'jti': jti,
+        'sub': str(persist_verified_user.public_id),
+        'exp': exp,
+        'typ': 'refresh',
+    }
+    return jwt.encode(
+        payload=payload,
+        key=jwt_secret,
+        algorithm='HS256',
+    )
+
+
+@pytest.fixture
+async def persist_valid_refresh_token(engine: AsyncEngine) -> None:
+    async with engine.begin() as conn:
+        repository = PostgresRefreshTokenRepository(conn)
+        await repository.create(public_id, jti, exp)
 
 
 @pytest.fixture

@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
 
+# =================== Body responses ====================
+
 
 class UserPublicBodyResponse(BaseModel):
     """
@@ -28,6 +30,19 @@ class UserPublicBodyResponse(BaseModel):
     last_login_at: datetime | None
 
 
+class AccessBodyResponse(BaseModel):
+    """
+    Authentication access token response body.
+
+    Attributes:
+        `access` (`str`):
+            - Access token used to authenticate requests to protected
+              endpoints.
+    """
+
+    access: str
+
+
 class TokensBodyResponse(BaseModel):
     """
     Authentication tokens response body.
@@ -43,6 +58,21 @@ class TokensBodyResponse(BaseModel):
     """
 
     access: str
+    refresh: str
+
+
+# =================== Body requests ====================
+
+
+class RefreshBodyRequest(BaseModel):
+    """
+    Refresh token request body.
+
+    Attributes:
+        `refresh` (`str`):
+            - Refresh token used to obtain a new access token.
+    """
+
     refresh: str
 
 
