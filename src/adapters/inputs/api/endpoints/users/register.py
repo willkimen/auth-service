@@ -1,13 +1,16 @@
 from adapters.inputs.api.dependencies.use_cases import RegisterUseCaseDep
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import Credentials, UserPublic
+from adapters.inputs.api.schemas import (
+    CredentialsBodyRequest,
+    UserPublicBodyResponse,
+)
 
 
-@users_router.post('/register', response_model=UserPublic)
+@users_router.post('/register', response_model=UserPublicBodyResponse)
 async def register(
-    body: Credentials,
+    body: CredentialsBodyRequest,
     use_case: RegisterUseCaseDep,
-) -> UserPublic:
+) -> UserPublicBodyResponse:
     """
     Registers a new user account.
 
@@ -16,7 +19,7 @@ async def register(
     address and password.
 
     Args:
-        `body` (`Credentials`):
+        `body` (`CredentialsBodyRequest`):
             - Request body containing the email address and password
               used to register the new account.
         `use_case` (`RegisterUseCaseDep`):
@@ -24,7 +27,7 @@ async def register(
               the user registration workflow.
 
     Returns:
-        `UserPublic`:
+        `UserPublicBodyResponse`:
             - Public-safe representation of the newly created user.
 
     Raises:
@@ -45,7 +48,7 @@ async def register(
         body.password,
     )
 
-    return UserPublic(
+    return UserPublicBodyResponse(
         public_id=user.public_id,
         email=user.email,
         email_verified=user.email_verified,

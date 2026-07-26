@@ -6,7 +6,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     ResetPasswordDep,
 )
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import EmailRequest, ResetPasswordRequest
+from adapters.inputs.api.schemas import (
+    EmailBodyRequest,
+    ResetPasswordBodyRequest,
+)
 
 
 @users_router.post(
@@ -14,7 +17,7 @@ from adapters.inputs.api.schemas import EmailRequest, ResetPasswordRequest
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def reset_password_code(
-    body: EmailRequest,
+    body: EmailBodyRequest,
     use_case: ResetPasswordCodeDep,
     settings: SettingsDep,
 ):
@@ -26,7 +29,7 @@ async def reset_password_code(
     be sent to the provided email address.
 
     Args:
-        `body` (`EmailRequest`):
+        `body` (`EmailBodyRequest`):
             - Request body containing the email address associated with
               the account for which the password reset should be initiated.
         `use_case` (`ResetPasswordCodeDep`):
@@ -56,7 +59,7 @@ async def reset_password_code(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def reset_password(
-    body: ResetPasswordRequest,
+    body: ResetPasswordBodyRequest,
     use_case: ResetPasswordDep,
 ):
     """
@@ -68,7 +71,7 @@ async def reset_password(
     and complete the process.
 
     Args:
-        `body` (`ResetPasswordRequest`):
+        `body` (`ResetPasswordBodyRequest`):
             - Request body containing the user's email address,
               password reset verification code, new password, and
               password confirmation.

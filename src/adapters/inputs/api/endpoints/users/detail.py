@@ -7,7 +7,7 @@ from adapters.inputs.api.dependencies.use_cases import (
     DetailUserDep,
 )
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import UserPublic
+from adapters.inputs.api.schemas import UserPublicBodyResponse
 from application.dtos.user_dto import UserPublicDTO
 
 bearer_scheme = HTTPBearer()
@@ -16,14 +16,14 @@ bearer_scheme = HTTPBearer()
 @users_router.get(
     '/detail',
     status_code=status.HTTP_200_OK,
-    response_model=UserPublic,
+    response_model=UserPublicBodyResponse,
 )
 async def detail(
     header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
     use_case: DetailUserDep,
-) -> UserPublic:
+) -> UserPublicBodyResponse:
     """
     Retrieves the authenticated user's public account information using
     a valid access token.
@@ -38,7 +38,7 @@ async def detail(
               user's details.
 
     Returns:
-        `UserPublic`:
+        `UserPublicBodyResponse`:
             - Public representation of the authenticated user's account
               information.
 
@@ -59,9 +59,11 @@ async def detail(
               adapter (infrastructure layer).
 
     """
-    user: UserPublicDTO = await use_case.execute(header_authorization.credentials)
+    user: UserPublicDTO = await use_case.execute(
+        header_authorization.credentials
+    )
 
-    return UserPublic(
+    return UserPublicBodyResponse(
         public_id=user.public_id,
         email=user.email,
         email_verified=user.email_verified,

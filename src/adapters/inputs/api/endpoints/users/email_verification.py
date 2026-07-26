@@ -6,7 +6,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     EmailVerificationDep,
 )
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import EmailAndCodeRequest, EmailRequest
+from adapters.inputs.api.schemas import (
+    EmailAndCodeBodyRequest,
+    EmailBodyRequest,
+)
 
 
 @users_router.post(
@@ -14,7 +17,7 @@ from adapters.inputs.api.schemas import EmailAndCodeRequest, EmailRequest
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def email_verification_code(
-    body: EmailRequest,
+    body: EmailBodyRequest,
     use_case: EmailVerificationCodeDep,
     settings: SettingsDep,
 ):
@@ -26,7 +29,7 @@ async def email_verification_code(
     sent to the provided email address.
 
     Args:
-        `body` (`EmailRequest`):
+        `body` (`EmailBodyRequest`):
             - Request body containing the email address associated with
               the account that should be verified.
         `use_case` (`EmailVerificationCodeDep`):
@@ -58,7 +61,7 @@ async def email_verification_code(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def email_verification(
-    body: EmailAndCodeRequest,
+    body: EmailAndCodeBodyRequest,
     use_case: EmailVerificationDep,
 ):
     """
@@ -69,7 +72,7 @@ async def email_verification(
     validate the code and complete the email verification process.
 
     Args:
-        `body` (`EmailAndCodeRequest`):
+        `body` (`EmailAndCodeBodyRequest`):
             - Request body containing the email address associated with
               the account and the verification code previously sent to
               that email address.

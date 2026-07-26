@@ -9,7 +9,7 @@ from adapters.inputs.api.dependencies.use_cases import (
     DeleteAccountDep,
 )
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import VerificationCodeRequest
+from adapters.inputs.api.schemas import VerificationCodeBodyRequest
 
 bearer_scheme = HTTPBearer()
 
@@ -72,7 +72,7 @@ async def delete_account_code(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_account(
-    body: VerificationCodeRequest,
+    body: VerificationCodeBodyRequest,
     credentials: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
@@ -84,7 +84,7 @@ async def delete_account(
     by validating the verification code and deleting the account.
 
     Args:
-        `body` (`VerificationCodeRequest`):
+        `body` (`VerificationCodeBodyRequest`):
             - Request body containing the account deletion verification
               code.
 

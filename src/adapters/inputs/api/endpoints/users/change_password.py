@@ -9,7 +9,7 @@ from adapters.inputs.api.dependencies.use_cases import (
     ChangePasswordDep,
 )
 from adapters.inputs.api.routers import users_router
-from adapters.inputs.api.schemas import ChangePasswordRequest
+from adapters.inputs.api.schemas import ChangePasswordBodyRequest
 
 bearer_scheme = HTTPBearer()
 
@@ -75,7 +75,7 @@ async def change_password(
     header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
-    body: ChangePasswordRequest,
+    body: ChangePasswordBodyRequest,
     use_case: ChangePasswordDep,
 ):
     """
@@ -87,7 +87,7 @@ async def change_password(
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
-        `body` (`ChangePasswordRequest`):
+        `body` (`ChangePasswordBodyRequest`):
             - Request body containing the password change verification
               code, new password, and password confirmation.
 

@@ -10,8 +10,8 @@ from adapters.inputs.api.dependencies.use_cases import (
 )
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import (
-    ChangeEmailCodeRequest,
-    VerificationCodeRequest,
+    ChangeEmailCodeBodyRequest,
+    VerificationCodeBodyRequest,
 )
 
 bearer_scheme = HTTPBearer()
@@ -25,7 +25,7 @@ async def change_email_code(
     header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
-    body: ChangeEmailCodeRequest,
+    body: ChangeEmailCodeBodyRequest,
     use_case: ChangeEmailCodeDep,
     settings: SettingsDep,
 ):
@@ -39,7 +39,7 @@ async def change_email_code(
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
-        `body` (`ChangeEmailCodeRequest`):
+        `body` (`ChangeEmailCodeBodyRequest`):
             - Request body containing the new email address that will
               receive the email change verification code.
 
@@ -84,7 +84,7 @@ async def change_email(
     header_authorization: Annotated[
         HTTPAuthorizationCredentials, Depends(bearer_scheme)
     ],
-    body: VerificationCodeRequest,
+    body: VerificationCodeBodyRequest,
     use_case: ChangeEmailDep,
 ):
     """
@@ -97,7 +97,7 @@ async def change_email(
             - HTTP Bearer credentials containing the access token used
               to authenticate the user.
 
-        `body` (`VerificationCodeRequest`):
+        `body` (`VerificationCodeBodyRequest`):
             - Request body containing the verification code sent to the
               user's new email address.
 

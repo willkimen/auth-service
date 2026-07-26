@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 
-class UserPublic(BaseModel):
+class UserPublicBodyResponse(BaseModel):
     """
     Public representation of a user response body.
 
@@ -28,7 +28,7 @@ class UserPublic(BaseModel):
     last_login_at: datetime | None
 
 
-class Credentials(BaseModel):
+class CredentialsBodyRequest(BaseModel):
     """
     User authentication credentials request body.
 
@@ -43,7 +43,7 @@ class Credentials(BaseModel):
     password: str
 
 
-class EmailRequest(BaseModel):
+class EmailBodyRequest(BaseModel):
     """
     Email request body.
 
@@ -55,7 +55,7 @@ class EmailRequest(BaseModel):
     email: EmailStr
 
 
-class VerificationCodeRequest(BaseModel):
+class VerificationCodeBodyRequest(BaseModel):
     """
     Verification code request body.
 
@@ -67,7 +67,7 @@ class VerificationCodeRequest(BaseModel):
     code: str
 
 
-class EmailAndCodeRequest(BaseModel):
+class EmailAndCodeBodyRequest(BaseModel):
     """
     Email verification request body.
 
@@ -82,7 +82,7 @@ class EmailAndCodeRequest(BaseModel):
     code: str
 
 
-class ResetPasswordRequest(BaseModel):
+class ResetPasswordBodyRequest(BaseModel):
     """
     Password reset request body.
 
@@ -103,7 +103,7 @@ class ResetPasswordRequest(BaseModel):
     password_confirmation: str
 
 
-class ChangePasswordRequest(BaseModel):
+class ChangePasswordBodyRequest(BaseModel):
     """
     Password change request body.
 
@@ -121,7 +121,7 @@ class ChangePasswordRequest(BaseModel):
     new_password_confirmation: str
 
 
-class ChangeEmailCodeRequest(BaseModel):
+class ChangeEmailCodeBodyRequest(BaseModel):
     """
     Email change request body.
 
