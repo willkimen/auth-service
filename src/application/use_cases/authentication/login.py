@@ -16,33 +16,27 @@ from domain.exceptions import InactiveUserError, UnverifiedEmailError
 
 class LoginUseCase:
     """
-    Handles user authentication and issues access/refresh tokens.
+    Authenticates a user using their email address and password and
+    establishes an authenticated session by issuing access and refresh
+    tokens.
 
-    This use case is responsible for validating user credentials,
-    ensuring account state is valid, updating user persistence state,
-    generating authentication tokens, and persisting refresh token
-    metadata for session continuity.
-
-    The flow enforces strict authentication rules:
-    - User existence validation
-    - Password verification
-    - Account activation check
-    - Email verification check
-
-    After successful validation, the use case:
-    - Updates the user entity (e.g., last login or metadata changes)
-    - Generates a new pair of tokens (access + refresh)
-    - Persists the refresh token for later validation/revocation
+    Authentication succeeds only when the user exists, the provided
+    password is valid, the account is active, and the user's email
+    address has been verified. After successful authentication, the
+    user's login state is updated, and the refresh token is persisted
+    to support subsequent session validation and revocation.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token generation and
-            session management.
+            - Port responsible for generating authentication tokens
+              and managing token-related session operations.
         `hasher` (HasherPort):
-            - Port/Interface responsible for securely verifying raw passwords.
+            - Port responsible for securely verifying the provided
+              password against the stored password hash.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to authenticate the user and
+              establish the authenticated session.
     """
 
     def __init__(
@@ -57,17 +51,26 @@ class LoginUseCase:
 
     async def execute(self, email: str, password: str) -> PairTokensDTO:
         """
-        Executes the authentication flow.
+        Authenticates the user and establishes an authenticated session.
+
+        The user must exist, the provided password must match the stored
+        password, the account must be active, and the user's email
+        address must be verified. After successful authentication, the
+        user's login state is updated and a pair of access and refresh
+        tokens is issued. The refresh token is persisted to support
+        subsequent session validation and revocation.
 
         Args:
             `email` (str):
-                - User email used for authentication lookup.
+                - Email address used to identify the user account.
             `password` (str):
-                - Plain password provided by the user.
+                - Plain-text password provided by the user for
+                  authentication.
 
         Returns:
             `PairTokensDTO`:
-                - Access and refresh tokens for authenticated session.
+                - Pair containing the access and refresh tokens issued
+                  for the authenticated session.
 
         Raises:
             `InvalidCredentialsError`:

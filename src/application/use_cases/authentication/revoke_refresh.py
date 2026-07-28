@@ -5,17 +5,19 @@ from application.ports.output import TokenManagerPort, UnitOfWorkPort
 
 class RevokeRefreshUseCase:
     """
-    Handles the refresh token revocation workflow.
+    Revokes a specific refresh token associated with an authenticated
+    session.
 
-    This use case validates the provided refresh token and marks
-    the associated refresh token as revoked in persistence storage.
+    The refresh token must be valid and be a refresh token before it
+    can be revoked. Once revoked, the token can no longer be used to
+    obtain new access tokens for the associated session.
 
-    Args:
+    Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation.
+            - Port responsible for validating the refresh token.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operation required to revoke the refresh token.
     """
 
     def __init__(
@@ -28,11 +30,15 @@ class RevokeRefreshUseCase:
 
     async def execute(self, refresh: str):
         """
-        Executes the refresh token revocation flow.
+        Revokes the refresh token associated with the provided token.
+
+        The provided token must be valid and be a refresh token. Once
+        validated, the token is revoked, preventing it from being used
+        to obtain new access tokens for the associated session.
 
         Args:
             `refresh` (str):
-                - Refresh token.
+                - Refresh token identifying the session to be revoked.
 
         Raises:
             `InfrastructureError`:

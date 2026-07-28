@@ -22,16 +22,23 @@ from domain.value_objects.email import Email
 
 class ChangeEmailCodeUseCase:
     """
-    Initializes the email change verification process for
-    an authenticated user.
+    Initiates the email change verification process for an
+    authenticated user by generating a temporary verification code
+    for the requested new email address.
+
+    The verification code acts as a temporary credential that can
+    later be used to authorize the completion of the email change.
+    The code and the data required to deliver it to the new email
+    address are persisted for subsequent processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and payload
-              extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the email change
+              verification process.
     """
 
     def __init__(
@@ -49,25 +56,26 @@ class ChangeEmailCodeUseCase:
         code_expiration_time: int,
     ):
         """
-        Generates and persists an email change verification code for
-        the authenticated user.
+        Initiates the email change verification process by generating
+        a temporary verification code for the authenticated user's
+        requested new email address.
 
-        This method:
-            - Validates the authentication access token.
-            - Validates the email address.
-            - Retrieves the authenticated user
-            - Generates a verification code for the new email address.
-            - Persists the verification code.
-            - Persists a message containing the data required to send
-              the verification code.
+        The requested email address must be valid, and the authenticated
+        user must exist and be active. A verification code with a
+        limited validity period is then generated and persisted
+        together with the data required to deliver the code to the
+        requested email address.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the email change.
             `new_email` (str):
-                - New email address requested by the user.
+                - New email address requested by the authenticated
+                  user.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `InvalidEmailError`:

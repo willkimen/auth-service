@@ -26,14 +26,23 @@ from domain.exceptions import (
 
 class DeleteAccountUseCase:
     """
-    Handles the authenticated account deletion workflow.
+    Completes the authenticated user's account deletion process by
+    validating the verification code issued for this operation.
+
+    The verification code acts as a temporary credential that
+    authorizes the user to complete the account deletion. Once the
+    verification succeeds, the user's account and associated
+    verification codes are deleted, active authentication sessions
+    are invalidated, and the data required to notify the user of the
+    deletion is persisted for subsequent processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and decoding.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the account deletion.
     """
 
     def __init__(
@@ -46,22 +55,23 @@ class DeleteAccountUseCase:
 
     async def execute(self, access: str, code: str):
         """
-        Executes the authenticated account deletion flow.
+        Completes the authenticated user's account deletion by
+        validating the verification code issued for the operation.
 
-        This method:
-            - Validates the access token.
-            - Loads and validates the user.
-            - Validates the provided verification code.
-            - Revokes all refresh tokens.
-            - Deletes verification codes.
-            - Persists a notification message informing the user about
-              the successful account delete.
+        The verification code must be valid for the authenticated user,
+        unused, issued for the account deletion operation, and not
+        expired. The user's account is then deleted, associated
+        verification codes are removed, active authentication sessions
+        are invalidated, and the data required to notify the user of
+        the deletion is persisted for subsequent processing.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting account deletion.
             `code` (str):
-                - Verification code authorizing account deletion.
+                - Verification code issued for the account deletion
+                  operation.
 
         Raises:
             `InvalidTokenError`:

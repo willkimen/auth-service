@@ -12,16 +12,21 @@ from application.ports.output import (
 # ============ User ports ===================
 class ChangeEmailCodePort(Protocol):
     """
-    Initializes the verification process for changing the user's
-    email address, creating a verification code.
+    Defines the contract for initiating the user's email change
+    verification process.
+
+    Implementations generate a temporary verification code for the
+    requested new email address and persist the data required to
+    deliver the code for subsequent processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and payload
-              extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the email change
+              verification process.
     """
 
     def __init__(
@@ -37,13 +42,19 @@ class ChangeEmailCodePort(Protocol):
         code_expiration_time: int,
     ):
         """
+        Initiates the email change verification process for the
+        authenticated user.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the email change.
             `new_email` (str):
-                - New email address requested by the user.
+                - New email address requested by the authenticated
+                  user.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `InvalidEmailError`:
@@ -68,15 +79,16 @@ class ChangeEmailCodePort(Protocol):
 
 class ChangeEmailPort(Protocol):
     """
-    Change a user's email address.
+    Defines the contract for completing a user's email change process
+    through a previously issued verification code.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and
-              payload extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the email change.
     """
 
     def __init__(
@@ -87,11 +99,16 @@ class ChangeEmailPort(Protocol):
 
     async def execute(self, access: str, code: str):
         """
+        Completes the email change process for the authenticated user
+        using a verification code issued for this operation.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the email change.
             `code` (str):
-                - Verification code sent to the new email address.
+                - Verification code issued for the email change
+                  operation.
 
         Raises:
             `InvalidTokenError`:
@@ -128,15 +145,17 @@ class ChangeEmailPort(Protocol):
 
 class ChangePasswordCodePort(Protocol):
     """
-    Initializes the verification process for changing the user's
-    password, creating a verification code.
+    Defines the contract for initiating the password change process
+    for an authenticated user through a temporary verification code.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and decoding.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the password change
+              verification process.
     """
 
     def __init__(
@@ -147,11 +166,16 @@ class ChangePasswordCodePort(Protocol):
 
     async def execute(self, access: str, code_expiraton_time: int):
         """
+        Initiates the password change verification process for the
+        authenticated user.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the password change.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `InvalidTokenError`:
@@ -176,16 +200,20 @@ class ChangePasswordCodePort(Protocol):
 
 class ChangePasswordPort(Protocol):
     """
-    Change a user's password.
+    Defines the contract for completing the password change process
+    for an authenticated user using a previously issued verification
+    code.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the password change.
         `hasher` (HasherPort):
-            - Service responsible for password hashing operations.
+            - Port responsible for securely hashing the new password
+              before it is persisted.
     """
 
     def __init__(
@@ -203,15 +231,21 @@ class ChangePasswordPort(Protocol):
         new_password_confirmation: str,
     ):
         """
+        Completes the password change process for the authenticated
+        user using a verification code issued for this operation.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the password change.
             `code` (str):
-                - Verification code authorizing the password change.
+                - Verification code issued to authorize the password
+                  change.
             `new_password` (str):
-                - New raw password provided by the user.
+                - New plain-text password provided by the user.
             `new_password_confirmation` (str):
-                - Confirmation password used to validate consistency.
+                - Confirmation of the new password used to verify that
+                  both password values match.
 
         Raises:
             `InvalidPasswordError`:
@@ -243,15 +277,17 @@ class ChangePasswordPort(Protocol):
 
 class DeleteAccountCodePort(Protocol):
     """
-    Initializes the verification process for delete the user,
-    creating a verification code.
+    Defines the contract for initiating the account deletion process
+    for an authenticated user through a temporary verification code.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and decoding.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the account deletion
+              verification process.
     """
 
     def __init__(
@@ -262,11 +298,16 @@ class DeleteAccountCodePort(Protocol):
 
     async def execute(self, access: str, code_expiration_time: int):
         """
+        Initiates the account deletion verification process for the
+        authenticated user.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting account deletion.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `InvalidTokenError`:
@@ -291,14 +332,17 @@ class DeleteAccountCodePort(Protocol):
 
 class DeleteAccountPort(Protocol):
     """
-    Delete user.
+    Defines the contract for completing the account deletion process
+    for an authenticated user using a previously issued verification
+    code.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and decoding.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the account deletion.
     """
 
     def __init__(
@@ -309,13 +353,16 @@ class DeleteAccountPort(Protocol):
 
     async def execute(self, access: str, code: str):
         """
-        Executes the authenticated account deletion flow.
+        Completes the account deletion process for the authenticated
+        user using a verification code issued for this operation.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting account deletion.
             `code` (str):
-                - Verification code authorizing account deletion.
+                - Verification code issued to authorize the account
+                  deletion.
 
         Raises:
             `InvalidTokenError`:
@@ -343,15 +390,16 @@ class DeleteAccountPort(Protocol):
 
 class DetailPort(Protocol):
     """
-    Retrieves authenticated user details from a valid access token.
+    Defines the contract for retrieving the authenticated user's
+    public information from a valid access token.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and
-              payload extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to retrieve the authenticated user.
     """
 
     def __init__(
@@ -362,13 +410,18 @@ class DetailPort(Protocol):
 
     async def execute(self, access: str) -> UserPublicDTO:
         """
+        Retrieves the public information of the authenticated user
+        identified by the provided access token.
+
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user whose information is being requested.
 
         Returns:
             `UserPublicDTO`:
-                - Public-safe representation of the authenticated user.
+                - Public representation of the authenticated user,
+                  excluding sensitive information.
 
         Raises:
             `InvalidTokenError`:
@@ -391,13 +444,14 @@ class DetailPort(Protocol):
 
 class EmailVerificationCodePort(Protocol):
     """
-    Initializes the verification process for the user's
-    email verification, creating a verification code.
+    Defines the contract for initiating the email verification process
+    for a user account through a temporary verification code.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the email verification
+              process.
     """
 
     def __init__(self, uow: UnitOfWorkPort): ...
@@ -407,13 +461,17 @@ class EmailVerificationCodePort(Protocol):
         email: str,
         code_expiration_time: int,
     ):
-        """Generates a code and persists an email verification message.
+        """
+        Initiates the email verification process for the user account
+        associated with the provided email address.
 
         Args:
             `email` (str):
-                - User email address used to identify the account.
+                - Email address used to identify the user account whose
+                  ownership is being verified.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `UserNotFoundError`:
@@ -434,12 +492,14 @@ class EmailVerificationCodePort(Protocol):
 
 class EmailVerificationPort(Protocol):
     """
-    Completes the user email verification process.
+    Defines the contract for completing the email verification process
+    for a user account using a previously issued verification code.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the email verification
+              process.
     """
 
     def __init__(
@@ -449,13 +509,16 @@ class EmailVerificationPort(Protocol):
 
     async def execute(self, email: str, code: str):
         """
-        Verifies a user's email using a verification code.
+        Completes the email verification process for the user account
+        associated with the provided email address.
 
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address used to identify the user account whose
+                  email ownership is being verified.
             `code` (str):
-                - Verification code informed by the user.
+                - Verification code issued for the email verification
+                  operation.
 
         Raises:
             `UserNotFoundError`:
@@ -484,26 +547,37 @@ class EmailVerificationPort(Protocol):
 
 class RegisterUserPort(Protocol):
     """
-    Register a user.
+    Defines the contract for registering a new user account.
 
     Attributes:
         `hasher` (HasherPort):
-            - Port/Interface responsible for hashing raw passwords securely.
+            - Port responsible for securely hashing the user's
+              password before it is persisted.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to register the new user account.
     """
 
     def __init__(self, hasher: HasherPort, uow: UnitOfWorkPort): ...
 
     async def execute(self, email: str, raw_password: str) -> UserPublicDTO:
         """
+        Registers a new user account using the provided email address
+        and password.
+
         Args:
             `email` (str):
-                - User email address used to identify the account.
+                - Email address to be associated with the new user
+                  account.
             `raw_password` (str):
-                - The plain-text password provided by the user,
-                  which will be validated and hashed before storage.
+                - Plain-text password provided by the user. The
+                  password is validated and securely hashed before
+                  being persisted.
+
+        Returns:
+            `UserPublicDTO`:
+                - Public representation of the newly registered user,
+                  excluding sensitive authentication credentials.
 
         Raises:
             `InvalidEmailError`:
@@ -522,13 +596,14 @@ class RegisterUserPort(Protocol):
 
 class ResetPasswordCodePort(Protocol):
     """
-    Initializes the verification process for reset the user's
-    password, creating a verification code.
+    Defines the contract for initiating the password reset process
+    for a user account through a temporary verification code.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the password reset
+              verification process.
     """
 
     def __init__(self, uow: UnitOfWorkPort): ...
@@ -539,11 +614,16 @@ class ResetPasswordCodePort(Protocol):
         code_expiration_time: int,
     ):
         """
+        Initiates the password reset process for the user account
+        associated with the provided email address.
+
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address associated with the user account whose
+                  password is being reset.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `UserNotFoundError`:
@@ -562,15 +642,16 @@ class ResetPasswordCodePort(Protocol):
 
 class ResetPasswordPort(Protocol):
     """
-    Completes the password reset process for a user.
+    Defines the contract for completing the password reset process
+    for a user account using a previously issued verification code.
 
     Attributes:
         `hasher` (HasherPort):
-            - Port/Interface responsible for securely hashing raw
-              passwords.
+            - Port responsible for securely hashing the new password
+              before it is persisted.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the password reset.
     """
 
     def __init__(
@@ -587,16 +668,24 @@ class ResetPasswordPort(Protocol):
         raw_password_confirmation: str,
     ):
         """
+        Completes the password reset process for the user account
+        associated with the provided email address using a verification
+        code issued for this operation.
+
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address associated with the user account whose
+                  password is being reset.
             `code` (str):
-                - Verification code informed by the user.
+                - Verification code issued to authorize the password
+                  reset.
             `raw_password` (str):
-                - New raw password informed by the user.
+                - New plain-text password provided by the user. The
+                  password is validated and securely hashed before
+                  being persisted.
             `raw_password_confirmation` (str):
-                - Confirmation password used to validate equality with
-                  the new password.
+                - Confirmation of the new password used to verify that
+                  both password values match.
 
         Raises:
             `InvalidPasswordError`:
@@ -631,17 +720,20 @@ class ResetPasswordPort(Protocol):
 # ============= Authentication ports ====================
 class LoginPort(Protocol):
     """
-    Handles user authentication and issues access/refresh tokens.
+    Defines the contract for authenticating a user and issuing
+    authentication tokens for an authenticated session.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token generation and
-            session management.
+            - Port responsible for generating authentication tokens
+              and managing session-related token state.
         `hasher` (HasherPort):
-            - Port/Interface responsible for securely verifying raw passwords.
+            - Port responsible for securely verifying the provided
+              password against the user's stored password hash.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required during authentication and session
+              creation.
     """
 
     def __init__(
@@ -653,17 +745,20 @@ class LoginPort(Protocol):
 
     async def execute(self, email: str, password: str) -> PairTokensDTO:
         """
-        Executes the authentication flow.
+        Authenticates a user using their credentials and creates a new
+        authenticated session represented by an access and refresh
+        token pair.
 
         Args:
             `email` (str):
-                - User email used for authentication lookup.
+                - Email address used to identify the user account.
             `password` (str):
-                - Plain password provided by the user.
+                - Plain-text password provided for authentication.
 
         Returns:
             `PairTokensDTO`:
-                - Access and refresh tokens for authenticated session.
+                - Pair containing the access and refresh tokens issued
+                  for the newly authenticated session.
 
         Raises:
             `InvalidCredentialsError`:
@@ -680,14 +775,17 @@ class LoginPort(Protocol):
 
 class RefreshPort(Protocol):
     """
-    Handles the refresh access token workflow.
+    Defines the contract for refreshing an authenticated session by
+    validating a refresh token and issuing a new access token.
 
-    Args:
+    Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and generation.
+            - Port responsible for validating the refresh token and
+              generating a new access token.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to validate the refresh token state
+              and retrieve the associated user.
     """
 
     def __init__(
@@ -698,11 +796,17 @@ class RefreshPort(Protocol):
 
     async def execute(self, refresh: str) -> str:
         """
-        Executes the refresh access token flow.
+        Validates a refresh token and issues a new access token for
+        the associated active user account.
 
         Args:
             `refresh` (str):
-                - Refresh token.
+                - Refresh token associated with the authenticated
+                  session.
+
+        Returns:
+            `str`:
+                - Newly issued access token for the authenticated user.
 
         Raises:
             `InfrastructureError`:
@@ -728,14 +832,17 @@ class RefreshPort(Protocol):
 
 class RevokeAllRefreshesPort(Protocol):
     """
-    Handles the refresh token mass revocation workflow.
+    Defines the contract for invalidating all active refresh tokens
+    associated with an authenticated user's sessions.
 
-    Args:
+    Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation.
+            - Port responsible for validating the access token and
+              extracting the authenticated user's identity.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              persistence operation required to revoke the user's
+              refresh tokens.
     """
 
     def __init__(
@@ -746,11 +853,14 @@ class RevokeAllRefreshesPort(Protocol):
 
     async def execute(self, access: str):
         """
-        Executes the mass refresh token revocation flow.
+        Revokes all refresh tokens associated with the user identified
+        by the provided access token, invalidating all active refresh
+        token-based sessions for that user.
 
         Args:
             `access` (str):
-                - Access token.
+                - Access token identifying the authenticated user whose
+                  refresh tokens are to be revoked.
 
         Raises:
             `InfrastructureError`:
@@ -765,14 +875,17 @@ class RevokeAllRefreshesPort(Protocol):
 
 class RevokeRefreshPort(Protocol):
     """
-    Handles the refresh token revocation workflow.
+    Defines the contract for invalidating a specific refresh token
+    associated with an authenticated session.
 
-    Args:
+    Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation.
+            - Port responsible for validating the provided refresh
+              token and extracting its token identifier.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              persistence operation required to revoke the refresh
+              token.
     """
 
     def __init__(
@@ -783,11 +896,13 @@ class RevokeRefreshPort(Protocol):
 
     async def execute(self, refresh: str):
         """
-        Executes the refresh token revocation flow.
+        Revokes the refresh token associated with the provided token,
+        invalidating the corresponding authenticated session.
 
         Args:
             `refresh` (str):
-                - Refresh token.
+                - Refresh token identifying the authenticated session
+                  to be invalidated.
 
         Raises:
             `InfrastructureError`:

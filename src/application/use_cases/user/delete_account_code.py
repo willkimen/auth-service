@@ -21,15 +21,23 @@ from domain.value_objects.code import Code
 
 class DeleteAccountCodeUseCase:
     """
-    Generates and persists a verification code used to authorize
-    the account deletion process for an authenticated user.
+    Initiates the account deletion verification process for an
+    authenticated user by generating a temporary verification code
+    for the account deletion operation.
+
+    The verification code acts as a temporary credential that can
+    later be used to authorize the completion of the account deletion.
+    The code and the data required to deliver it to the user are
+    persisted for subsequent processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and decoding.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the account deletion
+              verification process.
     """
 
     def __init__(
@@ -42,21 +50,22 @@ class DeleteAccountCodeUseCase:
 
     async def execute(self, access: str, code_expiration_time: int):
         """
-        Initializes the delete account code generation use case.
+        Initiates the account deletion verification process by
+        generating a temporary verification code for the
+        authenticated user.
 
-        This method:
-            - Validates the provided access token.
-            - Retrieves the authenticated user.
-            - Validates the user state.
-            - Gnerates a delete-account verification code and persists.
-            - Persists a message containing the data required to send
-              the verification code.
+        The authenticated user must exist and have an active account.
+        A verification code with a limited validity period is then
+        generated and persisted together with the data required to
+        deliver the code to the user.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting account deletion.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `InvalidTokenError`:

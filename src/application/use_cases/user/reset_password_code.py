@@ -14,12 +14,20 @@ from domain.value_objects.code import Code
 
 class ResetPasswordCodeUseCase:
     """
-    Starts the password reset process for a user account.
+    Initiates the password reset process for a user account by
+    generating a temporary verification code for the password reset
+    operation.
+
+    The verification code acts as a temporary credential that can
+    later be used to authorize the password reset. The code and the
+    data required to deliver it to the user are persisted for
+    subsequent processing.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the password reset
+              verification process.
     """
 
     def __init__(self, uow: UnitOfWorkPort):
@@ -31,18 +39,21 @@ class ResetPasswordCodeUseCase:
         code_expiration_time: int,
     ):
         """
-        Generates a password reset verification code and persists
-        the notification message required to deliver it to the user.
+        Initiates the password reset process by generating a temporary
+        verification code for the user's account.
 
-        This method:
-            - Generating a password reset verification code and persisting it.
-            - Retrieves and validate an user.
+        The user must exist and have an active account. A verification
+        code with a limited validity period is then generated and
+        persisted together with the data required to deliver the code
+        to the user.
 
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address associated with the user account whose
+                  password is being reset.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `UserNotFoundError`:

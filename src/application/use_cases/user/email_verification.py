@@ -22,12 +22,19 @@ from domain.exceptions import (
 
 class EmailVerificationUseCase:
     """
-    Completes the user email verification process.
+    Completes the user's email verification process by validating the
+    verification code issued for this purpose.
+
+    The verification code acts as a temporary credential that
+    authorizes the user to confirm ownership of the email address.
+    Once the verification succeeds, the user's email is marked as
+    verified, and the data required to notify the user of the
+    successful verification is persisted for subsequent processing.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the email verification.
     """
 
     def __init__(
@@ -38,22 +45,23 @@ class EmailVerificationUseCase:
 
     async def execute(self, email: str, code: str):
         """
-        Verifies a user's email using a verification code and
-        registers an notification message.
+        Completes the user's email verification by validating the
+        verification code issued for the email address.
 
-        This method:
-            - Retrieves the user and verification code.
-            - Validates user and verification code.
-            - Marks the user as verified.
-            - Marks the verification code as used.
-            - Persists a notification message informing the user about
-              the successful email verified.
+        The user must exist, have an active account, and not have an
+        already verified email address. The verification code must be
+        valid for the user, unused, issued for email verification,
+        and not expired. The user's email is then marked as verified,
+        and the data required to notify the user of the successful
+        verification is persisted for subsequent processing.
 
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address associated with the user whose email
+                  ownership is being verified.
             `code` (str):
-                - Verification code informed by the user.
+                - Verification code provided by the user to confirm
+                  ownership of the email address.
 
         Raises:
             `UserNotFoundError`:

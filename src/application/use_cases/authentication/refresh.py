@@ -15,19 +15,22 @@ from domain.exceptions import InactiveUserError
 
 class RefreshUseCase:
     """
-    Handles the refresh access token workflow.
+    Issues a new access token for an authenticated session using a
+    valid refresh token.
 
-    This use case validates the provided refresh token, verifies
-    whether the token exists and is not revoked, validates the
-    authenticated user state, and generates a new access token
-    for the authenticated session.
+    The refresh token must be valid, correspond to an existing and
+    non-revoked session, and identify an existing user with an active
+    account. When these conditions are satisfied, a new access token
+    is issued for the authenticated session.
 
-    Args:
+    Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation and generation.
+            - Port responsible for validating refresh tokens and
+              generating new access tokens.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the operations
+              required to validate the refresh token and retrieve
+              the authenticated user.
     """
 
     def __init__(
@@ -40,11 +43,23 @@ class RefreshUseCase:
 
     async def execute(self, refresh: str) -> str:
         """
-        Executes the refresh access token flow.
+        Issues a new access token for the session identified by the
+        provided refresh token.
+
+        The refresh token must be valid, be a refresh token, correspond
+        to an existing and non-revoked session, and identify an
+        existing user with an active account. A new access token is
+        then issued for the authenticated user.
 
         Args:
             `refresh` (str):
-                - Refresh token.
+                - Refresh token used to authenticate the session and
+                  obtain a new access token.
+
+        Returns:
+            `str`:
+                - Newly issued access token for the authenticated
+                  user's session.
 
         Raises:
             `InfrastructureError`:

@@ -14,15 +14,20 @@ from domain.exceptions import InactiveUserError
 
 class DetailUseCase:
     """
-    Retrieves authenticated user details from a valid access token.
+    Retrieves the authenticated user's public information.
+
+    The access token identifies the user whose details are requested.
+    The user must have a valid access token, an existing account, and
+    an active account status for their public information to be
+    returned.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and
-              payload extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the operations
+              required to retrieve the authenticated user's data.
     """
 
     def __init__(
@@ -35,22 +40,21 @@ class DetailUseCase:
 
     async def execute(self, access: str) -> UserPublicDTO:
         """
-        Validates an access token and returns the associated user's
-        public information.
+        Retrieves the public information of the authenticated user.
 
-        This method:
-            - Validates the token.
-            - Retrieves the associated user.
-            - Validates the user's state.
-            - Returns a public-safe representation of the user.
+        The provided access token must be valid and identify an
+        existing user with an active account. The authenticated
+        user's data is then returned as a public representation
+        suitable for exposure outside the domain.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user whose public information is requested.
 
         Returns:
             `UserPublicDTO`:
-                - Public-safe representation of the authenticated user.
+                - Public representation of the authenticated user.
 
         Raises:
             `InvalidTokenError`:

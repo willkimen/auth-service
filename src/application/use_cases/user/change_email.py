@@ -27,17 +27,23 @@ from domain.value_objects.email import Email
 
 class ChangeEmailUseCase:
     """
-    Completes the user email change process using a previously
-    generated verification code associated with an authenticated
-    session.
+    Completes the authenticated user's email change process by
+    validating the verification code issued for this operation.
+
+    The verification code acts as a temporary credential that
+    authorizes the user to complete the email change. Once the
+    verification succeeds, the user's email address is changed,
+    active authentication sessions are invalidated, and the data
+    required to notify the user of the change is persisted for
+    subsequent processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Port/Interface responsible for token validation and
-              payload extraction.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the email change.
     """
 
     def __init__(
@@ -50,23 +56,21 @@ class ChangeEmailUseCase:
 
     async def execute(self, access: str, code: str):
         """
-        Changes the authenticated user's email address after
-        validating a previously generated email change verification
-        code.
+        Completes the authenticated user's email change by validating
+        the verification code issued for the operation.
 
-        This method:
-            - Validates the authenticated token.
-            - Validates the verification code state
-            - Updates the user's email address.
-            - Revokes all active refresh tokens.
-            - Persists a notification message informing the user about
-              the successful email change.
+        The verification code must be valid for the authenticated user,
+        unused, issued for the email change operation, and not expired.
+        The new email address associated with the verified operation is
+        then applied to the user's account.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the email change.
             `code` (str):
-                - Verification code sent to the new email address.
+                - Verification code issued for the email change
+                  operation and sent to the new email address.
 
         Raises:
             `InvalidTokenError`:

@@ -16,12 +16,20 @@ from domain.value_objects.code import Code
 
 class EmailVerificationCodeUseCase:
     """
-    Starts the email verification process for a user account.
+    Initiates the email verification process for a user account by
+    generating a temporary verification code for the user's email
+    address.
+
+    The verification code acts as a temporary credential that can
+    later be used to confirm ownership of the email address. The
+    code and the data required to deliver it to the user are
+    persisted for subsequent processing.
 
     Attributes:
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to initiate the email verification
+              process.
     """
 
     def __init__(self, uow: UnitOfWorkPort):
@@ -32,19 +40,23 @@ class EmailVerificationCodeUseCase:
         email: str,
         code_expiration_time: int,
     ):
-        """Generates a code and persists an email verification message.
+        """
+        Initiates the email verification process by generating a
+        temporary verification code for the user's email address.
 
-        This method:
-            - Creating the verification code and persisting it in the database.
-            - Retrieves and validate user.
-            - Persists a message containing the data required to send
-              the verification code.
+        The user must exist, have an active account, and not have an
+        already verified email address. A verification code with a
+        limited validity period is then generated and persisted
+        together with the data required to deliver the code to the
+        user.
 
         Args:
             `email` (str):
-                - User email address used to identify the account.
+                - Email address used to identify the account whose
+                  ownership is being verified.
             `code_expiration_time` (int):
-                - Verification code expiration time in minutes.
+                - Duration, in minutes, for which the verification
+                  code remains valid.
 
         Raises:
             `UserNotFoundError`:

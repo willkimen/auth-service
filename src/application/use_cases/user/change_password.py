@@ -30,16 +30,27 @@ from domain.value_objects.password import PasswordHash
 
 class ChangePasswordUseCase:
     """
-    Handles the authenticated password change workflow.
+    Completes the authenticated user's password change process by
+    validating the new password and the verification code issued
+    for this operation.
+
+    The verification code acts as a temporary credential that
+    authorizes the user to complete the password change. Once the
+    verification succeeds, the user's password is changed, active
+    authentication sessions are invalidated, and the data required
+    to notify the user of the change is persisted for subsequent
+    processing.
 
     Attributes:
         `token_manager` (TokenManagerPort):
-            - Service responsible for token validation.
+            - Port responsible for validating the access token and
+              identifying the authenticated user.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the password change.
         `hasher` (HasherPort):
-            - Service responsible for password hashing operations.
+            - Port responsible for securely hashing the user's
+              new password.
     """
 
     def __init__(
@@ -60,28 +71,29 @@ class ChangePasswordUseCase:
         new_password_confirmation: str,
     ):
         """
-        Executes the authenticated password change flow.
+        Completes the authenticated user's password change by
+        validating the new password and the verification code issued
+        for the operation.
 
-        This method:
-            - Validates the new password against domain rules.
-            - Confirms password confirmation consistency.
-            - Validates the user's access token.
-            - Validates the user state.
-            - Validates the verification code.
-            - Retrieved and updates the user's password hash.
-            - Revokes all active refresh tokens.
-            - Persists a notification message informing the
-              user about the password change.
+        The new password must satisfy the password policy and match
+        its confirmation. The verification code must be valid for
+        the authenticated user, unused, issued for the password
+        change operation, and not expired. The user's password is
+        then changed, and the data required to notify the user of
+        the change is persisted for subsequent processing.
 
         Args:
             `access` (str):
-                - Authenticated access token associated with the user.
+                - Access token used to identify and authenticate the
+                  user requesting the password change.
             `code` (str):
-                - Verification code authorizing the password change.
+                - Verification code issued for the password change
+                  operation.
             `new_password` (str):
                 - New raw password provided by the user.
             `new_password_confirmation` (str):
-                - Confirmation password used to validate consistency.
+                - Confirmation of the new password used to verify
+                  that both password values match.
 
         Raises:
             `InvalidPasswordError`:

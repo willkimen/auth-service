@@ -27,15 +27,22 @@ from domain.value_objects.password import PasswordHash
 
 class ResetPasswordUseCase:
     """
-    Completes the password reset process for a user account.
+    Completes the password reset process for a user account by
+    validating the verification code issued for this operation.
+
+    The verification code acts as a temporary credential that
+    authorizes the user to reset their password. Once the verification
+    succeeds, the user's password is changed, active authentication
+    sessions are invalidated, and the data required to notify the user
+    of the password reset is persisted for subsequent processing.
 
     Attributes:
         `hasher` (HasherPort):
-            - Port/Interface responsible for securely hashing raw
-              passwords.
+            - Port responsible for securely hashing the user's new
+              password before it is stored.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for managing atomic database
-              transactions across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to complete the password reset.
     """
 
     def __init__(
@@ -54,28 +61,32 @@ class ResetPasswordUseCase:
         raw_password_confirmation: str,
     ):
         """
-        Resets a user's password using a valid verification code.
+        Completes the password reset process by validating the new
+        password and the verification code issued for the operation.
 
-        This method:
-            - Validates the password policy.
-            - Confirms password equality.
-            - Retrieves the user and verification code, validates
-              reset eligibility.
-            - Updates the password.
-            - Revokes all refresh tokens.
-            - Persists a message containing the data required to send
-              the verification code.
+        The user must exist and have an active account. The new
+        password must satisfy the password policy and match its
+        confirmation. The verification code must be valid for the
+        user, unused, issued for the password reset operation, and
+        not expired. The user's password is then changed, active
+        authentication sessions are invalidated, and the data
+        required to notify the user of the password reset is
+        persisted for subsequent processing.
 
         Args:
             `email` (str):
-                - User email address associated with the account.
+                - Email address associated with the user account
+                  whose password is being reset.
             `code` (str):
-                - Verification code informed by the user.
+                - Verification code issued for the password reset
+                  operation.
             `raw_password` (str):
-                - New raw password informed by the user.
+                - New plain-text password provided by the user. It is
+                  validated against the password policy and securely
+                  hashed before being persisted.
             `raw_password_confirmation` (str):
-                - Confirmation password used to validate equality with
-                  the new password.
+                - Confirmation of the new password used to verify
+                  that both password values match.
 
         Raises:
             `InvalidPasswordError`:

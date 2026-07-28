@@ -10,14 +10,22 @@ from domain.value_objects.password import PasswordHash
 
 class RegisterUserUseCase:
     """
-    Application use case responsible for registering new users.
+    Registers a new user account using the provided email address
+    and password.
+
+    The email address must be valid and not already associated with
+    an existing account. The password must satisfy the applicable
+    password policy before the user account is created. The
+    resulting user data is returned as a public representation that
+    excludes sensitive credentials.
 
     Attributes:
         `hasher` (HasherPort):
-            - Port/Interface responsible for hashing raw passwords securely.
+            - Port responsible for securely hashing the user's
+              password before it is stored.
         `uow` (UnitOfWorkPort):
-            - Port/Interface responsible for coordinating atomic
-              transactional operations across repositories.
+            - Port responsible for coordinating the transactional
+              operations required to register the user.
     """
 
     def __init__(self, hasher: HasherPort, uow: UnitOfWorkPort):
@@ -26,20 +34,28 @@ class RegisterUserUseCase:
 
     async def execute(self, email: str, raw_password: str) -> UserPublicDTO:
         """
-        Registers a new user in the system using a hashed password.
+        Registers a new user account after validating the provided
+        email address and password.
 
-        This method:
-            - Validates user credentials.
-            - Ensures email uniqueness.
-            - Hashes the password.
-            - Persists the user, and returns a public-safe DTO.
+        The email address must be valid and available for registration,
+        and the password must satisfy the password policy. The password
+        is securely hashed before the new user account is persisted.
+        The resulting user data is returned as a public representation
+        that does not expose sensitive authentication credentials.
 
         Args:
             `email` (str):
-                - User email address used to identify the account.
+                - Email address to be associated with the new user
+                  account.
             `raw_password` (str):
-                - The plain-text password provided by the user,
-                  which will be validated and hashed before storage.
+                - Plain-text password provided by the user. It is
+                  validated against the password policy and securely
+                  hashed before being persisted.
+
+        Returns:
+            `UserPublicDTO`:
+                - Public representation of the newly registered user,
+                  excluding sensitive authentication credentials.
 
         Raises:
             `InvalidEmailError`:
