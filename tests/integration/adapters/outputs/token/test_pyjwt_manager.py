@@ -1,3 +1,5 @@
+import base64
+import json
 import uuid
 
 import pytest
@@ -109,12 +111,6 @@ def test_should_reject_manually_modified_token():
     """
     Validates that manually modified tokens are rejected
     during validation.
-
-    The goal is to ensure that token integrity protection
-    through cryptographic signature verification is working
-    correctly and that any tampering invalidates the token.
-
-    This test simulates a real-world token manipulation attempt.
     """
 
     # arrange
@@ -122,7 +118,35 @@ def test_should_reject_manually_modified_token():
 
     token = manager.new_access(sub)
 
-    modified_token = token[:-1] + 'x'
+    # Split the JWT into its header, payload, and signature.
+    # The original signature will be kept unchanged to simulate
+    # tampering with the token without re-signing it.
+    header, payload, signature = token.split('.')
+
+    # Decode the payload so its claims can be modified.
+    payload_data = json.loads(
+        base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4))
+    )
+
+    # Modify a claim without generating a new signature.
+    # The token should become invalid because the original signature
+    # no longer matches the modified payload.
+    payload_data['typ'] = 'refresh'
+
+    # Encode the modified payload back to Base64URL format,
+    # as required by the JWT compact serialization format.
+    modified_payload = (
+        base64
+        .urlsafe_b64encode(
+            json.dumps(payload_data, separators=(',', ':')).encode()
+        )
+        .rstrip(b'=')
+        .decode()
+    )
+
+    # Reconstruct the JWT using the modified payload and the
+    # original signature, simulating a manually tampered token.
+    modified_token = '.'.join([header, modified_payload, signature])
 
     # act and assert
     with pytest.raises(InvalidTokenError):
