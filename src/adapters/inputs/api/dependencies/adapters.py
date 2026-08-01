@@ -2,9 +2,8 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
-from adapters.inputs.api.settings import Settings
 from adapters.outputs.hashers.bcrypt_hasher import (
     BcryptHasherAdapter,
 )
@@ -18,6 +17,10 @@ from application.ports.output import (
     HasherPort,
     TokenManagerPort,
     UnitOfWorkPort,
+)
+from config.settings import (
+    Settings,
+    create_engine,
 )
 
 
@@ -39,7 +42,7 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 def get_engine(settings: SettingsDep) -> AsyncEngine:
     """
-    Creates the asynchronous SQLAlchemy database engine.
+    Gets the asynchronous SQLAlchemy database engine.
 
     Args:
         `settings` (`Settings`):
@@ -50,7 +53,10 @@ def get_engine(settings: SettingsDep) -> AsyncEngine:
         `AsyncEngine`:
             - Asynchronous SQLAlchemy engine used for database operations.
     """
-    return create_async_engine(settings.sqlalchemy_database_uri)
+    return create_engine(settings.sqlalchemy_database_uri)
+
+
+EngineDep = Annotated[AsyncEngine, Depends(get_engine)]
 
 
 def get_jwt_secret(settings: SettingsDep) -> str:
@@ -68,6 +74,9 @@ def get_jwt_secret(settings: SettingsDep) -> str:
     return settings.jwt_secret
 
 
+JWTSecretDep = Annotated[str, Depends(get_jwt_secret)]
+
+
 def hasher_factory() -> HasherPort:
     """
     Creates the password hashing adapter.
@@ -80,9 +89,7 @@ def hasher_factory() -> HasherPort:
     return BcryptHasherAdapter()
 
 
-def token_manager_factory(
-    key: Annotated[str, Depends(get_jwt_secret)],
-) -> TokenManagerPort:
+def token_manager_factory(key: JWTSecretDep) -> TokenManagerPort:
     """
     Creates the token management adapter.
 
@@ -99,9 +106,7 @@ def token_manager_factory(
     return PyJWTManagerAdapter(key)
 
 
-def unit_of_work_factory(
-    engine: Annotated[AsyncEngine, Depends(get_engine)],
-) -> UnitOfWorkPort:
+def unit_of_work_factory(engine: EngineDep) -> UnitOfWorkPort:
     """
     Creates the SQLAlchemy unit of work.
 

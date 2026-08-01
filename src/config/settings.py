@@ -1,5 +1,6 @@
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
 class Settings(BaseSettings):
@@ -68,3 +69,18 @@ class Settings(BaseSettings):
             f'{self.postgres_port}/'
             f'{self.postgres_db}'
         )
+
+
+def create_engine(database_uri: str) -> AsyncEngine:
+    """
+    Creates the asynchronous SQLAlchemy database engine.
+
+    Args:
+        `database_uri` (`str`):
+            - Database connection URI.
+
+    Returns:
+        `AsyncEngine`:
+            - Asynchronous SQLAlchemy engine used for database operations.
+    """
+    return create_async_engine(database_uri)

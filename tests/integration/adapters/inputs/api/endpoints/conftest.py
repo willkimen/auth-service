@@ -12,7 +12,6 @@ from adapters.inputs.api.dependencies.adapters import (
     get_settings,
     hasher_factory,
 )
-from adapters.inputs.api.settings import Settings
 from adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
@@ -22,6 +21,7 @@ from adapters.outputs.repositories.user_repository import (
 from adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
+from config.settings import Settings
 from domain.entities.user import User
 from domain.entities.verification_code import VerificationCode
 from domain.enums import CodeType

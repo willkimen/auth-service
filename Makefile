@@ -1,4 +1,4 @@
-.PHONY: db-up db-down db-logs
+.PHONY: db-test-up db-test-down db-test-logs
 
 db-test-up:
 	docker volume create test-auth
