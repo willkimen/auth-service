@@ -27,7 +27,7 @@ from config.settings import (
 @lru_cache
 def get_settings() -> Settings:
     """
-    Provides the application settings as a cached singleton instance.
+    Provides the cached application settings as a FastAPI dependency.
 
     Returns:
         `Settings`:
