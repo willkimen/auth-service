@@ -58,8 +58,9 @@ async def test_should_handle_unexpected_exception(
 
     # asserts
     assert actual_response.status_code == expected_status_code
-    response_data = actual_response.json()
-    assert response_data['error'] == 'internal error server'
+    response_data = actual_response.json()['error']
+    assert response_data['code'] == 'INTERNAL_ERROR_SERVER'
+    assert response_data['message'] == 'internal error server'
 
 
 async def test_should_handle_domain_exception(
@@ -103,8 +104,9 @@ async def test_should_handle_corrupted_persistence_state_exception(
 
     # asserts
     assert actual_response.status_code == expected_status_code
-    response_data = actual_response.json()
-    assert response_data['error'] == 'internal error server'
+    response_data = actual_response.json()['error']
+    assert response_data['code'] == 'INTERNAL_ERROR_SERVER'
+    assert response_data['message'] == 'internal error server'
 
 
 async def test_should_handle_application_exception(

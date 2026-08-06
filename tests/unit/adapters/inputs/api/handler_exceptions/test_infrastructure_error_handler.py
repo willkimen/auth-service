@@ -23,7 +23,10 @@ async def test_handles_infrastructure_error_correctly(fake_request):
     # asserts
     assert actual_response.status_code == expected_status_code
     assert json.loads(bytes(actual_response.body)) == {
-        'error': 'internal error server'
+        'error': {
+            'code': 'INTERNAL_ERROR_SERVER',
+            'message': 'internal error server',
+        }
     }
 
 
@@ -42,5 +45,8 @@ async def test_handles_corrupted_persistence_error_correctly(fake_request):
     # asserts
     assert actual_response.status_code == expected_status_code
     assert json.loads(bytes(actual_response.body)) == {
-        'error': 'internal error server'
+        'error': {
+            'code': 'INTERNAL_ERROR_SERVER',
+            'message': 'internal error server',
+        }
     }

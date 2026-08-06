@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 import application.exceptions as application_exceptions
@@ -21,12 +21,15 @@ async def unexpected_exception_handler(request: Request, exc: Exception):
     Returns:
         `JSONResponse`:
             - HTTP 500 response containing a generic internal server
-              error message.
+              error message and code.
     """
     return JSONResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            'error': 'internal error server',
+            'error': {
+                'code': 'INTERNAL_ERROR_SERVER',
+                'message': 'internal error server',
+            }
         },
     )
 
@@ -49,12 +52,15 @@ async def infrastructure_error_handler(
     Returns:
         `JSONResponse`:
             - HTTP 500 response containing a generic internal server
-              error message.
+              error message and code.
     """
     return JSONResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            'error': 'internal error server',
+            'error': {
+                'code': 'INTERNAL_ERROR_SERVER',
+                'message': 'internal error server',
+            }
         },
     )
 
@@ -136,28 +142,48 @@ def get_status_code(exc: Exception) -> int:
               Returns `500` when no explicit mapping exists.
     """
     application_exceptions_table = {
-        application_exceptions.PasswordMismatchError: 400,
-        application_exceptions.InvalidTokenTypeError: 400,
-        application_exceptions.InvalidTokenError: 401,
-        application_exceptions.InvalidCredentialsError: 401,
-        application_exceptions.TokenRevokedError: 401,
-        application_exceptions.UserNotFoundError: 404,
-        application_exceptions.VerificationCodeNotFoundError: 404,
-        application_exceptions.TokenNotFoundError: 404,
-        application_exceptions.EmailAlreadyUsedError: 409,
+        application_exceptions.PasswordMismatchError: (
+            status.HTTP_400_BAD_REQUEST
+        ),
+        application_exceptions.InvalidTokenTypeError: (
+            status.HTTP_400_BAD_REQUEST
+        ),
+        application_exceptions.InvalidTokenError: (
+            status.HTTP_401_UNAUTHORIZED
+        ),
+        application_exceptions.InvalidCredentialsError: (
+            status.HTTP_401_UNAUTHORIZED
+        ),
+        application_exceptions.TokenRevokedError: (
+            status.HTTP_401_UNAUTHORIZED
+        ),
+        application_exceptions.UserNotFoundError: (status.HTTP_404_NOT_FOUND),
+        application_exceptions.VerificationCodeNotFoundError: (
+            status.HTTP_404_NOT_FOUND
+        ),
+        application_exceptions.TokenNotFoundError: (status.HTTP_404_NOT_FOUND),
+        application_exceptions.EmailAlreadyUsedError: (
+            status.HTTP_409_CONFLICT
+        ),
     }
 
     domain_exceptions_table = {
-        domain_exceptions.InvalidPasswordError: 400,
-        domain_exceptions.InvalidEmailError: 400,
-        domain_exceptions.InvalidCodeError: 400,
-        domain_exceptions.VerificationCodeTypeError: 400,
-        domain_exceptions.MissingNewEmailError: 400,
-        domain_exceptions.InactiveUserError: 403,
-        domain_exceptions.UnverifiedEmailError: 403,
-        domain_exceptions.EmailAlreadyVerifiedError: 409,
-        domain_exceptions.VerificationCodeAlreadyUsedError: 409,
-        domain_exceptions.VerificationCodeExpiredError: 410,
+        domain_exceptions.InvalidPasswordError: (status.HTTP_400_BAD_REQUEST),
+        domain_exceptions.InvalidEmailError: (status.HTTP_400_BAD_REQUEST),
+        domain_exceptions.InvalidCodeError: (status.HTTP_400_BAD_REQUEST),
+        domain_exceptions.VerificationCodeTypeError: (
+            status.HTTP_400_BAD_REQUEST
+        ),
+        domain_exceptions.MissingNewEmailError: (status.HTTP_400_BAD_REQUEST),
+        domain_exceptions.InactiveUserError: (status.HTTP_403_FORBIDDEN),
+        domain_exceptions.UnverifiedEmailError: (status.HTTP_403_FORBIDDEN),
+        domain_exceptions.EmailAlreadyVerifiedError: (
+            status.HTTP_409_CONFLICT
+        ),
+        domain_exceptions.VerificationCodeAlreadyUsedError: (
+            status.HTTP_409_CONFLICT
+        ),
+        domain_exceptions.VerificationCodeExpiredError: (status.HTTP_410_GONE),
     }
 
     tables = {
@@ -169,4 +195,4 @@ def get_status_code(exc: Exception) -> int:
         if isinstance(exc, exception_error):
             return status_code
 
-    return 500
+    return status.HTTP_500_INTERNAL_SERVER_ERROR
