@@ -1,10 +1,34 @@
-# IMPORTANT: DO NOT REMOVE THIS IMPORT.
-# This import is required to load and initialize the FastAPI application.
-# Although `app` is not used directly in this module, importing it loads
-# the module where the FastAPI application instance is created and configured.
-# The import alone is sufficient for the ASGI server to discover and execute
-# the FastAPI application.
-#
-# The `noqa: F401` directive is required when using Ruff because Ruff
-# otherwise considers `app` an unused import and may remove it automatically.
-from adapters.inputs.api.app import app  # noqa: F401
+from contextlib import asynccontextmanager
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from adapters.inputs.api.app import app
+from config.settings import create_engine, load_settings
+from scheduler.cleanup_service import CleanupService
+from scheduler.scheduler_service import CleanupSchedulerService
+
+
+@asynccontextmanager
+async def lifespan(app):
+    """
+    Manages the application lifecycle.
+
+    Starts the scheduler during application startup and ensures it is
+    properly shut down when the application stops.
+    """
+    config = load_settings()
+    scheduler = AsyncIOScheduler()
+    cleanup = CleanupService(create_engine(config.sqlalchemy_database_uri))
+
+    scheduler_service = CleanupSchedulerService(cleanup, scheduler)
+
+    scheduler_service.start_scheduler()
+
+    yield
+
+    scheduler_service.shutdown_scheduler()
+
+
+# Registers the application's lifespan context, allowing the scheduler
+# to start during startup and shut down gracefully when the application stops.
+app.router.lifespan_context = lifespan
