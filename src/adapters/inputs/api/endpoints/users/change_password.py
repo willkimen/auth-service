@@ -17,6 +17,12 @@ bearer_scheme = HTTPBearer()
 @users_router.post(
     '/password/change/code',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Generate password change verification code',
+    description="""
+        Starts the password change process for the authenticated user by
+        generating a verification code and sending it to the user's
+        registered email address.
+        """,
 )
 async def change_password_code(
     header_authorization: Annotated[
@@ -70,6 +76,11 @@ async def change_password_code(
 @users_router.post(
     '/password/change',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Change password',
+    description="""
+        Completes the password change process for the authenticated user
+        by validating the verification code and applying the new password.
+        """,
 )
 async def change_password(
     header_authorization: Annotated[

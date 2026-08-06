@@ -6,7 +6,14 @@ from adapters.inputs.api.schemas import (
 )
 
 
-@users_router.post('/register', response_model=UserPublicBodyResponse)
+@users_router.post(
+    '/register',
+    response_model=UserPublicBodyResponse,
+    summary='Register a new user',
+    description="""
+        Registers a new user account.
+    """,
+)
 async def register(
     body: CredentialsBodyRequest,
     use_case: RegisterUseCaseDep,

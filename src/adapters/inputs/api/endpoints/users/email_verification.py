@@ -15,6 +15,10 @@ from adapters.inputs.api.schemas import (
 @users_router.post(
     '/email/verify/code',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Generate email verification code',
+    description="""
+        Starts the email verification process for a user account.
+    """,
 )
 async def email_verification_code(
     body: EmailBodyRequest,
@@ -59,6 +63,10 @@ async def email_verification_code(
 @users_router.post(
     '/email/verify',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Verify email',
+    description="""
+        Completes the user email verification process.
+    """,
 )
 async def email_verification(
     body: EmailAndCodeBodyRequest,

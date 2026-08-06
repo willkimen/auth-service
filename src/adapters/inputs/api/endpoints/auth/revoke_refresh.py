@@ -10,6 +10,11 @@ from adapters.inputs.api.schemas import RefreshBodyRequest
 @auth_router.post(
     '/token/revoke-refresh',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Revoke refresh token',
+    description="""
+        Revokes a specific refresh token, invalidating the authenticated
+        session associated with that token.
+    """,
 )
 async def revoke_refresh(
     body: RefreshBodyRequest,

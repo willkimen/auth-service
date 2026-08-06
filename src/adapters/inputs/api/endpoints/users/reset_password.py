@@ -15,6 +15,10 @@ from adapters.inputs.api.schemas import (
 @users_router.post(
     '/password/reset/code',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Generate password resert verification code',
+    description="""
+        Starts the password reset process for a user account.
+    """,
 )
 async def reset_password_code(
     body: EmailBodyRequest,
@@ -57,6 +61,10 @@ async def reset_password_code(
 @users_router.post(
     '/password/reset',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Reset password',
+    description="""
+        Completes the password reset process for a user account.
+    """,
 )
 async def reset_password(
     body: ResetPasswordBodyRequest,

@@ -17,6 +17,12 @@ bearer_scheme = HTTPBearer()
 @users_router.post(
     '/delete/code',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Generate account delete verification code',
+    description="""
+        Starts the account deletion process for the authenticated user by
+        generating a verification code and sending it to the user's
+        registered email address.
+        """,
 )
 async def delete_account_code(
     header_authorization: Annotated[
@@ -70,6 +76,11 @@ async def delete_account_code(
 @users_router.post(
     '/delete',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Delete account',
+    description="""
+        Completes the account deletion process for the authenticated user
+        by validating the verification code and deleting the account.
+        """,
 )
 async def delete_account(
     body: VerificationCodeBodyRequest,

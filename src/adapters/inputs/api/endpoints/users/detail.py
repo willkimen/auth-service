@@ -17,6 +17,11 @@ bearer_scheme = HTTPBearer()
     '/detail',
     status_code=status.HTTP_200_OK,
     response_model=UserPublicBodyResponse,
+    summary='Get authenticated user details',
+    description="""
+        Retrieves the authenticated user's public account information using
+        a valid access token.
+    """,
 )
 async def detail(
     header_authorization: Annotated[

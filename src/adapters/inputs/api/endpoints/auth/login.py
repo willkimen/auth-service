@@ -13,6 +13,11 @@ from application.dtos.token_dto import PairTokensDTO
     '/token/login',
     status_code=status.HTTP_200_OK,
     response_model=TokensBodyResponse,
+    summary='Authenticate user',
+    description="""
+        Authenticates a user using their email and password and returns
+        an access token and a refresh token for the authenticated session.
+    """,
 )
 async def login(
     body: CredentialsBodyRequest,

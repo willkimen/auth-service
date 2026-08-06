@@ -12,6 +12,10 @@ from adapters.inputs.api.schemas import (
     '/token/refresh',
     status_code=status.HTTP_200_OK,
     response_model=AccessBodyResponse,
+    summary='Refresh access token',
+    description="""
+        Generates a new access token using a valid refresh token.
+    """,
 )
 async def refresh_token(
     body: RefreshBodyRequest,

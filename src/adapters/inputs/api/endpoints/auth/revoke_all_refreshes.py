@@ -14,6 +14,11 @@ bearer_scheme = HTTPBearer()
 @auth_router.post(
     '/token/revoke-all-refreshes',
     status_code=status.HTTP_204_NO_CONTENT,
+    summary='Revoke all refresh tokens',
+    description="""
+        Revokes all refresh tokens associated with the authenticated user,
+        invalidating all active refresh-token sessions.
+    """,
 )
 async def revoke_all_refreshes(
     header_authorization: Annotated[
