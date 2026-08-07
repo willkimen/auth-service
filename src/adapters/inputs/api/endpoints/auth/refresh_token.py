@@ -1,6 +1,9 @@
 from fastapi import status
 
 from adapters.inputs.api.dependencies.use_cases import RefreshDep
+from adapters.inputs.api.docs.authentication_error_responses import (
+    refresh_token_responses,
+)
 from adapters.inputs.api.routers import auth_router
 from adapters.inputs.api.schemas import (
     AccessBodyResponse,
@@ -16,6 +19,7 @@ from adapters.inputs.api.schemas import (
     description="""
         Generates a new access token using a valid refresh token.
     """,
+    responses=refresh_token_responses,
 )
 async def refresh_token(
     body: RefreshBodyRequest,

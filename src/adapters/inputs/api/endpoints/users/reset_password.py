@@ -5,6 +5,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     ResetPasswordCodeDep,
     ResetPasswordDep,
 )
+from adapters.inputs.api.docs.user_error_responses import (
+    reset_password_code_responses,
+    reset_password_responses,
+)
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import (
     EmailBodyRequest,
@@ -19,6 +23,7 @@ from adapters.inputs.api.schemas import (
     description="""
         Starts the password reset process for a user account.
     """,
+    responses=reset_password_code_responses,
 )
 async def reset_password_code(
     body: EmailBodyRequest,
@@ -65,6 +70,7 @@ async def reset_password_code(
     description="""
         Completes the password reset process for a user account.
     """,
+    responses=reset_password_responses,
 )
 async def reset_password(
     body: ResetPasswordBodyRequest,

@@ -3,6 +3,9 @@ from fastapi import status
 from adapters.inputs.api.dependencies.use_cases import (
     RevokeRefreshDep,
 )
+from adapters.inputs.api.docs.authentication_error_responses import (
+    revoke_refresh_responses,
+)
 from adapters.inputs.api.routers import auth_router
 from adapters.inputs.api.schemas import RefreshBodyRequest
 
@@ -15,6 +18,7 @@ from adapters.inputs.api.schemas import RefreshBodyRequest
         Revokes a specific refresh token, invalidating the authenticated
         session associated with that token.
     """,
+    responses=revoke_refresh_responses,
 )
 async def revoke_refresh(
     body: RefreshBodyRequest,

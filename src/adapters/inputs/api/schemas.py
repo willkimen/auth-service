@@ -61,6 +61,15 @@ class TokensBodyResponse(BaseModel):
     refresh: str
 
 
+class ErrorBodyResponse(BaseModel):
+    code: str
+    message: str
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorBodyResponse
+
+
 # =================== Body requests ====================
 
 

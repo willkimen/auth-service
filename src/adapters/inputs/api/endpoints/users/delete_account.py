@@ -8,6 +8,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     DeleteAccountCodeDep,
     DeleteAccountDep,
 )
+from adapters.inputs.api.docs.user_error_responses import (
+    delete_account_code_responses,
+    delete_account_responses,
+)
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import VerificationCodeBodyRequest
 
@@ -23,6 +27,7 @@ bearer_scheme = HTTPBearer()
         generating a verification code and sending it to the user's
         registered email address.
         """,
+    responses=delete_account_code_responses,
 )
 async def delete_account_code(
     header_authorization: Annotated[
@@ -81,6 +86,7 @@ async def delete_account_code(
         Completes the account deletion process for the authenticated user
         by validating the verification code and deleting the account.
         """,
+    responses=delete_account_responses,
 )
 async def delete_account(
     body: VerificationCodeBodyRequest,

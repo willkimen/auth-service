@@ -5,6 +5,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     EmailVerificationCodeDep,
     EmailVerificationDep,
 )
+from adapters.inputs.api.docs.user_error_responses import (
+    email_verification_code_responses,
+    email_verification_responses,
+)
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import (
     EmailAndCodeBodyRequest,
@@ -19,6 +23,7 @@ from adapters.inputs.api.schemas import (
     description="""
         Starts the email verification process for a user account.
     """,
+    responses=email_verification_code_responses,
 )
 async def email_verification_code(
     body: EmailBodyRequest,
@@ -67,6 +72,7 @@ async def email_verification_code(
     description="""
         Completes the user email verification process.
     """,
+    responses=email_verification_responses,
 )
 async def email_verification(
     body: EmailAndCodeBodyRequest,

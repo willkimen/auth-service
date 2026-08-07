@@ -8,6 +8,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     ChangePasswordCodeDep,
     ChangePasswordDep,
 )
+from adapters.inputs.api.docs.user_error_responses import (
+    change_password_code_responses,
+    change_password_responses,
+)
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import ChangePasswordBodyRequest
 
@@ -23,6 +27,7 @@ bearer_scheme = HTTPBearer()
         generating a verification code and sending it to the user's
         registered email address.
         """,
+    responses=change_password_code_responses,
 )
 async def change_password_code(
     header_authorization: Annotated[
@@ -81,6 +86,7 @@ async def change_password_code(
         Completes the password change process for the authenticated user
         by validating the verification code and applying the new password.
         """,
+    responses=change_password_responses,
 )
 async def change_password(
     header_authorization: Annotated[

@@ -1,6 +1,9 @@
 from fastapi import status
 
 from adapters.inputs.api.dependencies.use_cases import LoginDep
+from adapters.inputs.api.docs.authentication_error_responses import (
+    login_responses,
+)
 from adapters.inputs.api.routers import auth_router
 from adapters.inputs.api.schemas import (
     CredentialsBodyRequest,
@@ -18,6 +21,7 @@ from application.dtos.token_dto import PairTokensDTO
         Authenticates a user using their email and password and returns
         an access token and a refresh token for the authenticated session.
     """,
+    responses=login_responses,
 )
 async def login(
     body: CredentialsBodyRequest,

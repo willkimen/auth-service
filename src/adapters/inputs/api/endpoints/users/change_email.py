@@ -8,6 +8,10 @@ from adapters.inputs.api.dependencies.use_cases import (
     ChangeEmailCodeDep,
     ChangeEmailDep,
 )
+from adapters.inputs.api.docs.user_error_responses import (
+    change_email_code_responses,
+    change_email_responses,
+)
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import (
     ChangeEmailCodeBodyRequest,
@@ -26,6 +30,7 @@ bearer_scheme = HTTPBearer()
         generating a verification code and sending it to the requested
         new email address.
     """,
+    responses=change_email_code_responses,
 )
 async def change_email_code(
     header_authorization: Annotated[
@@ -91,6 +96,7 @@ async def change_email_code(
         validating the verification code sent to the requested new email
         address and applying the email change.
     """,
+    responses=change_email_responses,
 )
 async def change_email(
     header_authorization: Annotated[

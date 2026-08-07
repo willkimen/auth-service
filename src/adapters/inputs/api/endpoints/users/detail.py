@@ -6,6 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from adapters.inputs.api.dependencies.use_cases import (
     DetailUserDep,
 )
+from adapters.inputs.api.docs.user_error_responses import detail_responses
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import UserPublicBodyResponse
 from application.dtos.user_dto import UserPublicDTO
@@ -22,6 +23,7 @@ bearer_scheme = HTTPBearer()
         Retrieves the authenticated user's public account information using
         a valid access token.
     """,
+    responses=detail_responses,
 )
 async def detail(
     header_authorization: Annotated[

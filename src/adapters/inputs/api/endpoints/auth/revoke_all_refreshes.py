@@ -6,6 +6,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from adapters.inputs.api.dependencies.use_cases import (
     RevokeAllRefreshesDep,
 )
+from adapters.inputs.api.docs.authentication_error_responses import (
+    revoke_all_refreshes_responses,
+)
 from adapters.inputs.api.routers import auth_router
 
 bearer_scheme = HTTPBearer()
@@ -19,6 +22,7 @@ bearer_scheme = HTTPBearer()
         Revokes all refresh tokens associated with the authenticated user,
         invalidating all active refresh-token sessions.
     """,
+    responses=revoke_all_refreshes_responses,
 )
 async def revoke_all_refreshes(
     header_authorization: Annotated[

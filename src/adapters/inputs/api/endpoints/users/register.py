@@ -1,4 +1,5 @@
 from adapters.inputs.api.dependencies.use_cases import RegisterUseCaseDep
+from adapters.inputs.api.docs.user_error_responses import register_responses
 from adapters.inputs.api.routers import users_router
 from adapters.inputs.api.schemas import (
     CredentialsBodyRequest,
@@ -13,6 +14,7 @@ from adapters.inputs.api.schemas import (
     description="""
         Registers a new user account.
     """,
+    responses=register_responses,
 )
 async def register(
     body: CredentialsBodyRequest,
