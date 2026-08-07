@@ -1,4 +1,4 @@
-from enum import StrEnum, auto
+from enum import StrEnum
 
 
 class DomainError(Exception):
@@ -36,10 +36,10 @@ class UserErrorCode(StrEnum):
             - Raised when a new email address is required but missing.
     """
 
-    EMAIL_ALREADY_VERIFIED = auto()
-    INACTIVE_USER = auto()
-    UNVERIFIED_EMAIL = auto()
-    MISSING_NEW_EMAIL = auto()
+    EMAIL_ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED'
+    INACTIVE_USER = 'INACTIVE_USER'
+    UNVERIFIED_EMAIL = 'UNVERIFIED_EMAIL'
+    MISSING_NEW_EMAIL = 'MISSING_NEW_EMAIL'
 
 
 class InactiveUserError(DomainError):
@@ -107,14 +107,14 @@ class PasswordErrorCode(StrEnum):
             - Indicates the password lacks at least one lowercase letter.
     """
 
-    PASSWORD_REQUIRED = auto()
-    PASSWORD_TOO_SHORT = auto()
-    PASSWORD_TOO_LONG = auto()
-    PASSWORD_MISSING_LETTER = auto()
-    PASSWORD_MISSING_NUMBER = auto()
-    PASSWORD_MISSING_SPECIAL = auto()
-    PASSWORD_MISSING_UPPERCASE = auto()
-    PASSWORD_MISSING_LOWERCASE = auto()
+    PASSWORD_REQUIRED = 'PASSWORD_REQUIRED'
+    PASSWORD_TOO_SHORT = 'PASSWORD_TOO_SHORT'
+    PASSWORD_TOO_LONG = 'PASSWORD_TOO_LONG'
+    PASSWORD_MISSING_LETTER = 'PASSWORD_MISSING_LETTER'
+    PASSWORD_MISSING_NUMBER = 'PASSWORD_MISSING_NUMBER'
+    PASSWORD_MISSING_SPECIAL = 'PASSWORD_MISSING_SPECIAL'
+    PASSWORD_MISSING_UPPERCASE = 'PASSWORD_MISSING_UPPERCASE'
+    PASSWORD_MISSING_LOWERCASE = 'PASSWORD_MISSING_LOWERCASE'
 
 
 class InvalidPasswordError(DomainError):
@@ -146,8 +146,8 @@ class EmailErrorCode(StrEnum):
             - Raised when the provided email string format is invalid.
     """
 
-    EMAIL_REQUIRED = auto()
-    EMAIL_INVALID_FORMAT = auto()
+    EMAIL_REQUIRED = 'EMAIL_REQUIRED'
+    EMAIL_INVALID_FORMAT = 'EMAIL_INVALID_FORMAT'
 
 
 class InvalidEmailError(DomainError):
@@ -178,7 +178,7 @@ class CodeErrorCode(StrEnum):
               is invalid.
     """
 
-    CODE_INVALID_FORMAT = auto()
+    CODE_INVALID_FORMAT = 'CODE_INVALID_FORMAT'
 
 
 class InvalidCodeError(DomainError):
@@ -212,9 +212,9 @@ class VerificationCodeErrorCode(StrEnum):
             - Raised when the verification code purpose type is invalid.
     """
 
-    VERIFICATION_CODE_EXPIRED = auto()
-    VERIFICATION_CODE_ALREADY_USED = auto()
-    VERIFICATION_CODE_INCORRECT_TYPE = auto()
+    VERIFICATION_CODE_EXPIRED = 'VERIFICATION_CODE_EXPIRED'
+    VERIFICATION_CODE_ALREADY_USED = 'VERIFICATION_CODE_ALREADY_USED'
+    VERIFICATION_CODE_INCORRECT_TYPE = 'VERIFICATION_CODE_INCORRECT_TYPE'
 
 
 class VerificationCodeAlreadyUsedError(DomainError):

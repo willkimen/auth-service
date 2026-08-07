@@ -1,4 +1,4 @@
-from enum import StrEnum, auto
+from enum import StrEnum
 
 # =========================
 # Infrastructure Errors
@@ -25,11 +25,11 @@ class InfrastructureErrorCode(StrEnum):
               mapped into valid domain objects.
     """
 
-    UNKNOWN_ERROR = auto()
-    DATABASE_ERROR = auto()
-    PASSWORD_HASHER_ERROR = auto()
-    AUTH_TOKEN_ERROR = auto()
-    CORRUPTED_PERSISTENCE_STATE_ERROR = auto()
+    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+    DATABASE_ERROR = 'DATABASE_ERROR'
+    PASSWORD_HASHER_ERROR = 'PASSWORD_HASHER_ERROR'
+    AUTH_TOKEN_ERROR = 'AUTH_TOKEN_ERROR'
+    CORRUPTED_PERSISTENCE_STATE_ERROR = 'CORRUPTED_PERSISTENCE_STATE_ERROR'
 
 
 class InfrastructureError(Exception):
@@ -195,10 +195,10 @@ class InvalidTokenErrorCode(StrEnum):
               other codes.
     """
 
-    TOKEN_EXPIRED = auto()
-    TOKEN_INVALID_SIGNATURE = auto()
-    TOKEN_MALFORMED = auto()
-    TOKEN_INVALID = auto()
+    TOKEN_EXPIRED = 'TOKEN_EXPIRED'
+    TOKEN_INVALID_SIGNATURE = 'TOKEN_INVALID_SIGNATURE'
+    TOKEN_MALFORMED = 'TOKEN_MALFORMED'
+    TOKEN_INVALID = 'TOKEN_INVALID'
 
 
 class InvalidTokenError(ApplicationError):
