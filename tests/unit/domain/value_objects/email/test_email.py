@@ -2,8 +2,8 @@ from typing import cast
 
 import pytest
 
-from domain.exceptions import InvalidEmailError
-from domain.value_objects.email import Email
+from auth_service.domain.exceptions import InvalidEmailError
+from auth_service.domain.value_objects.email import Email
 
 correct_email = 'user@email.com'
 

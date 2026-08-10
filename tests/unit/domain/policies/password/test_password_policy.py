@@ -2,8 +2,8 @@ from typing import cast
 
 import pytest
 
-from domain.exceptions import InvalidPasswordError
-from domain.policies.password import PasswordPolicy
+from auth_service.domain.exceptions import InvalidPasswordError
+from auth_service.domain.policies.password import PasswordPolicy
 
 correct_password = 'PASSword1234!'
 

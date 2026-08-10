@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.models import UserRowMapper
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.models import UserRowMapper
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
 )

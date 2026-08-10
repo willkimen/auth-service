@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 import pytest
 import sqlalchemy
 
-from application.messages.email_payloads import EmailCodePayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
+from auth_service.application.messages.email_payloads import EmailCodePayload
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
 
 payload = EmailCodePayload(
     to='email@email.com',

@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.enums import CodeType
-from domain.value_objects.code import Code
+from auth_service.domain.enums import CodeType
+from auth_service.domain.value_objects.code import Code
 
 
 @pytest.fixture

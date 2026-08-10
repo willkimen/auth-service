@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.dtos.user_dto import UserPublicDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.dtos.user_dto import UserPublicDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -16,14 +16,14 @@ from application.exceptions import (
     InvalidTokenTypeError,
     UserNotFoundError,
 )
-from application.ports.output import (
+from auth_service.application.ports.output import (
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
 )
-from application.use_cases.user.detail import DetailUseCase
-from domain.entities.user import User
-from domain.exceptions import DomainError, InactiveUserError
+from auth_service.application.use_cases.user.detail import DetailUseCase
+from auth_service.domain.entities.user import User
+from auth_service.domain.exceptions import DomainError, InactiveUserError
 
 access = 'access-token'
 
@@ -66,9 +66,7 @@ async def test_return_user_details_successfully(active_user: User):
         'last_login_at',
     }
 
-    assert {field.name for field in fields(actual_user)} == (
-        expected_public_fields
-    )
+    assert {field.name for field in fields(actual_user)} == (expected_public_fields)
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
@@ -239,8 +237,8 @@ async def test_detail_fails_when_user_state_is_corrupted():
 
     mocks: DependeciesMocked = mocks_factory(None, payload)
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
 
     use_case = DetailUseCase(

@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from domain.entities.user import User
+from auth_service.domain.entities.user import User
 
 
 async def test_should_return_user_when_email_exists(
@@ -28,9 +28,7 @@ async def test_should_return_none_when_email_does_not_exist(
     repository = PostgresUserRepository(conn_rollback)
 
     # act
-    actual_user: User | None = await repository.get_by_email(
-        'nonexists@email.com'
-    )
+    actual_user: User | None = await repository.get_by_email('nonexists@email.com')
 
     # assert
     assert actual_user is None

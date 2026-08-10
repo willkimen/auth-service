@@ -4,8 +4,13 @@ import uuid
 
 import pytest
 
-from adapters.outputs.token.pyjwt_manager import PyJWTManagerAdapter
-from application.exceptions import InvalidTokenError, InvalidTokenErrorCode
+from auth_service.adapters.outputs.token.pyjwt_manager import (
+    PyJWTManagerAdapter,
+)
+from auth_service.application.exceptions import (
+    InvalidTokenError,
+    InvalidTokenErrorCode,
+)
 
 sub = uuid.uuid4()
 TEST_SECRET_KEY = 'super-secret-test-key-with-at-least-32-bytes'
@@ -137,9 +142,7 @@ def test_should_reject_manually_modified_token():
     # as required by the JWT compact serialization format.
     modified_payload = (
         base64
-        .urlsafe_b64encode(
-            json.dumps(payload_data, separators=(',', ':')).encode()
-        )
+        .urlsafe_b64encode(json.dumps(payload_data, separators=(',', ':')).encode())
         .rstrip(b'=')
         .decode()
     )

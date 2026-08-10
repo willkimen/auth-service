@@ -1,8 +1,8 @@
 import pytest
 
-import application.exceptions as application_exceptions
-import domain.exceptions as domain_exceptions
-from adapters.inputs.api.handler_exceptions import get_status_code
+import auth_service.application.exceptions as application_exceptions
+import auth_service.domain.exceptions as domain_exceptions
+from auth_service.adapters.inputs.api.handler_exceptions import get_status_code
 
 cases = [
     (application_exceptions.PasswordMismatchError(), 400),

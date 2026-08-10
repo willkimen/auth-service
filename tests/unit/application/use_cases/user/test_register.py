@@ -5,20 +5,25 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.user_dto import UserPublicDTO
-from application.exceptions import (
+from auth_service.application.dtos.user_dto import UserPublicDTO
+from auth_service.application.exceptions import (
     EmailAlreadyUsedError,
     InfrastructureError,
     InfrastructureErrorCode,
 )
-from application.ports.output import (
+from auth_service.application.ports.output import (
     HasherPort,
     UnitOfWorkPort,
     UserRepositoryPort,
 )
-from application.use_cases.user.register import RegisterUserUseCase
-from domain.entities.user import User
-from domain.exceptions import InvalidEmailError, InvalidPasswordError
+from auth_service.application.use_cases.user.register import (
+    RegisterUserUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.exceptions import (
+    InvalidEmailError,
+    InvalidPasswordError,
+)
 
 email_input = 'test@email.com'
 password_input = 'PasswordTest12345!'

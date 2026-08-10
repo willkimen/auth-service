@@ -3,11 +3,11 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.message_repository import (
+from auth_service.adapters.outputs.repositories.message_repository import (
     PostgresMessageRepository,
 )
-from application.exceptions import InfrastructureError
-from application.messages.message import Message
+from auth_service.application.exceptions import InfrastructureError
+from auth_service.application.messages.message import Message
 
 
 async def test_should_successfully_create_a_message(

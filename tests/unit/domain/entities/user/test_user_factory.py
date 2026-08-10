@@ -1,6 +1,6 @@
-from domain.entities.user_factory import create_new_user
-from domain.value_objects.email import Email
-from domain.value_objects.password import PasswordHash
+from auth_service.domain.entities.user_factory import create_new_user
+from auth_service.domain.value_objects.email import Email
+from auth_service.domain.value_objects.password import PasswordHash
 
 hash_password = PasswordHash('somepassword')
 email = Email('user@email.com')

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -12,10 +12,12 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailNotificationPayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import (
+    EmailNotificationPayload,
+)
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     HasherPort,
     MessageRepositoryPort,
     RefreshTokenRepositoryPort,
@@ -23,11 +25,13 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.reset_password import ResetPasswordUseCase
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import (
+from auth_service.application.use_cases.user.reset_password import (
+    ResetPasswordUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import (
     DomainError,
     InactiveUserError,
     InvalidPasswordError,
@@ -73,9 +77,7 @@ async def test_password_reset_successfully(
     )
 
     # assert was called
-    mocks.uow.users.get_by_email.assert_awaited_once_with(
-        active_user.email.value
-    )
+    mocks.uow.users.get_by_email.assert_awaited_once_with(active_user.email.value)
     mocks.hasher.hash.assert_called_once_with(raw_password)
     mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once_with(
         active_user.public_id,

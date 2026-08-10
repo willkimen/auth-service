@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -17,10 +17,12 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailNotificationPayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import (
+    EmailNotificationPayload,
+)
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     MessageRepositoryPort,
     RefreshTokenRepositoryPort,
     TokenManagerPort,
@@ -28,11 +30,13 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.change_email import ChangeEmailUseCase
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import (
+from auth_service.application.use_cases.user.change_email import (
+    ChangeEmailUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import (
     DomainError,
     InactiveUserError,
     VerificationCodeAlreadyUsedError,
@@ -70,9 +74,7 @@ async def test_email_changed_successfully(
         active_user.public_id,
         unused_code.code.value,
     )
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
 
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
@@ -269,9 +271,7 @@ async def test_change_email_fails_when_code_expired(
     active_user: User,
     create_expired_code,
 ):
-    expired_code = create_expired_code(
-        CodeType.CHANGE_EMAIL, payload_new_email
-    )
+    expired_code = create_expired_code(CodeType.CHANGE_EMAIL, payload_new_email)
     mocks: DependeciesMocked = mocks_factory(
         active_user,
         expired_code,
@@ -309,9 +309,7 @@ async def test_change_email_fails_when_code_type_invalid(
     The email change flow is aborted when the verification code
     type is invalid.
     """
-    invalid_code = create_unused_code(
-        CodeType.DELETE_ACCOUNT, payload_new_email
-    )
+    invalid_code = create_unused_code(CodeType.DELETE_ACCOUNT, payload_new_email)
     mocks: DependeciesMocked = mocks_factory(
         active_user,
         invalid_code,
@@ -545,8 +543,8 @@ async def test_change_email_fails_when_user_state_corrupted(
         unused_code,
     )
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
 
     use_case = ChangeEmailUseCase(

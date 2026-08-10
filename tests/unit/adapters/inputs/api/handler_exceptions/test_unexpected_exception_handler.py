@@ -2,7 +2,9 @@ import json
 
 from fastapi.responses import JSONResponse
 
-from adapters.inputs.api.handler_exceptions import unexpected_exception_handler
+from auth_service.adapters.inputs.api.handler_exceptions import (
+    unexpected_exception_handler,
+)
 
 
 async def test_handles_unexpected_error_correctly(fake_request):

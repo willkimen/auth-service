@@ -3,27 +3,27 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
 )
-from application.messages.email_payloads import EmailCodePayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import EmailCodePayload
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     MessageRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.reset_password_code import (
+from auth_service.application.use_cases.user.reset_password_code import (
     ResetPasswordCodeUseCase,
 )
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.exceptions import DomainError, InactiveUserError
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.exceptions import DomainError, InactiveUserError
 
 email = 'email@email.com'
 code_expiration_time = 15

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.refresh_token_repository import (
+from auth_service.adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
 

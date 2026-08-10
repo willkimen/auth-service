@@ -6,10 +6,10 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.refresh_token_repository import (
+from auth_service.adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
-from application.exceptions import InfrastructureError
+from auth_service.application.exceptions import InfrastructureError
 
 
 async def test_should_invalidate_all_active_sessions_for_a_specific_user(
@@ -84,9 +84,7 @@ async def test_revocation_fails_when_database_error_occurs(
 
     # ensure the rollback kept the state intact
     row = (
-        await conn_rollback.execute(
-            select_revoked_at_column_by_jti, {'jti': token_id}
-        )
+        await conn_rollback.execute(select_revoked_at_column_by_jti, {'jti': token_id})
     ).fetchone()
 
     assert row is not None

@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -18,10 +18,12 @@ from application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from application.messages.email_payloads import EmailNotificationPayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import (
+    EmailNotificationPayload,
+)
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     HasherPort,
     MessageRepositoryPort,
     RefreshTokenRepositoryPort,
@@ -30,11 +32,13 @@ from application.ports.output import (
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.change_password import ChangePasswordUseCase
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import (
+from auth_service.application.use_cases.user.change_password import (
+    ChangePasswordUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import (
     DomainError,
     InactiveUserError,
     InvalidPasswordError,
@@ -96,9 +100,7 @@ async def test_change_password_successfully(
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(token)
     mocks.hasher.hash.assert_called_once_with(new_password)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.codes.get_by_user_id_and_code.assert_awaited_once_with(
         active_user.public_id,
         unused_code.code.value,
@@ -116,9 +118,9 @@ async def test_change_password_successfully(
     assert user_args.updated_at >= active_user.updated_at
 
     # assert codes.mark_as_used() arguments
-    verification_code_args: VerificationCode = (
-        mocks.uow.codes.mark_as_used.call_args[0][0]
-    )
+    verification_code_args: VerificationCode = mocks.uow.codes.mark_as_used.call_args[
+        0
+    ][0]
     assert verification_code_args.user_public_id == active_user.public_id
     assert verification_code_args.code.value == unused_code.code.value
     assert verification_code_args.type == CodeType.CHANGE_PASSWORD
@@ -442,9 +444,7 @@ async def test_password_change_not_performed_when_get_user_fails(
     # assert was called
     mocks.hasher.hash.assert_called_once_with(new_password)
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -469,8 +469,8 @@ async def test_password_change_not_performed_when_user_state_is_corrupted(
         verification_code=None,
     )
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
 
     use_case = ChangePasswordUseCase(
@@ -491,9 +491,7 @@ async def test_password_change_not_performed_when_user_state_is_corrupted(
     # assert was called
     mocks.hasher.hash.assert_called_once_with(new_password)
     mocks.token_manager.validate.assert_called_once_with(token)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 

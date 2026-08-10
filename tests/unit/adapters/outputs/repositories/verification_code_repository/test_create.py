@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.verification_code_repository import (
+from auth_service.adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
-from application.exceptions import InfrastructureError
-from domain.entities.verification_code import VerificationCode
+from auth_service.application.exceptions import InfrastructureError
+from auth_service.domain.entities.verification_code import VerificationCode
 
 
 async def test_creation_fails_when_database_error_occurs(

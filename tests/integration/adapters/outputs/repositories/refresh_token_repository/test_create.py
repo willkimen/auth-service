@@ -6,10 +6,10 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.refresh_token_repository import (
+from auth_service.adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
-from application.exceptions import InfrastructureError
+from auth_service.application.exceptions import InfrastructureError
 
 
 async def test_should_successfully_persist_a_refresh_token(
@@ -33,9 +33,7 @@ async def test_should_successfully_persist_a_refresh_token(
 
     # assert
     row = (
-        await conn_rollback.execute(
-            select_refresh_token_by_jti, {'jti': token_id}
-        )
+        await conn_rollback.execute(select_refresh_token_by_jti, {'jti': token_id})
     ).fetchone()
 
     assert row is not None
@@ -72,9 +70,7 @@ async def test_persistence_fails_when_a_database_error_occurs(
 
     # ensure NOTHING was persisted in the real database
     row = (
-        await conn_rollback.execute(
-            select_jti_column_by_jti, {'jti': token_id}
-        )
+        await conn_rollback.execute(select_jti_column_by_jti, {'jti': token_id})
     ).fetchone()
 
     # The record must not exist due to the automatic rollback

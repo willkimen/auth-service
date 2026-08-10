@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.value_objects.code import Code
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.value_objects.code import Code
 
 
 @pytest.fixture

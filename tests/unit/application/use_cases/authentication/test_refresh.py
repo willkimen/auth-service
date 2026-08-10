@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -18,15 +18,17 @@ from application.exceptions import (
     TokenRevokedError,
     UserNotFoundError,
 )
-from application.ports.output import (
+from auth_service.application.ports.output import (
     RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
 )
-from application.use_cases.authentication.refresh import RefreshUseCase
-from domain.entities.user import User
-from domain.exceptions import DomainError, InactiveUserError
+from auth_service.application.use_cases.authentication.refresh import (
+    RefreshUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.exceptions import DomainError, InactiveUserError
 
 jti = 'jti'
 refresh_input = 'refresh'
@@ -51,9 +53,7 @@ async def test_refresh_successfully(verified_user: User):
     mocks.uow.tokens.exists.assert_awaited_once()
     mocks.uow.tokens.is_revoked.assert_awaited_once()
     mocks.uow.users.get_by_public_id.assert_awaited_once()
-    mocks.token_manager.new_access.assert_called_once_with(
-        verified_user.public_id
-    )
+    mocks.token_manager.new_access.assert_called_once_with(verified_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -330,8 +330,8 @@ async def test_refresh_aborts_when_user_state_is_corrupted(
     """
     mocks = mocks_factory(verified_user)
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('corrupted user state'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('corrupted user state')
     )
 
     use_case = RefreshUseCase(

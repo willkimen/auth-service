@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from adapters.outputs.token.pyjwt_manager import PyJWTManagerAdapter
+from auth_service.adapters.outputs.token.pyjwt_manager import (
+    PyJWTManagerAdapter,
+)
 
 # Fixed to resolve PyJWT's InsecureKeyLengthWarning (RFC 7518 compliance).
 # Ensures the HMAC key is at least 32 bytes long to satisfy

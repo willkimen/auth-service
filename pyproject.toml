@@ -28,7 +28,7 @@ dev = [
 
 
 [tool.ty.environment]
-root = ["./src", "./tests/"]
+root = ["./src/", "./tests/"]
 python = "./.venv/bin/python"
 python-version = "3.13"
 python-platform = "linux"
@@ -40,13 +40,13 @@ include = ["tests/**", "**/test_*.py"]
 possibly-unresolved-reference = "warn"
 
 [tool.pytest.ini_options]
-pythonpath = "./src"
+pythonpath = "./src/"
 addopts = '-p no:warnings'
 asyncio_default_fixture_loop_scope = 'session'
 asyncio_mode = "auto"
 
 [tool.ruff]
-line-length = 79
+line-length = 88
 extend-exclude = ['migrations']
 
 [tool.ruff.lint]
@@ -69,7 +69,7 @@ pre_format = 'ruff check --fix'
 
 format = 'ruff format'
 
-run = 'fastapi dev src/main.py'
+run = 'fastapi dev src/auth_service/main.py'
 
 pre_test = 'task lint && task format'
 

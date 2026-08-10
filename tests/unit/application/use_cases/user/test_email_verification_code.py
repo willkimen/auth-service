@@ -3,33 +3,33 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
     UserNotFoundError,
 )
-from application.messages.email_payloads import EmailCodePayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import EmailCodePayload
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     MessageRepositoryPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.email_verification_code import (
+from auth_service.application.use_cases.user.email_verification_code import (
     EmailVerificationCodeUseCase,
 )
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import (
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import (
     DomainError,
     EmailAlreadyVerifiedError,
     InactiveUserError,
 )
-from domain.value_objects.code import Code
+from auth_service.domain.value_objects.code import Code
 
 code_expiration_time = 15
 
@@ -60,9 +60,7 @@ async def test_initialize_email_verification_process_successfully(
     )
 
     # Assert was called
-    mocks.uow.users.get_by_email.assert_awaited_once_with(
-        unverified_user.email.value
-    )
+    mocks.uow.users.get_by_email.assert_awaited_once_with(unverified_user.email.value)
     mocks.uow.codes.create.assert_awaited_once()
     mocks.uow.messages.create.assert_awaited()
     mocks.uow.__aenter__.assert_awaited_once()

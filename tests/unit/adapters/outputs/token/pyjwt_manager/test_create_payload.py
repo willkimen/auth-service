@@ -1,6 +1,8 @@
 import uuid
 
-from adapters.outputs.token.pyjwt_manager import PyJWTManagerAdapter
+from auth_service.adapters.outputs.token.pyjwt_manager import (
+    PyJWTManagerAdapter,
+)
 
 sub = uuid.uuid4()
 # Fixed to resolve PyJWT's InsecureKeyLengthWarning (RFC 7518 compliance).

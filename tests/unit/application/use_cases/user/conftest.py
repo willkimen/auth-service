@@ -3,12 +3,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.value_objects.code import Code
-from domain.value_objects.email import Email
-from domain.value_objects.password import PasswordHash
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.value_objects.code import Code
+from auth_service.domain.value_objects.email import Email
+from auth_service.domain.value_objects.password import PasswordHash
 
 # for user
 public_id = uuid.uuid4()

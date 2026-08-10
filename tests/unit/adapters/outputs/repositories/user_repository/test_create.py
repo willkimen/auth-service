@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from application.exceptions import InfrastructureError
-from domain.entities.user import User
+from auth_service.application.exceptions import InfrastructureError
+from auth_service.domain.entities.user import User
 
 
 async def test_creation_fails_when_database_error_occurs(user: User):

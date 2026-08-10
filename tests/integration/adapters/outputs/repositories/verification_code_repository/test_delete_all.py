@@ -3,11 +3,11 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.verification_code_repository import (
+from auth_service.adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
-from application.exceptions import InfrastructureError
-from domain.entities.verification_code import VerificationCode
+from auth_service.application.exceptions import InfrastructureError
+from auth_service.domain.entities.verification_code import VerificationCode
 
 
 async def test_should_successfully_delete_all_verification_codes_for_a_user(

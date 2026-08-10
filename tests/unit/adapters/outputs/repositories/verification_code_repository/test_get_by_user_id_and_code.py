@@ -4,11 +4,13 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.models import VerificationCodeRowMapper
-from adapters.outputs.repositories.verification_code_repository import (
+from auth_service.adapters.outputs.repositories.models import (
+    VerificationCodeRowMapper,
+)
+from auth_service.adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
 )

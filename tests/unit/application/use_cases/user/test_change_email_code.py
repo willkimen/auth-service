@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -16,28 +16,28 @@ from application.exceptions import (
     InvalidTokenTypeError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import EmailCodePayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import EmailCodePayload
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     MessageRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.change_email_code import (
+from auth_service.application.use_cases.user.change_email_code import (
     ChangeEmailCodeUseCase,
 )
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import (
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import (
     DomainError,
     InactiveUserError,
     InvalidEmailError,
 )
-from domain.value_objects.code import Code
+from auth_service.domain.value_objects.code import Code
 
 code_expiration_time = 15
 token = 'access-token'
@@ -326,8 +326,8 @@ async def test_change_email_process_not_initialize_when_user_state_corrupted(
     """
     mocks: DependeciesMocked = mocks_factory(active_user)
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('some domain error'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('some domain error')
     )
 
     use_case = ChangeEmailCodeUseCase(

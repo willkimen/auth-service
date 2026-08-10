@@ -6,28 +6,30 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.token_dto import (
+from auth_service.application.dtos.token_dto import (
     AccessTokenDTO,
     PairTokensDTO,
     PayloadTokenDTO,
     RefreshTokenDTO,
 )
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
     InvalidCredentialsError,
 )
-from application.ports.output import (
+from auth_service.application.ports.output import (
     HasherPort,
     RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
 )
-from application.use_cases.authentication.login import LoginUseCase
-from domain.entities.user import User
-from domain.exceptions import (
+from auth_service.application.use_cases.authentication.login import (
+    LoginUseCase,
+)
+from auth_service.domain.entities.user import User
+from auth_service.domain.exceptions import (
     InactiveUserError,
     UnverifiedEmailError,
 )
@@ -54,9 +56,7 @@ async def test_login_successfully(verified_user: User):
         password=password,
     )
 
-    mocks.uow.users.get_by_email.assert_awaited_once_with(
-        verified_user.email.value
-    )
+    mocks.uow.users.get_by_email.assert_awaited_once_with(verified_user.email.value)
     mocks.hasher.verify_password.assert_called_once()
     mocks.token_manager.new_pair_token.assert_called_once()
     mocks.uow.tokens.create.assert_awaited_once()
@@ -293,9 +293,7 @@ async def test_login_not_performed_when_email_is_not_verified(
     )
 
     with pytest.raises(UnverifiedEmailError):
-        await use_case.execute(
-            email=unverified_user.email.value, password=password
-        )
+        await use_case.execute(email=unverified_user.email.value, password=password)
 
     # assert was called
     mocks.uow.users.get_by_email.assert_awaited_once()
@@ -406,9 +404,7 @@ async def test_login_not_performed_when_save_refresh_fails(
     )
 
     with pytest.raises(InfrastructureError):
-        await use_case.execute(
-            email=verified_user.email.value, password=password
-        )
+        await use_case.execute(email=verified_user.email.value, password=password)
 
     # assert was called
     mocks.uow.users.get_by_email.assert_awaited_once()

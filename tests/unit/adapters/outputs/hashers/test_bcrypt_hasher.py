@@ -1,8 +1,13 @@
 import bcrypt
 import pytest
 
-from adapters.outputs.hashers.bcrypt_hasher import BcryptHasherAdapter
-from application.exceptions import InfrastructureError, InfrastructureErrorCode
+from auth_service.adapters.outputs.hashers.bcrypt_hasher import (
+    BcryptHasherAdapter,
+)
+from auth_service.application.exceptions import (
+    InfrastructureError,
+    InfrastructureErrorCode,
+)
 
 raw_password = 'fakepassword'
 

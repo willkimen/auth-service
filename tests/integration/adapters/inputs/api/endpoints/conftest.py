@@ -7,27 +7,27 @@ import pytest
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from adapters.inputs.api.app import app
-from adapters.inputs.api.dependencies.adapters import (
+from auth_service.adapters.inputs.api.app import app
+from auth_service.adapters.inputs.api.dependencies.adapters import (
     get_settings,
     hasher_factory,
 )
-from adapters.outputs.repositories.refresh_token_repository import (
+from auth_service.adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from adapters.outputs.repositories.verification_code_repository import (
+from auth_service.adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
-from config.settings import Settings
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.value_objects.code import Code
-from domain.value_objects.email import Email
-from domain.value_objects.password import PasswordHash
+from auth_service.config.settings import Settings
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.value_objects.code import Code
+from auth_service.domain.value_objects.email import Email
+from auth_service.domain.value_objects.password import PasswordHash
 
 jwt_secret = 'super_secret_jwt_key_that_has_at_least_32_characters_long'
 email_vo = Email('email@email.com')

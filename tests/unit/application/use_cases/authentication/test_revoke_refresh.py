@@ -5,20 +5,20 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     InvalidTokenError,
     InvalidTokenErrorCode,
     InvalidTokenTypeError,
 )
-from application.ports.output import (
+from auth_service.application.ports.output import (
     RefreshTokenRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
 )
-from application.use_cases.authentication.revoke_refresh import (
+from auth_service.application.use_cases.authentication.revoke_refresh import (
     RevokeRefreshUseCase,
 )
 

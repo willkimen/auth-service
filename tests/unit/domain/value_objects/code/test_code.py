@@ -2,8 +2,8 @@ from typing import cast
 
 import pytest
 
-from domain.exceptions import InvalidCodeError
-from domain.value_objects.code import Code
+from auth_service.domain.exceptions import InvalidCodeError
+from auth_service.domain.value_objects.code import Code
 
 
 def test_code_is_generated_correctly():
@@ -24,9 +24,7 @@ def test_code_with_same_state_are_equals():
 
 def test_code_must_be_string_type():
     incorrect_type = 123456
-    msg_error = (
-        f'Invalid code: expected str, got {type(incorrect_type).__name__}'
-    )
+    msg_error = f'Invalid code: expected str, got {type(incorrect_type).__name__}'
 
     with pytest.raises(TypeError, match=msg_error):
         Code(cast(str, incorrect_type))

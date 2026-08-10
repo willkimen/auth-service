@@ -3,16 +3,16 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.entities.verification_code_factory import (
+from auth_service.domain.entities.verification_code_factory import (
     new_change_email_code,
     new_change_password_code,
     new_delete_account_code,
     new_email_verification_code,
     new_reset_password_code,
 )
-from domain.enums import CodeType
-from domain.exceptions import InvalidEmailError
-from domain.value_objects.code import Code
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import InvalidEmailError
+from auth_service.domain.value_objects.code import Code
 
 user_public_id = uuid.uuid4()
 created_at = datetime.now(timezone.utc)

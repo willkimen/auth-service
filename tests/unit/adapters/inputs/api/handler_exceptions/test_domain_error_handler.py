@@ -2,8 +2,10 @@ import json
 
 from fastapi.responses import JSONResponse
 
-import domain.exceptions as domain_exceptions
-from adapters.inputs.api.handler_exceptions import domain_error_handler
+import auth_service.domain.exceptions as domain_exceptions
+from auth_service.adapters.inputs.api.handler_exceptions import (
+    domain_error_handler,
+)
 
 
 async def test_handles_domain_error_correctly(fake_request):
@@ -14,9 +16,7 @@ async def test_handles_domain_error_correctly(fake_request):
     expected_status_code = 409
 
     # act
-    actual_response: JSONResponse = await domain_error_handler(
-        fake_request, error
-    )
+    actual_response: JSONResponse = await domain_error_handler(fake_request, error)
 
     # asserts
     assert actual_response.status_code == expected_status_code

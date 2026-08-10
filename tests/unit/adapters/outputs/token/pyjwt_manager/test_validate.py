@@ -3,9 +3,11 @@ import uuid
 import jwt
 import pytest
 
-from adapters.outputs.token.pyjwt_manager import PyJWTManagerAdapter
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.adapters.outputs.token.pyjwt_manager import (
+    PyJWTManagerAdapter,
+)
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     InfrastructureError,
     InfrastructureErrorCode,
     InvalidTokenError,

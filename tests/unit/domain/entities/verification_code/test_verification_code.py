@@ -2,9 +2,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import MissingNewEmailError
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import MissingNewEmailError
 
 current_time = datetime.now(timezone.utc)
 
@@ -86,8 +86,7 @@ def test_code_must_be_correct_type(initial_state: dict):
     incorrect_type = 'ACTIVE'
     initial_state['type'] = incorrect_type
     msg_error = (
-        f'Invalid code type: expected CodeType, '
-        f'got {type(incorrect_type).__name__}'
+        f'Invalid code type: expected CodeType, got {type(incorrect_type).__name__}'
     )
 
     with pytest.raises(TypeError, match=msg_error):

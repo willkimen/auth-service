@@ -3,11 +3,11 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from application.exceptions import InfrastructureError
-from domain.entities.user import User
+from auth_service.application.exceptions import InfrastructureError
+from auth_service.domain.entities.user import User
 
 
 async def test_should_successfully_create_a_user(

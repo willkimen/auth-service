@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.refresh_token_repository import (
+from auth_service.adapters.outputs.repositories.refresh_token_repository import (
     PostgresRefreshTokenRepository,
 )
-from application.exceptions import InfrastructureError
+from auth_service.application.exceptions import InfrastructureError
 
 
 async def test_revocation_fails_when_database_error_occurs():

@@ -2,8 +2,10 @@ import json
 
 from fastapi.responses import JSONResponse
 
-import application.exceptions as application_exceptions
-from adapters.inputs.api.handler_exceptions import infrastructure_error_handler
+import auth_service.application.exceptions as application_exceptions
+from auth_service.adapters.inputs.api.handler_exceptions import (
+    infrastructure_error_handler,
+)
 
 
 async def test_handles_infrastructure_error_correctly(fake_request):

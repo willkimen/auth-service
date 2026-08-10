@@ -2,8 +2,8 @@ from typing import cast
 
 import pytest
 
-from domain.exceptions import InvalidPasswordError
-from domain.value_objects.password import PasswordHash
+from auth_service.domain.exceptions import InvalidPasswordError
+from auth_service.domain.value_objects.password import PasswordHash
 
 value = '1234357'
 

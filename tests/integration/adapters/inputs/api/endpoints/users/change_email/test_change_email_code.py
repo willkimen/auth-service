@@ -1,13 +1,13 @@
 from httpx2 import AsyncClient
 
-from adapters.inputs.api.dependencies.use_cases import (
+from auth_service.adapters.inputs.api.dependencies.use_cases import (
     change_email_code_factory,
 )
-from application.exceptions import (
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     EmailAlreadyUsedError,
 )
-from domain.exceptions import InactiveUserError, UserErrorCode
+from auth_service.domain.exceptions import InactiveUserError, UserErrorCode
 
 body = {'new_email': 'newemail@email.com'}
 
@@ -158,6 +158,4 @@ async def test_should_handle_application_exception(
     assert actual_response.status_code == expected_status_code
     response_data = actual_response.json()['error']
     assert response_data['code'] == 'EMAIL_ALREADY_USE'
-    assert response_data['message'] == (
-        'An account with this email already exists'
-    )
+    assert response_data['message'] == ('An account with this email already exists')

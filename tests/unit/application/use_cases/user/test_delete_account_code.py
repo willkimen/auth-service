@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.dtos.token_dto import PayloadTokenDTO
-from application.exceptions import (
+from auth_service.application.dtos.token_dto import PayloadTokenDTO
+from auth_service.application.exceptions import (
     CorruptedPersistenceStateError,
     InfrastructureError,
     InfrastructureErrorCode,
@@ -16,24 +16,24 @@ from application.exceptions import (
     InvalidTokenTypeError,
     UserNotFoundError,
 )
-from application.messages.email_payloads import EmailCodePayload
-from application.messages.message import Message
-from application.messages.message_types import MessageType
-from application.ports.output import (
+from auth_service.application.messages.email_payloads import EmailCodePayload
+from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
+from auth_service.application.ports.output import (
     MessageRepositoryPort,
     TokenManagerPort,
     UnitOfWorkPort,
     UserRepositoryPort,
     VerificationCodeRepositoryPort,
 )
-from application.use_cases.user.delete_account_code import (
+from auth_service.application.use_cases.user.delete_account_code import (
     DeleteAccountCodeUseCase,
 )
-from domain.entities.user import User
-from domain.entities.verification_code import VerificationCode
-from domain.enums import CodeType
-from domain.exceptions import DomainError, InactiveUserError
-from domain.value_objects.code import Code
+from auth_service.domain.entities.user import User
+from auth_service.domain.entities.verification_code import VerificationCode
+from auth_service.domain.enums import CodeType
+from auth_service.domain.exceptions import DomainError, InactiveUserError
+from auth_service.domain.value_objects.code import Code
 
 access = 'access'
 jti = 'jti'
@@ -67,9 +67,7 @@ async def test_initialize_account_deletion_process_successfully(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.codes.create.assert_awaited_once()
@@ -240,9 +238,7 @@ async def test_delete_account_not_initialize_when_get_user_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -262,8 +258,8 @@ async def test_delete_account_not_initialize_when_user_state_is_corrupted(
     """
     mocks: DependenciesMocked = mocks_factory(active_user)
 
-    mocks.uow.users.get_by_public_id.side_effect = (
-        CorruptedPersistenceStateError(DomainError('corrupted state'))
+    mocks.uow.users.get_by_public_id.side_effect = CorruptedPersistenceStateError(
+        DomainError('corrupted state')
     )
 
     use_case = DeleteAccountCodeUseCase(
@@ -277,9 +273,7 @@ async def test_delete_account_not_initialize_when_user_state_is_corrupted(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -339,9 +333,7 @@ async def test_delete_account_not_initialize_when_user_is_inactive(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        inactive_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(inactive_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
 
@@ -379,9 +371,7 @@ async def test_delete_account_not_initialize_when_persist_code_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.codes.create.assert_awaited_once()
@@ -419,9 +409,7 @@ async def test_delete_account_not_initialize_when_persist_message_fails(
 
     # assert was called
     mocks.token_manager.validate.assert_called_once_with(access)
-    mocks.uow.users.get_by_public_id.assert_awaited_once_with(
-        active_user.public_id
-    )
+    mocks.uow.users.get_by_public_id.assert_awaited_once_with(active_user.public_id)
     mocks.uow.__aenter__.assert_awaited_once()
     mocks.uow.__aexit__.assert_awaited_once()
     mocks.uow.codes.create.assert_awaited_once()

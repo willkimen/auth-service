@@ -2,10 +2,10 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.verification_code_repository import (
+from auth_service.adapters.outputs.repositories.verification_code_repository import (
     PostgresVerificationCodeRepository,
 )
-from domain.entities.verification_code import VerificationCode
+from auth_service.domain.entities.verification_code import VerificationCode
 
 
 async def test_should_return_verification_code_when_it_exists(

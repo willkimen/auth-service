@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from domain.value_objects.email import Email
-from domain.value_objects.password import PasswordHash
+from auth_service.domain.value_objects.email import Email
+from auth_service.domain.value_objects.password import PasswordHash
 
 
 @pytest.fixture

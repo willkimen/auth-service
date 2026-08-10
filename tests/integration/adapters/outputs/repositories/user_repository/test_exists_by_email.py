@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from adapters.outputs.repositories.user_repository import (
+from auth_service.adapters.outputs.repositories.user_repository import (
     PostgresUserRepository,
 )
-from domain.entities.user import User
+from auth_service.domain.entities.user import User
 
 
 async def test_should_return_true_when_user_exists_by_email(

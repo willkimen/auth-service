@@ -4,7 +4,7 @@ import time_machine
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from scheduler.cleanup_service import CleanupService
+from auth_service.scheduler.cleanup_service import CleanupService
 
 count_verification_codes = text('SELECT COUNT(*) FROM verification_codes;')
 count_refresh_tokens = text('SELECT COUNT(*) FROM refresh_tokens;')

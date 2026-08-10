@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from domain.entities.user import User
-from domain.value_objects.email import Email
-from domain.value_objects.password import PasswordHash
+from auth_service.domain.entities.user import User
+from auth_service.domain.value_objects.email import Email
+from auth_service.domain.value_objects.password import PasswordHash
 
 
 def test_create_user_success(initial_state: dict):
@@ -33,9 +33,7 @@ def test_public_id_it_is_required(initial_state: dict):
 def test_public_id_must_be_uuid_type(initial_state: dict):
     type_incorrect = 'type_incorrect'
     initial_state['public_id'] = type_incorrect
-    msg_error = (
-        f'Invalid id: expected UUID, got {type(type_incorrect).__name__}'
-    )
+    msg_error = f'Invalid id: expected UUID, got {type(type_incorrect).__name__}'
 
     with pytest.raises(TypeError, match=msg_error):
         User(**initial_state)
@@ -54,8 +52,7 @@ def test_email_verified_must_be_bool_type(initial_state: dict):
     type_incorrect = 0
     initial_state['email_verified'] = type_incorrect
     msg_error = (
-        'Invalid email_verified: expected bool, '
-        f'got {type(type_incorrect).__name__}'
+        f'Invalid email_verified: expected bool, got {type(type_incorrect).__name__}'
     )
 
     with pytest.raises(TypeError, match=msg_error):
@@ -74,10 +71,7 @@ def test_is_active_it_is_required(initial_state: dict):
 def test_is_active_must_be_bool_type(initial_state: dict):
     type_incorrect = 0
     initial_state['is_active'] = type_incorrect
-    msg_error = (
-        'Invalid is_active: expected bool, '
-        f'got {type(type_incorrect).__name__}'
-    )
+    msg_error = f'Invalid is_active: expected bool, got {type(type_incorrect).__name__}'
 
     with pytest.raises(TypeError, match=msg_error):
         User(**initial_state)

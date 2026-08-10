@@ -3,13 +3,16 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from adapters.outputs.repositories.unit_of_work import SqlAlchemyUnitOfWork
-from application.exceptions import InfrastructureError, InfrastructureErrorCode
+from auth_service.adapters.outputs.repositories.unit_of_work import (
+    SqlAlchemyUnitOfWork,
+)
+from auth_service.application.exceptions import (
+    InfrastructureError,
+    InfrastructureErrorCode,
+)
 
 
-def engine_mock(
-    engine: AsyncMock, connection: AsyncMock, transaction: AsyncMock
-):
+def engine_mock(engine: AsyncMock, connection: AsyncMock, transaction: AsyncMock):
     engine.connect = AsyncMock(return_value=connection)
 
     connection.begin = AsyncMock(return_value=transaction)
