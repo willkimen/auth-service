@@ -20,8 +20,9 @@ __pycache__
 dist
 docs
 env
+*.env
 .env
-.env.example
+.env.*
 .vscode/
 .venv/
 venv/
