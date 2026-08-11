@@ -1,0 +1,42 @@
+services:
+  authdb:
+    container_name: authdb
+    image: authdb
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.postgres
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    networks:
+      - apidb
+  authapi:
+    container_name: authapi
+    image: authapi
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.api
+      - .env.postgres
+    depends_on:
+      - authdb
+    networks:
+      - apidb
+
+volumes:
+  pgdata:
+
+networks:
+  apidb:
+    driver: bridge

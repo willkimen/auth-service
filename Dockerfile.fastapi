@@ -1,0 +1,105 @@
+# Reference:
+# https://github.com/astral-sh/uv-docker-example/blob/main/Dockerfile
+
+# Use the official uv image with Python 3.13 and Debian Bookworm Slim.
+FROM astral/uv:python3.13-bookworm-slim
+
+# Create a dedicated system group and user to run the application
+# without root privileges.
+RUN groupadd --system --gid 999 fastuser \
+ && useradd --system --gid 999 --uid 999 --create-home fastuser
+
+# Set the working directory inside the container.
+WORKDIR /app
+
+# Prevent Python from buffering stdout and stderr.
+# This makes application logs available immediately.
+ENV PYTHONUNBUFFERED=1
+
+# Compile Python files to bytecode during the image build.
+# This can improve application startup time.
+ENV UV_COMPILE_BYTECODE=1
+
+# Copy packages instead of creating hard links when installing dependencies.
+# This is useful in container environments.
+ENV UV_LINK_MODE=copy
+
+# Install only production dependencies, excluding development dependencies.
+ENV UV_NO_DEV=1
+
+# Set the directory where uv-installed command-line tools will be available.
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+
+# Mount uv's cache directory at /root/.cache/uv.
+# This is the default location where uv stores downloaded packages
+# and other cached data.
+#
+# By using a Docker cache mount, the cache can be reused across
+# different Docker builds. This prevents uv from downloading the same
+# dependencies again when they are already available in the cache.
+#
+# Mount uv.lock and pyproject.toml from the build context into the
+# current working directory inside the container.
+#
+# These files are mounted only for the duration of this RUN instruction.
+# They are not copied into the image by these mounts.
+#
+# uv uses:
+#
+# - uv.lock to determine the exact versions of the dependencies.
+# - pyproject.toml to determine the project's dependencies and configuration.
+#
+# Then uv sync reads these files and installs the required dependencies.
+#
+# In summary, this step is mainly about installing the project's
+# dependencies while taking advantage of uv's cache:
+#
+# 1. Docker mounts uv's cache at /root/.cache/uv.
+# 2. Docker temporarily mounts uv.lock and pyproject.toml.
+# 3. uv sync reads both files.
+# 4. uv downloads the required dependencies if they are not already
+#    available in the cache.
+# 5. The downloaded packages are stored in uv's cache.
+# 6. Future Docker builds can reuse those cached packages.
+#
+# --locked tells uv to use the existing lockfile without modifying it.
+# --no-install-project tells uv to install the dependencies without
+# installing the project itself at this stage.
+RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
+
+# Copy the application source code into the container.
+COPY . /app
+
+# Install the project and synchronize its dependencies according
+# to the lockfile.
+#
+# The uv cache mounted here allows already downloaded packages
+# to be reused instead of downloading them again.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
+
+# Add the virtual environment's executables to PATH.
+# This allows commands such as "fastapi" to be executed directly.
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Do not use an additional entrypoint script.
+ENTRYPOINT []
+
+# Run the application as the non-root user created above.
+USER fastuser
+
+# Run the FastAPI development server through uv.
+#
+# "uv run" executes the command using the project's virtual environment
+# and dependencies managed by uv.
+#
+# "fastapi dev" starts the FastAPI application in development mode.
+#
+# "--host 0.0.0.0" makes the server listen on all network interfaces
+# inside the container, allowing it to be accessed from the host machine.
+#
+# The application entry point is defined by the main.py file.
+CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "8000", "src/auth_service/main.py"]

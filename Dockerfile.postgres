@@ -1,0 +1,5 @@
+FROM postgres:18.4-alpine3.24
+
+# Copy the SQL script to the directory automatically executed
+# when the PostgreSQL database is initialized.
+COPY scripts/create_tables.sql /docker-entrypoint-initdb.d/
