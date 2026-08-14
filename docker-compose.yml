@@ -30,7 +30,8 @@ services:
       - .env.api
       - .env.postgres
     depends_on:
-      - authdb
+      authdb:
+        condition: service_healthy
     networks:
       - apidb
 
