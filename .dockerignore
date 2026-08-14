@@ -32,3 +32,4 @@ __localcode/
 tests/
 .coverage
 htmlcov/
+bruno/

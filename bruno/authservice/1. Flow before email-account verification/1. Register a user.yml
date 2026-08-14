@@ -1,0 +1,25 @@
+info:
+  name: 1. Register a user
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_users}}/register"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{email}}",
+        "password": "{{password}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

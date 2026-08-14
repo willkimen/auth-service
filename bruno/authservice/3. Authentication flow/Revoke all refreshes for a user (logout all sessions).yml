@@ -1,0 +1,18 @@
+info:
+  name: Revoke all refreshes for a user (logout all sessions)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_auth}}/revoke-all-refreshes"
+  headers:
+    - name: Authorization
+      value: Bearer   {{access}}
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

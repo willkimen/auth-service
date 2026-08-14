@@ -1,0 +1,36 @@
+info:
+  name: 4. Login (authenticate)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_auth}}/login"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{email}}",
+        "password": "{{password}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 200) {
+          const body = res.body
+          
+          bru.setEnvVar("access", body.access)
+          bru.setEnvVar("refresh", body.refresh)
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

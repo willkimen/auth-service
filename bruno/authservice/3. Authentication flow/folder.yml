@@ -1,0 +1,13 @@
+info:
+  name: 3. Authentication flow
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    This folder is reserved for the authentication, refresh token, and refresh token revocation processes.
+    To be able to authenticate, the user must first verify their email.
+  type: text/markdown

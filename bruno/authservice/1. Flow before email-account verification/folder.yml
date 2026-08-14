@@ -1,0 +1,14 @@
+info:
+  name: 1. Flow before email/account verification
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    This folder is reserved for requests that do not require the user to verify their email. The user can:
+    - Register.
+    - Reset their password, in case they forget it.
+  type: text/markdown

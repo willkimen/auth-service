@@ -1,0 +1,18 @@
+info:
+  name: Requests user details
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{url}}{{port}}{{endpoint_base_users}}/detail"
+  headers:
+    - name: Authorization
+      value: Bearer   {{access}}
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

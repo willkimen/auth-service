@@ -1,0 +1,35 @@
+info:
+  name: Change email using code
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_users}}/email/change"
+  headers:
+    - name: Authorization
+      value: Bearer   {{access}}
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "code": "555616"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // After the successful email change, update the value of the `email` variable.
+        if (res.status === 204) {  
+          bru.setEnvVar("email", bru.getEnvVar("new_email"))
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

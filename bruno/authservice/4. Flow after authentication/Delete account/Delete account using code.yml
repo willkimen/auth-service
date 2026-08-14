@@ -1,0 +1,26 @@
+info:
+  name: Delete account using code
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_users}}/delete"
+  headers:
+    - name: Authorization
+      value: Bearer   {{access}}
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "code": "770891"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,33 @@
+name: DEVELOPMENT
+color: "#346AB2"
+variables:
+  - name: url
+    value: http://127.0.0.1
+    description: ""
+  - name: port
+    value: :8000
+    description: ""
+  - name: endpoint_base_users
+    value: /api/v1/users
+    description: ""
+  - name: endpoint_base_auth
+    value: /api/v1/auth/token
+    description: ""
+  - name: email
+    value: user@email.com
+    description: ""
+  - name: password
+    value: Password!123456
+    description: ""
+  - name: new_password
+    value: NewPassword!123456
+    description: ""
+  - name: access
+    value: ""
+    description: ""
+  - name: refresh
+    value: ""
+    description: ""
+  - name: new_email
+    value: new@email.com
+    description: ""

@@ -1,0 +1,18 @@
+info:
+  name: Requests a code to delete account
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_users}}/delete/code"
+  headers:
+    - name: Authorization
+      value: Bearer   {{access}}
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

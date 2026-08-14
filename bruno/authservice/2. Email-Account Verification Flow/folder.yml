@@ -1,0 +1,11 @@
+info:
+  name: 2. Email/Account Verification Flow
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
+
+docs:
+  content: This folder is reserved for the email/account verification process.
+  type: text/markdown

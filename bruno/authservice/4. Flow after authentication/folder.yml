@@ -1,0 +1,11 @@
+info:
+  name: 4. Flow after authentication
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
+
+docs:
+  content: The entire flow within this folder is restricted to authenticated users.
+  type: text/markdown

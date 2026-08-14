@@ -1,0 +1,24 @@
+info:
+  name: Revoke a specific refresh (logout of a session)
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_auth}}/revoke-refresh"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "refresh": "{{refresh}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

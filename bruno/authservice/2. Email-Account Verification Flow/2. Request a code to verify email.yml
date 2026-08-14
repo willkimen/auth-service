@@ -1,0 +1,24 @@
+info:
+  name: 2. Request a code to verify email
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}{{port}}{{endpoint_base_users}}/email/verify/code"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email":  "{{email}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
