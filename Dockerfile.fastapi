@@ -91,15 +91,15 @@ ENTRYPOINT []
 # Run the application as the non-root user created above.
 USER fastuser
 
-# Run the FastAPI development server through uv.
+# Run the FastAPI production server through uv.
 #
 # "uv run" executes the command using the project's virtual environment
 # and dependencies managed by uv.
 #
-# "fastapi dev" starts the FastAPI application in development mode.
+# "fastapi run" starts the FastAPI application in production mode.
 #
 # "--host 0.0.0.0" makes the server listen on all network interfaces
-# inside the container, allowing it to be accessed from the host machine.
+# inside the container, allowing it to receive external requests.
 #
 # The application entry point is defined by the main.py file.
-CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "8000", "src/auth_service/main.py"]
+CMD ["uv", "run", "fastapi", "run", "--host", "0.0.0.0", "--port", "8000", "src/auth_service/main.py"]
