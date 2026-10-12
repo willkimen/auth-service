@@ -1,3 +1,13 @@
+"""
+Contains database cleanup operations triggered by scheduled jobs.
+
+This service currently resides in the scheduler module because its operations
+are exclusively used by scheduled tasks. If these operations need to be
+reused by other application components in the future, consider moving the
+business logic into an application use case and introducing the appropriate
+ports and adapters to separate the application logic from database access.
+"""
+
 import logging
 
 from sqlalchemy import text
@@ -8,6 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 class CleanupService:
+    """
+    Service responsible for cleaning up database records.
+
+    Args:
+        engine: SQLAlchemy asynchronous engine used to connect to the database.
+    """
+
     def __init__(self, engine: AsyncEngine):
         self._engine = engine
 
