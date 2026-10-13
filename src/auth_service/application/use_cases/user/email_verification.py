@@ -4,11 +4,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import UnitOfWorkPort
 from auth_service.domain.entities.user import User
 from auth_service.domain.entities.verification_code import VerificationCode
@@ -123,7 +123,7 @@ class EmailVerificationUseCase:
 
             user.mark_email_as_verified()
 
-            payload = EmailNotificationPayload(user.email.value)
+            payload = NotificationPayload(user.email.value)
 
             message = Message(
                 type=MessageType.NOTIFY_EMAIL_VERIFIED,

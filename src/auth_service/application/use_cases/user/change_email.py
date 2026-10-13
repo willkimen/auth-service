@@ -6,11 +6,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     TokenManagerPort,
     UnitOfWorkPort,
@@ -143,7 +143,7 @@ class ChangeEmailUseCase:
 
             message = Message(
                 type=MessageType.NOTIFY_EMAIL_CHANGED,
-                payload=EmailNotificationPayload(to=user.email.value),
+                payload=NotificationPayload(recipient=user.email.value),
             )
 
             await self.uow.users.update(user)

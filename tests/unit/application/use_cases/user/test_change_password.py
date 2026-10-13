@@ -18,11 +18,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     HasherPort,
     MessageRepositoryPort,
@@ -130,8 +130,8 @@ async def test_change_password_successfully(
     message_args: Message = mocks.uow.messages.create.call_args[0][0]
     assert message_args.type == MessageType.NOTIFY_PASSWORD_CHANGED
 
-    payload_args: EmailNotificationPayload = message_args.payload
-    assert payload_args.to == active_user.email.value
+    payload_args: NotificationPayload = message_args.payload
+    assert payload_args.recipient == active_user.email.value
 
 
 async def test_password_change_not_performed_when_password_is_invalid(

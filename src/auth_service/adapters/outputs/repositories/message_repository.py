@@ -7,6 +7,7 @@ from auth_service.application.exceptions import (
     InfrastructureErrorCode,
 )
 from auth_service.application.messages.message import Message
+from auth_service.application.messages.payload import Payload
 
 
 class PostgresMessageRepository:
@@ -42,18 +43,18 @@ class PostgresMessageRepository:
                     type,
                     created_at,
                     expires_at,
-                    dispatched_at,
-                    dispatch_attempts,
-                    max_attempts
+                    published_at,
+                    publish_attempts,
+                    max_publish_attempts
                 ) VALUES (
                     :id,
                     :payload,
                     :type,
                     :created_at,
                     :expires_at,
-                    :dispatched_at,
-                    :dispatch_attempts,
-                    :max_attempts
+                    :published_at,
+                    :publish_attempts,
+                    :max_publish_attempts
                 )
                 """
             ).bindparams(bindparam('payload', type_=JSON))
@@ -66,9 +67,9 @@ class PostgresMessageRepository:
                     'type': message.type,
                     'created_at': message.created_at,
                     'expires_at': message.expires_at,
-                    'dispatched_at': message.dispatched_at,
-                    'dispatch_attempts': message.dispatch_attempts,
-                    'max_attempts': message.max_attempts,
+                    'published_at': message.published_at,
+                    'publish_attempts': message.publish_attempts,
+                    'max_publish_attempts': message.max_publish_attempts,
                 },
             )
 

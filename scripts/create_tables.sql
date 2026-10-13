@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS messages (
     type VARCHAR(32),
     created_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ DEFAULT NULL,
-    dispatched_at TIMESTAMPTZ DEFAULT NULL,
-    dispatch_attempts INTEGER DEFAULT 0,
-    max_attempts INTEGER NOT NULL
+    published_at TIMESTAMPTZ DEFAULT NULL,
+    publish_attempts INTEGER DEFAULT 0,
+    max_publish_attempts INTEGER NOT NULL
 );

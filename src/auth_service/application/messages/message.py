@@ -29,13 +29,13 @@ class Message:
         `expires_at` (datetime | None):
             - Timestamp after which the message is considered invalid.
               Defaults to `None`.
-        `dispatched_at` (datetime | None):
+        `published_at` (datetime | None):
             - Timestamp of the successful message processing.
               Defaults to `None`.
-        `dispatch_attempts` (int):
+        `publish_attempts` (int):
             - Counter for the number of processing attempts made.
               Defaults to `0`.
-        `max_attempts` (int):
+        `max_publish_attempts` (int):
             - Maximum allowed processing attempts before failure.
               Defaults to `5`.
         `id` (uuid.UUID):
@@ -47,7 +47,7 @@ class Message:
     payload: Payload
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime | None = None
-    dispatched_at: datetime | None = None
-    dispatch_attempts: int = 0
-    max_attempts: int = 5
+    published_at: datetime | None = None
+    publish_attempts: int = 0
+    max_publish_attempts: int = 5
     id: uuid.UUID = field(default_factory=uuid.uuid4)

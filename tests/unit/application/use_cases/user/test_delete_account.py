@@ -17,11 +17,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     MessageRepositoryPort,
     RefreshTokenRepositoryPort,
@@ -81,8 +81,8 @@ async def test_delete_account_successfully(active_user: User, create_unused_code
     message_arg: Message = mocks.uow.messages.create.call_args[0][0]
     assert message_arg.type == MessageType.NOTIFY_ACCOUNT_DELETED
 
-    payload: EmailNotificationPayload = message_arg.payload
-    assert payload.to == active_user.email.value
+    payload: NotificationPayload = message_arg.payload
+    assert payload.recipient == active_user.email.value
 
 
 async def test_delete_not_performed_when_token_is_invalid(

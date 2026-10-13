@@ -16,9 +16,9 @@ from auth_service.application.exceptions import (
     InvalidTokenTypeError,
     UserNotFoundError,
 )
-from auth_service.application.messages.email_payloads import EmailCodePayload
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import VerificationCodePayload
 from auth_service.application.ports.output import (
     MessageRepositoryPort,
     TokenManagerPort,
@@ -96,8 +96,8 @@ async def test_initialize_change_email_process_successfully(
     assert message_arg.type == MessageType.CHANGE_EMAIL_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
-    payload: EmailCodePayload = message_arg.payload
-    assert payload.to == new_email
+    payload: VerificationCodePayload = message_arg.payload
+    assert payload.recipient == new_email
     assert payload.code == code_arg.code.value
 
 

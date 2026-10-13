@@ -11,11 +11,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     MessageRepositoryPort,
     UnitOfWorkPort,
@@ -94,8 +94,8 @@ async def test_email_verified_successfully(
     assert message_arg.id is not None
     assert message_arg.type == MessageType.NOTIFY_EMAIL_VERIFIED
 
-    payload: EmailNotificationPayload = message_arg.payload
-    assert payload.to == user_arg.email.value
+    payload: NotificationPayload = message_arg.payload
+    assert payload.recipient == user_arg.email.value
 
 
 async def test_verification_fails_when_user_does_not_exist(

@@ -9,9 +9,9 @@ from auth_service.application.exceptions import (
     InfrastructureErrorCode,
     UserNotFoundError,
 )
-from auth_service.application.messages.email_payloads import EmailCodePayload
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import VerificationCodePayload
 from auth_service.application.ports.output import (
     MessageRepositoryPort,
     UnitOfWorkPort,
@@ -91,8 +91,8 @@ async def test_initialize_email_verification_process_successfully(
     assert message_arg.type == MessageType.EMAIL_VERIFICATION_CODE
     assert message_arg.expires_at == code_arg.expires_at
 
-    payload: EmailCodePayload = message_arg.payload
-    assert payload.to == unverified_user.email.value
+    payload: VerificationCodePayload = message_arg.payload
+    assert payload.recipient == unverified_user.email.value
     assert payload.code == code_arg.code.value
 
 

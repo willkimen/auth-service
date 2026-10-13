@@ -7,11 +7,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     HasherPort,
     TokenManagerPort,
@@ -167,7 +167,7 @@ class ChangePasswordUseCase:
 
             message = Message(
                 type=MessageType.NOTIFY_PASSWORD_CHANGED,
-                payload=EmailNotificationPayload(user.email.value),
+                payload=NotificationPayload(user.email.value),
             )
 
             await self.uow.users.update(user)

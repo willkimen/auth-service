@@ -2,12 +2,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from auth_service.application.messages.email_payloads import EmailCodePayload
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import VerificationCodePayload
 
-payload = EmailCodePayload(
-    to='email@email.com',
+payload = VerificationCodePayload(
+    recipient='email@email.com',
     code='123456',
 )
 

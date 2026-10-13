@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
 from auth_service.application.exceptions import UserNotFoundError
-from auth_service.application.messages.email_payloads import EmailCodePayload
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import VerificationCodePayload
 from auth_service.application.ports.output import UnitOfWorkPort
 from auth_service.domain.entities.user import User
 from auth_service.domain.entities.verification_code import VerificationCode
@@ -98,8 +98,8 @@ class EmailVerificationCodeUseCase:
                 ),
             )
 
-            payload = EmailCodePayload(
-                to=user.email.value,
+            payload = VerificationCodePayload(
+                recipient=user.email.value,
                 code=verification_code.code.value,
             )
 

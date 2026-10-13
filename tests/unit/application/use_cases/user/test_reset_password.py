@@ -12,11 +12,11 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
     VerificationCodeNotFoundError,
 )
-from auth_service.application.messages.email_payloads import (
-    EmailNotificationPayload,
-)
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import (
+    NotificationPayload,
+)
 from auth_service.application.ports.output import (
     HasherPort,
     MessageRepositoryPort,
@@ -125,8 +125,8 @@ async def test_password_reset_successfully(
     assert message_arg.id is not None
     assert message_arg.type == MessageType.NOTIFY_PASSWORD_RESET
 
-    payload: EmailNotificationPayload = message_arg.payload
-    assert payload.to == active_user.email.value
+    payload: NotificationPayload = message_arg.payload
+    assert payload.recipient == active_user.email.value
 
 
 async def test_reset_password_fails_when_password_invalid(

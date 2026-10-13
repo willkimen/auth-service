@@ -5,9 +5,9 @@ from auth_service.application.exceptions import (
     InvalidTokenTypeError,
     UserNotFoundError,
 )
-from auth_service.application.messages.email_payloads import EmailCodePayload
 from auth_service.application.messages.message import Message
 from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.payload import VerificationCodePayload
 from auth_service.application.ports.output import (
     TokenManagerPort,
     UnitOfWorkPort,
@@ -126,8 +126,8 @@ class ChangeEmailCodeUseCase:
 
             message = Message(
                 type=MessageType.CHANGE_EMAIL_CODE,
-                payload=EmailCodePayload(
-                    to=email_vo.value,
+                payload=VerificationCodePayload(
+                    recipient=email_vo.value,
                     code=verification_code.code.value,
                 ),
                 expires_at=verification_code.expires_at,
