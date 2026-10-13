@@ -37,7 +37,6 @@ async def test_should_successfully_create_a_message(
     assert row.expires_at == message.expires_at
     assert row.published_at == message.published_at
     assert row.publish_attempts == message.publish_attempts
-    assert row.max_publish_attempts == message.max_publish_attempts
 
 
 async def test_creation_fails_when_a_database_error_occurs(

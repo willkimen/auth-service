@@ -45,7 +45,6 @@ class PostgresMessageRepository:
                     expires_at,
                     published_at,
                     publish_attempts,
-                    max_publish_attempts
                 ) VALUES (
                     :id,
                     :payload,
@@ -54,7 +53,6 @@ class PostgresMessageRepository:
                     :expires_at,
                     :published_at,
                     :publish_attempts,
-                    :max_publish_attempts
                 )
                 """
             ).bindparams(bindparam('payload', type_=JSON))
@@ -69,7 +67,6 @@ class PostgresMessageRepository:
                     'expires_at': message.expires_at,
                     'published_at': message.published_at,
                     'publish_attempts': message.publish_attempts,
-                    'max_publish_attempts': message.max_publish_attempts,
                 },
             )
 

@@ -35,9 +35,6 @@ class Message:
         `publish_attempts` (int):
             - Counter for the number of processing attempts made.
               Defaults to `0`.
-        `max_publish_attempts` (int):
-            - Maximum allowed processing attempts before failure.
-              Defaults to `5`.
         `id` (uuid.UUID):
             - Unique identifier for the message instance.
               Automatically generated via UUIDv4 if omitted.
@@ -49,5 +46,4 @@ class Message:
     expires_at: datetime | None = None
     published_at: datetime | None = None
     publish_attempts: int = 0
-    max_publish_attempts: int = 5
     id: uuid.UUID = field(default_factory=uuid.uuid4)

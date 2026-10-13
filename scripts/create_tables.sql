@@ -75,6 +75,5 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ DEFAULT NULL,
     published_at TIMESTAMPTZ DEFAULT NULL,
-    publish_attempts INTEGER DEFAULT 0,
-    max_publish_attempts INTEGER NOT NULL
+    publish_attempts INTEGER DEFAULT 0
 );
