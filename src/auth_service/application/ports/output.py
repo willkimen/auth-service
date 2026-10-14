@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, Sequence
 
 from auth_service.application.dtos.token_dto import (
     PairTokensDTO,
     PayloadTokenDTO,
 )
 from auth_service.application.messages.message import Message
+from auth_service.application.messages.message_types import MessageType
 from auth_service.domain.entities.user import User
 from auth_service.domain.entities.verification_code import VerificationCode
 
@@ -196,6 +197,52 @@ class MessageRepositoryPort(Protocol):
         Raises:
             InfrastructureError:
                 Raised when message persistence fails.
+        """
+        ...
+
+    async def find_pending_messages_by_type(
+        self,
+        types: Sequence[MessageType],
+    ) -> list[Message]:
+        """
+        Retrieves unpublished messages matching the specified types.
+
+        Args:
+            types: Message types to filter the pending messages by.
+
+        Returns:
+            A list of messages that have not yet been published
+            and match the specified types.
+
+        Raises:
+            InfrastructureError:
+                Raised when retrieving messages fails.
+        """
+        ...
+
+    async def mark_as_published(self, message_id: uuid.UUID) -> None:
+        """
+        Marks a message as successfully published.
+
+        Args:
+            message_id: Unique identifier of the message to update.
+
+        Raises:
+            InfrastructureError:
+                Raised when updating the message fails.
+        """
+        ...
+
+    async def increment_publish_attempts(self, message_id: uuid.UUID) -> None:
+        """
+        Increments the publication attempt counter for a message.
+
+        Args:
+            message_id: Unique identifier of the message to update.
+
+        Raises:
+            InfrastructureError:
+                Raised when updating the message fails.
         """
         ...
 

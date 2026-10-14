@@ -90,6 +90,20 @@ class NotificationPayload:
         return NotificationPayload(**data)
 
 
+_PAYLOAD_TYPES: dict[MessageType, type[Payload]] = {
+    MessageType.EMAIL_VERIFICATION_CODE: VerificationCodePayload,
+    MessageType.NOTIFY_EMAIL_VERIFIED: NotificationPayload,
+    MessageType.RESET_PASSWORD_CODE: VerificationCodePayload,
+    MessageType.NOTIFY_PASSWORD_RESET: NotificationPayload,
+    MessageType.CHANGE_PASSWORD_CODE: VerificationCodePayload,
+    MessageType.NOTIFY_PASSWORD_CHANGED: NotificationPayload,
+    MessageType.CHANGE_EMAIL_CODE: VerificationCodePayload,
+    MessageType.NOTIFY_EMAIL_CHANGED: NotificationPayload,
+    MessageType.ACCOUNT_DELETION_CODE: VerificationCodePayload,
+    MessageType.NOTIFY_ACCOUNT_DELETED: NotificationPayload,
+}
+
+
 def payload_from_dict(
     message_type: MessageType,
     data: dict,
@@ -109,20 +123,6 @@ def payload_from_dict(
         ValueError: If no payload implementation is registered
             for the specified message type.
     """
-
-    _PAYLOAD_TYPES: dict[MessageType, type[Payload]] = {
-        MessageType.EMAIL_VERIFICATION_CODE: VerificationCodePayload,
-        MessageType.NOTIFY_EMAIL_VERIFIED: NotificationPayload,
-        MessageType.RESET_PASSWORD_CODE: VerificationCodePayload,
-        MessageType.NOTIFY_PASSWORD_RESET: NotificationPayload,
-        MessageType.CHANGE_PASSWORD_CODE: VerificationCodePayload,
-        MessageType.NOTIFY_PASSWORD_CHANGED: NotificationPayload,
-        MessageType.CHANGE_EMAIL_CODE: VerificationCodePayload,
-        MessageType.NOTIFY_EMAIL_CHANGED: NotificationPayload,
-        MessageType.ACCOUNT_DELETION_CODE: VerificationCodePayload,
-        MessageType.NOTIFY_ACCOUNT_DELETED: NotificationPayload,
-    }
-
     payload_type = _PAYLOAD_TYPES.get(message_type)
 
     if payload_type is None:
