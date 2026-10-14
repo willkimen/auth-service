@@ -1,6 +1,8 @@
 from dataclasses import asdict, dataclass
 from typing import Protocol
 
+from auth_service.application.messages.message_types import MessageType
+
 
 class Payload(Protocol):
     """
@@ -25,6 +27,7 @@ class Payload(Protocol):
         """
         ...
 
+    @staticmethod
     def from_dict(data: dict) -> 'Payload':
         """
         Reconstructs a payload object from its serialized data.
@@ -59,10 +62,10 @@ class VerificationCodePayload:
         """Serializes the payload to a dictionary."""
         return asdict(self)
 
-    @classmethod
-    def from_dict(cls, data: dict) -> 'VerificationCodePayload':
+    @staticmethod
+    def from_dict(data: dict) -> 'VerificationCodePayload':
         """Reconstructs the payload from a dictionary."""
-        return cls(**data)
+        return VerificationCodePayload(**data)
 
 
 @dataclass(slots=True, frozen=True)
@@ -81,7 +84,50 @@ class NotificationPayload:
         """Serializes the payload to a dictionary."""
         return asdict(self)
 
-    @classmethod
-    def from_dict(cls, data: dict) -> 'NotificationPayload':
+    @staticmethod
+    def from_dict(data: dict) -> 'NotificationPayload':
         """Reconstructs the payload from a dictionary."""
-        return cls(**data)
+        return NotificationPayload(**data)
+
+
+def payload_from_dict(
+    message_type: MessageType,
+    data: dict,
+) -> Payload:
+    """
+    Reconstructs the appropriate payload for a message type.
+
+    Args:
+        message_type: Type identifying the message operation.
+        data: Serialized payload data.
+
+    Returns:
+        Payload:
+            The reconstructed payload instance.
+
+    Raises:
+        ValueError: If no payload implementation is registered
+            for the specified message type.
+    """
+
+    _PAYLOAD_TYPES: dict[MessageType, type[Payload]] = {
+        MessageType.EMAIL_VERIFICATION_CODE: VerificationCodePayload,
+        MessageType.NOTIFY_EMAIL_VERIFIED: NotificationPayload,
+        MessageType.RESET_PASSWORD_CODE: VerificationCodePayload,
+        MessageType.NOTIFY_PASSWORD_RESET: NotificationPayload,
+        MessageType.CHANGE_PASSWORD_CODE: VerificationCodePayload,
+        MessageType.NOTIFY_PASSWORD_CHANGED: NotificationPayload,
+        MessageType.CHANGE_EMAIL_CODE: VerificationCodePayload,
+        MessageType.NOTIFY_EMAIL_CHANGED: NotificationPayload,
+        MessageType.ACCOUNT_DELETION_CODE: VerificationCodePayload,
+        MessageType.NOTIFY_ACCOUNT_DELETED: NotificationPayload,
+    }
+
+    payload_type = _PAYLOAD_TYPES.get(message_type)
+
+    if payload_type is None:
+        raise ValueError(
+            f"No payload implementation registered for message type '{message_type}'"
+        )
+
+    return payload_type.from_dict(data)
