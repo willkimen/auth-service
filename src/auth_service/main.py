@@ -5,8 +5,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from auth_service.adapters.inputs.api.app import app
 from auth_service.config.settings import load_settings
 from auth_service.infrastructure.database.engine import create_engine
-from auth_service.scheduler.cleanup_service import CleanupService
-from auth_service.scheduler.job_registration.cleanup import register_cleanup_job
+from auth_service.infrastructure.scheduler.cleanup_service import CleanupService
+from auth_service.infrastructure.scheduler.job_registration.cleanup import (
+    register_cleanup_job,
+)
 
 
 @asynccontextmanager

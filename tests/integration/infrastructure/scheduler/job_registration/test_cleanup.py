@@ -6,8 +6,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from auth_service.scheduler.cleanup_service import CleanupService
-from auth_service.scheduler.job_registration.cleanup import register_cleanup_job
+from auth_service.infrastructure.scheduler.cleanup_service import CleanupService
+from auth_service.infrastructure.scheduler.job_registration.cleanup import (
+    register_cleanup_job,
+)
 
 count_verification_codes = text('SELECT COUNT(*) FROM verification_codes;')
 count_refresh_tokens = text('SELECT COUNT(*) FROM refresh_tokens;')

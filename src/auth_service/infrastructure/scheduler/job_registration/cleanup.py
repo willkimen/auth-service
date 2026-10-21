@@ -1,6 +1,6 @@
 from apscheduler.schedulers.base import BaseScheduler
 
-from auth_service.scheduler.cleanup_service import CleanupService
+from auth_service.infrastructure.scheduler.cleanup_service import CleanupService
 
 
 def register_cleanup_job(
