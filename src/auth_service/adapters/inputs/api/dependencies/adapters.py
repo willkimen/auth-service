@@ -20,8 +20,8 @@ from auth_service.application.ports.output import (
 )
 from auth_service.config.settings import (
     Settings,
-    create_engine,
 )
+from auth_service.infrastructure.database.engine import create_engine
 
 
 @lru_cache

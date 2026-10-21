@@ -2,7 +2,6 @@ from functools import lru_cache
 
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
 class Settings(BaseSettings):
@@ -84,21 +83,3 @@ def load_settings() -> Settings:
               and the `.env` file.
     """
     return Settings()
-
-
-@lru_cache
-def create_engine(database_uri: str) -> AsyncEngine:
-    """
-    Creates and caches an asynchronous SQLAlchemy engine for the given
-    database connection URI.
-
-    Args:
-        `database_uri` (`str`):
-            - Database connection URI.
-
-    Returns:
-        `AsyncEngine`:
-            - Cached asynchronous SQLAlchemy engine used for database
-              operations.
-    """
-    return create_async_engine(database_uri)
