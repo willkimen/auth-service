@@ -365,3 +365,18 @@ class TokenManagerPort(Protocol):
                 If token decoding library fails unexpectedly.
         """
         ...
+
+
+class MessagePublishPort(Protocol):
+    """Defines the contract for publishing messages to a messaging broker."""
+
+    async def publish(self, message: Message) -> None:
+        """Publishes a message to the configured messaging infrastructure.
+
+        Args:
+            message: The message to be published.
+
+        Raises:
+            InfrastructureError: If the message cannot be published.
+        """
+        ...

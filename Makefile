@@ -1,4 +1,4 @@
-.PHONY: db-test-up db-test-down db-test-logs
+.PHONY: db-test-up db-test-clean db-test-logs rabbitmq-test-up rabbitmq-test-clean
 
 db-test-up:
 	docker volume create test-auth
@@ -11,9 +11,22 @@ db-test-up:
 		-p 5432:5432 \
 		-d postgres:18-alpine
 
-db-test-down:
-	docker stop postgres_test && docker rm postgres_test
+db-test-clean:
+	docker stop postgres_test && docker rm -f postgres_test
 	docker volume rm test-auth
 
 db-test-logs:
 	docker logs -f postgres_test
+
+rabbitmq-test-up:
+	docker volume create test-rabbitmq
+	docker run --name rabbitmq_test \
+		-e RABBITMQ_DEFAULT_USER=test \
+		-e RABBITMQ_DEFAULT_PASS=test \
+		-v test-rabbitmq:/var/lib/rabbitmq \
+		-p 5672:5672 \
+		-d rabbitmq:4-management-alpine
+
+rabbitmq-test-clean:
+	docker rm -f rabbitmq_test 2>/dev/null || true
+	docker volume rm test-rabbitmq
