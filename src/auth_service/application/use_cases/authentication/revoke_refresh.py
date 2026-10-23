@@ -1,3 +1,26 @@
+"""
+Design rationale:
+This use case revokes a specific refresh token without requiring an
+authenticated access token. The refresh token itself identifies the
+credential to be revoked and must be validated before the operation
+proceeds.
+
+This design is inspired by RFC 7009 (OAuth 2.0 Token Revocation),
+which defines a mechanism for revoking individual tokens. However,
+RFC 7009 does not mandate this specific authentication policy or
+require a separate endpoint for revoking all refresh tokens.
+
+Revoking all refresh tokens is handled by a separate use case that
+requires an authenticated access token to identify the user whose
+tokens are to be revoked. This prevents the operation from affecting
+tokens belonging to other users.
+
+The distinction is intentional: revoking a specific token targets a
+credential supplied by the caller, whereas revoking all tokens
+targets a user's collection of credentials and therefore requires
+an authenticated identity.
+
+"""
 from auth_service.application.dtos.token_dto import PayloadTokenDTO
 from auth_service.application.exceptions import InvalidTokenTypeError
 from auth_service.application.ports.output import (

@@ -111,6 +111,9 @@ class ChangeEmailUseCase:
             if token_payload.typ != 'access':
                 raise InvalidTokenTypeError()
 
+            # The uniqueness of a verification code is determined by the combination
+            # of the user ID and the code itself; therefore, you must use this data
+            # to retrieve the specific verification code.
             verification_code: (
                 VerificationCode | None
             ) = await self.uow.codes.get_by_user_id_and_code(token_payload.sub, code)

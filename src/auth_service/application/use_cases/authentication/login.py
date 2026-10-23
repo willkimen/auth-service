@@ -87,36 +87,48 @@ class LoginUseCase:
         """
 
         async with self.uow:
+            # Login is not accepted for users that do not exist,
+            # and we perform this check using your email address and password.
             user: User | None = await self.uow.users.get_by_email(email)
 
             if user is None:
                 raise InvalidCredentialsError()
 
+            # Even if the user exists with that email address,
+            # we still need to verify that the password matches.
             if not self.hasher.verify_password(
                 plain_password=password,
                 hashed_password=user.hash_password.value,
             ):
                 raise InvalidCredentialsError()
 
+            # Users who have not yet verified their email
+            # are not permitted to login; the same applies if,
+            # for any reason, an account has been deactivated.
             if not user.is_active:
                 raise InactiveUserError()
 
             if not user.email_verified:
                 raise UnverifiedEmailError()
 
-            user.record_login()
 
             pair_tokens: PairTokensDTO = self.token_manager.new_pair_token(
                 user.public_id
             )
 
-            # convert unix timestamp to datatime aware
+            # Convert unix timestamp to datatime aware.
+            # All objects related to dates should be aware.
             exp = datetime.fromtimestamp(
                 pair_tokens.refresh.payload.exp,
                 tz=ZoneInfo('UTC'),
             )
 
+            # When a user's state changes,
+            # that change must be recorded in the database.
+            user.record_login()
             await self.uow.users.update(user)
+
+            # The refresh token data must be persisted for later verification.
             await self.uow.tokens.create(
                 pair_tokens.refresh.payload.sub,
                 pair_tokens.refresh.payload.jti,
