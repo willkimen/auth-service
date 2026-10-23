@@ -3,6 +3,18 @@
 This documentation is intended to give anyone using, studying, or continuing the
 development of this project a general understanding of how it works.
 
+## Project Status 🚧
+
+**Work in Progress:** This project is currently under active development.
+
+A RabbitMQ integration is being implemented to enable asynchronous message publishing.
+The goal is to publish email-related messages to a RabbitMQ exchange, allowing
+the [`email-service`](https://github.com/willkimen/email-service) to consume and
+process them asynchronously.
+
+This implementation builds on the Outbox Pattern to improve the reliability of message
+delivery between services.
+
 ## Overview
 
 The `auth-service` is responsible for centralizing user authentication and
@@ -25,35 +37,6 @@ is intended for administrators and must be performed directly in the database.
 This project is a skeleton and a starting point. The goal is not to provide a
 complete solution for every possible scenario, but to provide a structure that
 can be studied, adapted, and expanded according to the needs of each project.
-
-### Important decision about email delivery
-
-The email delivery mechanism was not implemented directly in this service. The
-idea is to avoid tying the project to a specific solution, since there are
-several ways to implement this part.
-
-For example, someone may prefer to:
-
-* Call the API of an email delivery service directly.
-* Use a messaging system such as Celery.
-* Use a scheduler such as APScheduler.
-* Create a separate service responsible for sending emails.
-* Use another communication method, such as SMS.
-
-Because of this, the `auth-service` does not decide how a message is actually
-delivered. It only records the intention to send it.
-
-For this purpose, the Outbox Pattern is used. The data required to send a
-message is persisted in the database before the process responsible for
-delivery is executed. This ensures that the intention to send the message is not
-lost if an external service is unavailable or the delivery process fails.
-
-A separate Go service was also created that consumes the Resend API
-to send the emails.
-
-You can implement your own solution or use this service as a reference:
-
-[email-service](https://github.com/willkimen/email-service?utm_source=chatgpt.com)
 
 ## Architecture
 
