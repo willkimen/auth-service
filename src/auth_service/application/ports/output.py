@@ -7,7 +7,7 @@ from auth_service.application.dtos.token_dto import (
     PayloadTokenDTO,
 )
 from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message_enums import MessageType
 from auth_service.domain.entities.user import User
 from auth_service.domain.entities.verification_code import VerificationCode
 
@@ -370,13 +370,18 @@ class TokenManagerPort(Protocol):
 class MessagePublishPort(Protocol):
     """Defines the contract for publishing messages to a messaging broker."""
 
-    async def publish(self, message: Message) -> None:
-        """Publishes a message to the configured messaging infrastructure.
+    async def publish(self, message: Message) -> Message:
+        """Attempts to publish a message and updates its state.
 
         Args:
             message: The message to be published.
 
+        Returns:
+            The message with its publication state and attempt details updated.
+
         Raises:
-            InfrastructureError: If the message cannot be published.
+            InfrastructureError:
+                If the publisher is not initialized or an infrastructure
+                error prevents the publication attempt from being processed.
         """
         ...

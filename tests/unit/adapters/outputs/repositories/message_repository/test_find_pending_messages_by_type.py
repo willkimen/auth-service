@@ -8,7 +8,7 @@ from auth_service.adapters.outputs.repositories.message_repository import (
 )
 from auth_service.application.exceptions import InfrastructureError
 from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message_enums import MessageType
 
 
 async def test_find_fails_when_database_error_occurs(

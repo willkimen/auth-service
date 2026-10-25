@@ -68,12 +68,25 @@ CREATE TABLE IF NOT EXISTS verification_codes (
 CREATE INDEX idx_verification_code_user_id ON verification_codes(user_public_id);
 CREATE INDEX idx_verification_code_code ON verification_codes(code);
  
+CREATE TYPE message_status AS ENUM (
+    'pending',
+    'published',
+    'failed'
+);
+
 CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY,
-    payload JSONB,
-    type VARCHAR(32),
+    payload JSONB NOT NULL,
+    type VARCHAR(32) NOT NULL,
+
+    status message_status NOT NULL DEFAULT 'pending',
+
     created_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ DEFAULT NULL,
     published_at TIMESTAMPTZ DEFAULT NULL,
-    publish_attempts INTEGER DEFAULT 0
+
+    publish_attempts INTEGER NOT NULL DEFAULT 0,
+
+    failure_code VARCHAR(64) DEFAULT NULL,
+    failure_reason TEXT DEFAULT NULL
 );

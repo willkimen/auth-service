@@ -8,8 +8,8 @@ from auth_service.adapters.outputs.repositories.message_repository import (
     PostgresMessageRepository,
 )
 from auth_service.application.exceptions import InfrastructureError
-from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message import Message, MessageStatus
+from auth_service.application.messages.message_enums import MessageType
 from auth_service.application.messages.payload import VerificationCodePayload
 
 
@@ -29,6 +29,7 @@ async def find_pending_messages_success(
         Message(
             type=MessageType.ACCOUNT_DELETION_CODE,
             payload=payload,
+            status=MessageStatus.PENDING,
         )
     )
 
@@ -36,6 +37,7 @@ async def find_pending_messages_success(
         Message(
             type=MessageType.CHANGE_PASSWORD_CODE,
             payload=payload,
+            status=MessageStatus.PENDING,
         )
     )
 
@@ -45,6 +47,7 @@ async def find_pending_messages_success(
             type=MessageType.RESET_PASSWORD_CODE,
             payload=payload,
             published_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+            status=MessageStatus.PUBLISHED,
         )
     )
 
@@ -53,6 +56,7 @@ async def find_pending_messages_success(
             type=MessageType.EMAIL_VERIFICATION_CODE,
             payload=payload,
             published_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+            status=MessageStatus.PUBLISHED,
         )
     )
 
@@ -75,8 +79,14 @@ async def find_pending_messages_success(
     # asserts
     number_messages = 2
     assert len(messages) == number_messages
+
     assert messages[0].type == MessageType.ACCOUNT_DELETION_CODE
+    assert messages[0].published_at is None
+    assert messages[0].status == MessageStatus.PENDING
+
     assert messages[1].type == MessageType.CHANGE_PASSWORD_CODE
+    assert messages[1].published_at is None
+    assert messages[1].status == MessageStatus.PENDING
 
 
 async def test_find_fails_when_a_database_error_occurs(

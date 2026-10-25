@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message_enums import MessageType
 from auth_service.application.messages.payload import VerificationCodePayload
 
 payload = VerificationCodePayload(

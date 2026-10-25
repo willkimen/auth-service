@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import Protocol
 
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message_enums import MessageType
 
 
 class Payload(Protocol):

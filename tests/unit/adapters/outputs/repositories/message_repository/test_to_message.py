@@ -8,8 +8,8 @@ from auth_service.adapters.outputs.repositories.message_repository import (
     PostgresMessageRepository,
 )
 from auth_service.application.exceptions import InfrastructureError
-from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message import Message, MessageStatus
+from auth_service.application.messages.message_enums import MessageType
 from auth_service.application.messages.payload import (
     NotificationPayload,
     VerificationCodePayload,
@@ -29,6 +29,9 @@ def message_row() -> RowMapping:
         'expires_at': None,
         'published_at': None,
         'publish_attempts': 0,
+        'status': MessageStatus.PENDING,
+        'failure_code': None,
+        'failure_reason': None,
     }
 
 
@@ -42,6 +45,9 @@ def test_to_message_converts_row_to_message(message_row):
     assert message.expires_at is None
     assert message.published_at is None
     assert message.publish_attempts == 0
+    assert message.status == MessageStatus.PENDING
+    assert message.failure_code is None
+    assert message.failure_reason is None
 
 
 def test_to_message_reconstructs_verification_code_payload(message_row):

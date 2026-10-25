@@ -23,6 +23,9 @@ class InfrastructureErrorCode(StrEnum):
         `CORRUPTED_PERSISTENCE_STATE_ERROR` (str):
             - Raised when the retrieved database data cannot be successfully
               mapped into valid domain objects.
+        `MESSAGING_ERROR` (str):
+            - Indicates a failure during messaging infrastructure
+              initialization, connection, or message publication.
     """
 
     UNKNOWN_ERROR = 'UNKNOWN_ERROR'
@@ -30,6 +33,7 @@ class InfrastructureErrorCode(StrEnum):
     PASSWORD_HASHER_ERROR = 'PASSWORD_HASHER_ERROR'
     AUTH_TOKEN_ERROR = 'AUTH_TOKEN_ERROR'
     CORRUPTED_PERSISTENCE_STATE_ERROR = 'CORRUPTED_PERSISTENCE_STATE_ERROR'
+    MESSAGING_ERROR = 'MESSAGING_ERROR'
 
 
 class InfrastructureError(Exception):

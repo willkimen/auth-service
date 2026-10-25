@@ -111,7 +111,6 @@ class LoginUseCase:
             if not user.email_verified:
                 raise UnverifiedEmailError()
 
-
             pair_tokens: PairTokensDTO = self.token_manager.new_pair_token(
                 user.public_id
             )

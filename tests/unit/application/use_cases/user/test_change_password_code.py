@@ -17,7 +17,7 @@ from auth_service.application.exceptions import (
     UserNotFoundError,
 )
 from auth_service.application.messages.message import Message
-from auth_service.application.messages.message_types import MessageType
+from auth_service.application.messages.message_enums import MessageType
 from auth_service.application.messages.payload import VerificationCodePayload
 from auth_service.application.ports.output import (
     MessageRepositoryPort,

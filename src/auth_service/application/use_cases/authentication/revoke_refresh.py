@@ -21,6 +21,7 @@ targets a user's collection of credentials and therefore requires
 an authenticated identity.
 
 """
+
 from auth_service.application.dtos.token_dto import PayloadTokenDTO
 from auth_service.application.exceptions import InvalidTokenTypeError
 from auth_service.application.ports.output import (

@@ -1,6 +1,21 @@
 from enum import StrEnum, auto
 
 
+class MessageStatus(StrEnum):
+    PENDING = 'pending'
+    PUBLISHED = 'published'
+    FAILED = 'failed'
+
+
+class MessageFailureCode(StrEnum):
+    BROKER_UNAVAILABLE = 'broker_unavailable'
+    PUBLISH_TIMEOUT = 'publish_timeout'
+    MESSAGE_UNROUTABLE = 'message_unroutable'
+    PUBLISH_REJECTED = 'publish_rejected'
+    SERIALIZATION_ERROR = 'serialization_error'
+    UNKNOWN = 'unknown'
+
+
 class MessageType(StrEnum):
     """
     Defines the supported message types.
