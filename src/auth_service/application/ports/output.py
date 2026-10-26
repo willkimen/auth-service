@@ -220,29 +220,14 @@ class MessageRepositoryPort(Protocol):
         """
         ...
 
-    async def mark_as_published(self, message_id: uuid.UUID) -> None:
-        """
-        Marks a message as successfully published.
+    async def update(self, message: Message) -> None:
+        """Updates an existing message in the persistence layer.
 
         Args:
-            message_id: Unique identifier of the message to update.
+            message: Message containing the updated state.
 
         Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
-        """
-        ...
-
-    async def increment_publish_attempts(self, message_id: uuid.UUID) -> None:
-        """
-        Increments the publication attempt counter for a message.
-
-        Args:
-            message_id: Unique identifier of the message to update.
-
-        Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
+            InfrastructureError: If the message cannot be updated.
         """
         ...
 

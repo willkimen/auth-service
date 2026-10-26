@@ -1,4 +1,3 @@
-import uuid
 from typing import Sequence
 
 from sqlalchemy import JSON, RowMapping, bindparam, text
@@ -98,6 +97,42 @@ class PostgresMessageRepository:
                 cause=e,
             ) from e
 
+    async def update(self, message: Message) -> None:
+        """Updates the publication state of an existing message."""
+        query = text("""
+            UPDATE messages
+            SET
+                status = :status,
+                published_at = :published_at,
+                publish_attempts = :publish_attempts,
+                failure_code = :failure_code,
+                failure_reason = :failure_reason
+            WHERE id = :id
+        """)
+
+        try:
+            await self.conn.execute(
+                query,
+                {
+                    'id': message.id,
+                    'status': message.status.value,
+                    'published_at': message.published_at,
+                    'publish_attempts': message.publish_attempts,
+                    'failure_code': (
+                        message.failure_code.value
+                        if message.failure_code is not None
+                        else None
+                    ),
+                    'failure_reason': message.failure_reason,
+                },
+            )
+
+        except SQLAlchemyError as exc:
+            raise InfrastructureError(
+                message='Failed to update message.',
+                code=InfrastructureErrorCode.DATABASE_ERROR,
+            ) from exc
+
     async def find_pending_messages_by_type(
         self,
         types: Sequence[MessageType],
@@ -157,184 +192,6 @@ class PostgresMessageRepository:
         except SQLAlchemyError as e:
             raise InfrastructureError(
                 message='Failed to retrieve pending messages',
-                code=InfrastructureErrorCode.DATABASE_ERROR,
-                cause=e,
-            ) from e
-
-    async def mark_as_published(self, message_id: uuid.UUID) -> None:
-        """
-        Marks a message as successfully published and clears its last failure.
-
-        Args:
-            message_id: Unique identifier of the message to update.
-
-        Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
-        """
-        query = text(
-            """
-            UPDATE messages
-            SET status = :status,
-                published_at = NOW(),
-                failure_code = NULL,
-                failure_reason = NULL
-            WHERE id = :id
-              AND status = :pending_status
-            """
-        )
-
-        try:
-            await self.conn.execute(
-                query,
-                {
-                    'id': message_id,
-                    'status': MessageStatus.PUBLISHED.value,
-                    'pending_status': MessageStatus.PENDING.value,
-                },
-            )
-
-        except SQLAlchemyError as e:
-            raise InfrastructureError(
-                message='Failed to mark message as published',
-                code=InfrastructureErrorCode.DATABASE_ERROR,
-                cause=e,
-            ) from e
-
-    async def increment_publish_attempts(
-        self,
-        message_id: uuid.UUID,
-    ) -> None:
-        """
-        Increments the publication attempt counter for a pending message.
-
-        Args:
-            message_id: Unique identifier of the message to update.
-
-        Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
-        """
-        query = text(
-            """
-            UPDATE messages
-            SET publish_attempts = publish_attempts + 1
-            WHERE id = :id
-              AND status = :status
-            """
-        )
-
-        try:
-            await self.conn.execute(
-                query,
-                {
-                    'id': message_id,
-                    'status': MessageStatus.PENDING.value,
-                },
-            )
-
-        except SQLAlchemyError as e:
-            raise InfrastructureError(
-                message='Failed to increment publication attempts',
-                code=InfrastructureErrorCode.DATABASE_ERROR,
-                cause=e,
-            ) from e
-
-    async def mark_as_failed(
-        self,
-        message_id: uuid.UUID,
-        failure_code: MessageFailureCode,
-        failure_reason: str,
-    ) -> None:
-        """
-        Marks a message as permanently failed.
-
-        Args:
-            message_id: Unique identifier of the message to update.
-            failure_code: Standardized code identifying the failure.
-            failure_reason: Description of the last publication failure.
-
-        Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
-        """
-        query = text(
-            """
-            UPDATE messages
-            SET status = :status,
-                failure_code = :failure_code,
-                failure_reason = :failure_reason
-            WHERE id = :id
-              AND status = :pending_status
-            """
-        )
-
-        try:
-            await self.conn.execute(
-                query,
-                {
-                    'id': message_id,
-                    'status': MessageStatus.FAILED.value,
-                    'failure_code': failure_code.value,
-                    'failure_reason': failure_reason,
-                    'pending_status': MessageStatus.PENDING.value,
-                },
-            )
-
-        except SQLAlchemyError as e:
-            raise InfrastructureError(
-                message='Failed to mark message as failed',
-                code=InfrastructureErrorCode.DATABASE_ERROR,
-                cause=e,
-            ) from e
-
-    async def record_publish_failure(
-        self,
-        message_id: uuid.UUID,
-        failure_code: MessageFailureCode,
-        failure_reason: str,
-    ) -> None:
-        """
-        Records a publication failure while keeping the message pending
-        for a possible retry.
-
-        Increments the publication attempt counter and stores the
-        standardized failure code and its description.
-
-        Args:
-            message_id: Unique identifier of the message to update.
-            failure_code: Standardized code identifying the failure.
-            failure_reason: Description of the publication failure.
-
-        Raises:
-            InfrastructureError:
-                Raised when updating the message fails.
-        """
-        query = text(
-            """
-            UPDATE messages
-            SET publish_attempts = publish_attempts + 1,
-                failure_code = :failure_code,
-                failure_reason = :failure_reason
-            WHERE id = :id
-              AND status = :status
-            """
-        )
-
-        try:
-            await self.conn.execute(
-                query,
-                {
-                    'id': message_id,
-                    'status': MessageStatus.PENDING.value,
-                    'failure_code': failure_code.value,
-                    'failure_reason': failure_reason,
-                },
-            )
-
-        except SQLAlchemyError as e:
-            raise InfrastructureError(
-                message='Failed to record publication failure',
                 code=InfrastructureErrorCode.DATABASE_ERROR,
                 cause=e,
             ) from e
