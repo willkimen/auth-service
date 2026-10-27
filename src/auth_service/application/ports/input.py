@@ -913,3 +913,11 @@ class RevokeRefreshPort(Protocol):
                 - If token type is not a refresh token.
         """
         ...
+
+
+class PublishEmailMessagePort(Protocol):
+    """Input port for publishing pending email messages."""
+
+    async def execute(self) -> None:
+        """Publishes pending email messages."""
+        ...
