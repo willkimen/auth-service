@@ -6,8 +6,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from auth_service.infrastructure.scheduler.cleanup_service import CleanupService
-from auth_service.infrastructure.scheduler.job_registration.cleanup import (
+from auth_service.infrastructure.scheduler.jobs.cleanup_job import (
+    CleanupJob,
     register_cleanup_job,
 )
 
@@ -29,7 +29,7 @@ async def test_scheduler_should_trigger_cleanup_jobs_at_scheduled_time(
 ):
     # arrange
     scheduler = AsyncIOScheduler(timezone=timezone.utc)
-    register_cleanup_job(scheduler, CleanupService(engine))
+    register_cleanup_job(scheduler, CleanupJob(engine))
 
     async with engine.connect() as conn:
         count = await conn.scalar(count_verification_codes)

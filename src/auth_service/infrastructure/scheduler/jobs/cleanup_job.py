@@ -10,6 +10,7 @@ ports and adapters to separate the application logic from database access.
 
 import logging
 
+from apscheduler.schedulers.base import BaseScheduler
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -17,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 logger = logging.getLogger(__name__)
 
 
-class CleanupService:
+class CleanupJob:
     """
     Service responsible for cleaning up database records.
 
@@ -93,3 +94,14 @@ class CleanupService:
         await self.cleanup_expired_refresh_tokens()
         await self.cleanup_used_verification_codes()
         await self.cleanup_expired_verification_codes()
+
+
+def register_cleanup_job(
+    scheduler: BaseScheduler,
+    cleanup_service: CleanupJob,
+) -> None:
+    scheduler.add_job(
+        cleanup_service.cleanup,
+        trigger='cron',
+        hour=3,
+    )
