@@ -1,19 +1,7 @@
 # auth-service
 
-This documentation is intended to give anyone using, studying, or continuing the
-development of this project a general understanding of how it works.
-
-## Project Status 🚧
-
-**Work in Progress:** This project is currently under active development.
-
-A RabbitMQ integration is being implemented to enable asynchronous message publishing.
-The goal is to publish email-related messages to a RabbitMQ exchange, allowing
-the [`email-service`](https://github.com/willkimen/email-service) to consume and
-process them asynchronously.
-
-This implementation builds on the Outbox Pattern to improve the reliability of message
-delivery between services.
+This documentation provides an overview of the project for anyone interested
+in using, studying, or contributing to its development.
 
 ## Overview
 
@@ -40,26 +28,58 @@ can be studied, adapted, and expanded according to the needs of each project.
 
 ## Architecture
 
-The architecture follows the Hexagonal Architecture approach, while also using
-some DDD concepts.
+The architecture follows the Hexagonal Architecture approach, while also
+incorporating some Domain-Driven Design (DDD) concepts.
 
 The goal is to keep the application core as independent as possible from
-frameworks, databases, and external services. This makes it easier to replace
-infrastructure-specific components without having to change the main business rules.
+frameworks, databases, and external services. This separation makes it easier
+to replace infrastructure-specific components without changing the
+application's business rules.
 
-The project is mainly divided into the following layers:
+The project is organized into the following main layers:
 
-* `domain`: contains the core business rules and concepts.
-* `application`: contains the application use cases and coordinates the
-execution of business rules.
-* `adapters`: contains the implementations responsible for communicating with
-external resources, such as databases and other services.
+* `domain`: contains the core business concepts, entities, and business rules.
+* `application`: contains the application use cases, input and output ports,
+  and application-level data structures.
+* `adapters`: contains the implementations that connect the application to
+  external interfaces and resources, such as the HTTP API, PostgreSQL, and
+  RabbitMQ.
+* `infrastructure`: contains technical components required to run the
+  application, including configuration, database engine creation, and
+  scheduled jobs.
 
-In addition to these layers, there are two other parts:
+### Infrastructure
 
-* `config`: centralizes the application's configuration.
-* `scheduler`: responsible for creating scheduled tasks that automate routines
-such as removing verification codes and expired or revoked refresh tokens.
+The `infrastructure` package groups technical concerns that support the
+application:
+
+* `config`: loads application settings from environment variables and
+  environment files.
+* `database`: provides database infrastructure, including the SQLAlchemy
+  engine.
+* `scheduler`: registers and executes scheduled jobs, such as cleaning up
+  expired verification codes and expired or revoked refresh tokens.
+
+### Messaging and the Outbox Pattern
+
+The application uses the Outbox Pattern to persist messages that need to be
+published for asynchronous processing.
+
+Messages are stored in PostgreSQL before they are published. A scheduled job
+periodically invokes the `PublishEmailMessageUseCase`, which retrieves
+pending messages and delegates publication through an output port. The
+RabbitMQ publisher adapter implements this port and is responsible for
+communicating with the broker.
+
+This separates the application logic from the messaging technology: the use
+case depends on an abstraction rather than directly on RabbitMQ.
+
+The publisher sends email-related messages to a direct exchange named
+`notifications`, using the routing key `email.send`. The consuming service
+is responsible for declaring its queue and binding it to the exchange.
+
+The `email-service` is intended to consume these messages and process the
+corresponding email operations asynchronously.
 
 ## Business Rules
 
@@ -97,26 +117,45 @@ The database currently contains the following main structures:
 * `Refresh Tokens`
 * `Messages` — used by the Outbox Pattern to store messages that need to be processed.
 
+### Referential Integrity
+
+The database currently does not define foreign key constraints between
+tables. This is an intentional design decision to keep the data model
+simple and avoid introducing additional coupling between tables at this
+stage of the project.
+
+Referential integrity is enforced by the application, which validates
+relationships between records when necessary, using identifiers such as
+`user_public_id` and `sub`.
+
+This approach keeps the schema flexible while the application is evolving.
+Foreign key constraints may be introduced in the future if stronger
+database-level referential integrity becomes necessary.
+
 ## Technologies
 
 The main technologies used by the application are:
 
 * APScheduler
+* aio-pika
 * bcrypt
 * email-validator
 * FastAPI
+* PostgreSQL
 * psycopg
-* pydantic-settings
+* Pydantic Settings
 * PyJWT
+* RabbitMQ
 * SQLAlchemy
 
 For development and testing:
 
+* Docker
 * httpx
 * pytest
 * pytest-asyncio
 * pytest-cov
-* ruff
+* Ruff
 * taskipy
 * time-machine
 
@@ -124,6 +163,8 @@ For development and testing:
 
 To set up the development environment, first install `uv` on your machine.
 
+To install `uv`, follow the
+[official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
 There are several ways to install `uv`. You can choose whichever method you prefer:
 
 * Using `pipx`.
@@ -169,21 +210,24 @@ code is formatted and free of basic issues.
 * `post_test`: Generates an HTML version of the coverage report, allowing it to
 be viewed in a browser.
 
-## Running Tests — Starting the Test Container
+## Running Tests — Starting the Test Containers
 
-For integration tests involving the database, I chose not to use `testcontainers`.
+For integration tests involving the database, I chose not to use
+`testcontainers`.
 
-Instead of creating and destroying a container every time the tests are run, the
-project uses a dedicated Docker container for the test PostgreSQL database.
+Instead of creating and destroying containers every time the tests are run,
+the project uses dedicated Docker containers for the test PostgreSQL database
+and RabbitMQ.
 
-The idea is to keep the process simpler and more efficient. The container remains
-available while you are working, and the tests are already prepared to clean the
-tables before each test.
+The idea is to keep the process simpler and more efficient. The containers
+remain available while you are working, and the tests are already prepared to
+clean the database tables before each test.
 
-To start the container, use the `Makefile`.
+To start the test containers, use the `Makefile`.
 
 The `Makefile` configures the test PostgreSQL instance with the data,
-credentials, ports, and other settings expected by the application.
+credentials, ports, and other settings expected by the application. It also
+provides a command to start the RabbitMQ container used for integration tests.
 
 To start the test database:
 
@@ -191,7 +235,13 @@ To start the test database:
 make db-test-up
 ```
 
-Once PostgreSQL is available, you can run the tests normally.
+To start the RabbitMQ container:
+
+```bash
+make rabbitmq-test-up
+```
+
+Once PostgreSQL and RabbitMQ are available, you can run the tests normally.
 
 ## Running the Production Environment
 

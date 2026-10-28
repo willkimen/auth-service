@@ -35,6 +35,9 @@ class Settings(BaseSettings):
         `sqlalchemy_database_uri` (`str`):
             - Computed SQLAlchemy database connection URI constructed from
               the PostgreSQL configuration settings.
+
+        `rabbitmq_url` (`str`):
+            - AMQP connection URL used to connect to the RabbitMQ broker.
     """
 
     postgres_db: str
@@ -45,6 +48,7 @@ class Settings(BaseSettings):
 
     code_expiration_time: int = 20
     jwt_secret: str
+    rabbitmq_url: str
 
     model_config = SettingsConfigDict(
         env_file=('.env.api', '.env.postgres'),

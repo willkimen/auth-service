@@ -12,12 +12,27 @@ services:
     env_file:
       - .env.postgres
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
-        interval: 5s
-        timeout: 5s
-        retries: 5
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - apidb
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - apidb
+
   authapi:
     container_name: authapi
     image: authapi
@@ -31,6 +46,8 @@ services:
       - .env.postgres
     depends_on:
       authdb:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - apidb
