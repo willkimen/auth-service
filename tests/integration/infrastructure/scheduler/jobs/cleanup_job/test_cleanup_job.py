@@ -11,6 +11,8 @@ count_refresh_tokens = text('SELECT COUNT(*) FROM refresh_tokens;')
 
 EXPECTED_ROWS_BEFORE_CLEANUP = 1
 EXPECTED_ROWS_AFTER_CLEANUP = 0
+
+# It represents a point in time when the token has expired.
 AFTER_EXPIRATION_TIME = datetime(2000, 1, 2, 3, 0, tzinfo=timezone.utc)
 
 
@@ -20,6 +22,8 @@ async def test_cleanup_expired_verification_code_successfully(
     clean_database: None,
 ):
     # arrange
+    # Check whether a verification code is actually persisted in
+    # the database before the scheduler executes the job.
     async with engine.connect() as conn:
         count = await conn.scalar(count_verification_codes)
         assert count == EXPECTED_ROWS_BEFORE_CLEANUP
@@ -40,6 +44,8 @@ async def test_cleanup_used_verification_code_successfully(
     clean_database: None,
 ):
     # arrange
+    # Check whether a verification code is actually persisted in
+    # the database before the scheduler executes the job.
     async with engine.connect() as conn:
         count = await conn.scalar(count_verification_codes)
         assert count == EXPECTED_ROWS_BEFORE_CLEANUP
@@ -59,6 +65,8 @@ async def test_cleanup_expired_refresh_token_successfully(
     clean_database: None,
 ):
     # arrange
+    # Check whether a token is actually persisted in
+    # the database before the scheduler executes the job.
     async with engine.connect() as conn:
         count = await conn.scalar(count_refresh_tokens)
         assert count == EXPECTED_ROWS_BEFORE_CLEANUP
@@ -79,6 +87,8 @@ async def test_cleanup_revoked_refresh_token_successfully(
     clean_database: None,
 ):
     # arrange
+    # Check whether a token is actually persisted in
+    # the database before the scheduler executes the job.
     async with engine.connect() as conn:
         count = await conn.scalar(count_refresh_tokens)
         assert count == EXPECTED_ROWS_BEFORE_CLEANUP
@@ -101,6 +111,8 @@ async def test_cleanup_all_successfully(
     EXPECTED_ROWS_AFTER_CLEANUP = 0
 
     # arrange
+    # Verify whether the rows actually exist in the
+    # database before the scheduler executes the job.
     async with engine.connect() as conn:
         count = await conn.scalar(count_refresh_tokens)
         assert count == EXPECTED_ROWS_BEFORE_CLEANUP

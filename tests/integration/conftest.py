@@ -1,3 +1,7 @@
+"""
+This module provides fixtures that will be used by various tests;
+for this reason, it sits hierarchically above other `conftest.py` modules.
+"""
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -5,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 @pytest.fixture(scope='session')
 async def engine():
-    "Connects to the fixed database initialized by the Docker container."
+    """Connects to the fixed database initialized by the Docker container."""
     db_engine: AsyncEngine = create_async_engine(
         'postgresql+psycopg://test:test@localhost:5432/test-auth'
     )
@@ -18,7 +22,7 @@ async def engine():
 
 @pytest.fixture
 async def conn_rollback(engine: AsyncEngine):
-    "Provides a connection and rolls back all changes after the test."
+    """Provides a connection and rolls back all changes after the test."""
     async with engine.connect() as connection:
         # We start a transaction explicitly
         transaction = await connection.begin()

@@ -2,6 +2,16 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+
+"""
+Justificaiton:
+I needed to set fixed creation and expiration dates to make testing easier,
+rather than having to deal with dynamic dates that change depending on when
+the tests are run. The goal is to ensure predictability so that behavior
+can be tested.
+So, keep this in mind when trying to understand the tests.
+"""
+
 insert_expired_verification_code = text(
     """
     INSERT INTO verification_codes (
