@@ -81,6 +81,35 @@ is responsible for declaring its queue and binding it to the exchange.
 The `email-service` is intended to consume these messages and process the
 corresponding email operations asynchronously.
 
+### Messaging Flow
+
+1. An HTTP request reaches the API, which invokes the corresponding use case
+   through an input port. The use case creates a `Message` object representing
+   the intention to send an email.
+
+2. The use case persists the `Message` through a repository accessed via an
+   output port. The message is stored in PostgreSQL as part of the Outbox
+   Pattern.
+
+3. A scheduled job periodically invokes the `PublishEmailMessageUseCase`
+   through its input port.
+
+4. The use case retrieves pending messages from PostgreSQL through the
+   repository output port.
+
+5. For each pending message, the use case delegates publication through the
+   `MessagePublishPort`. The RabbitMQ publisher adapter implements this port
+   and publishes the message to the `notifications` direct exchange using
+   the `email.send` routing key.
+
+6. The publication result is recorded in PostgreSQL by updating the message's
+   status and related publication details.
+
+7. The `email-service` consumes messages from its queue, which is bound to
+   the exchange, and processes the corresponding email operation asynchronously.
+
+![Message Flow](docs/img/message-flow.png)
+
 ## Business Rules
 
 The rules below are the main business rules of the domain, but they do not
